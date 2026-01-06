@@ -10,28 +10,43 @@ export default function TopNav() {
     color: "#fff",
     background: pathname === path ? "#ffffff22" : "transparent",
     fontWeight: 500,
+    whiteSpace: "nowrap",
   });
 
   return (
     <nav
       style={{
         display: "flex",
+        alignItems: "center",
         gap: 12,
         padding: "12px 16px",
         background: "#020617",
         borderBottom: "1px solid #ffffff22",
+        overflowX: "auto",
       }}
     >
+      {/* LOGO / BAŞLIK */}
+      <div
+        style={{
+          fontWeight: 600,
+          marginRight: 16,
+          color: "#e5e7eb",
+          whiteSpace: "nowrap",
+        }}
+      >
+        Mefkure Kayıt Sayfası
+      </div>
+
       <Link to="/dashboard" style={linkStyle("/dashboard")}>
-        📊 Dashboard
+        🏠 Anasayfa
       </Link>
 
       <Link to="/import" style={linkStyle("/import")}>
-        📥 Excel Yükle
+        📥 Import
       </Link>
 
       <Link to="/daily" style={linkStyle("/daily")}>
-        ✍️ Günlük Giriş
+        ✍️ Günlük Kayıt Girişi
       </Link>
 
       <Link to="/compare" style={linkStyle("/compare")}>
@@ -42,9 +57,8 @@ export default function TopNav() {
         🎯 Hedefler
       </Link>
 
-      {/* ✅ YENİ – SADECE EKLENDİ */}
       <Link to="/students" style={linkStyle("/students")}>
-        🧑‍🎓 Yeni Kayıt – Kayıt Yenileme
+        🧑‍🎓 Yeni Kayıt / Kayıt Yenileme
       </Link>
     </nav>
   );

@@ -57,7 +57,7 @@ export default function DashboardPage() {
 
   return (
     <div style={{ padding: 24, color: "white" }}>
-      <h2>📊 Dashboard</h2>
+      <h2>📊 Anlık Genel Durum</h2>
 
       <FilterBar
         year={year}
