@@ -4,7 +4,7 @@ import { filterRecords, computeKPI } from "../../services/analytics.service";
 import FilterBar from "../../components/FilterBar";
 
 /* ================================
-   BRANCH TYPE GUARD (SON HATA İÇİN)
+   BRANCH TYPE GUARD
 ================================ */
 
 const ALLOWED_BRANCHES = [
@@ -19,6 +19,23 @@ function safeBranch(b?: string): AllowedBranch | undefined {
   return ALLOWED_BRANCHES.includes(b as AllowedBranch)
     ? (b as AllowedBranch)
     : undefined;
+}
+
+/* ================================
+   CLASS TYPE NORMALIZER
+   UI: 6 / 7 / 8
+   DB: 06 / 07 / 08
+================================ */
+
+function normalizeClassTypes(list: string[]) {
+  return list.map((v) => {
+    const s = String(v).trim();
+
+    // 6 → 06, 7 → 07, 8 → 08
+    if (/^\d$/.test(s)) return s.padStart(2, "0");
+
+    return s;
+  });
 }
 
 /* ================================
@@ -43,7 +60,9 @@ export default function DashboardPage() {
     year,
     month: month ?? undefined,
     branch: safeBranch(branch),
-    classTypes: classTypes.length ? classTypes : undefined,
+    classTypes: classTypes.length
+      ? normalizeClassTypes(classTypes)
+      : undefined,
   });
 
   const { studentCount, totalRevenue, avgRevenue } = computeKPI(filtered);

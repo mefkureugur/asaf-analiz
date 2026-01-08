@@ -39,12 +39,6 @@ const titleStyle: React.CSSProperties = {
   fontWeight: 700,
 };
 
-const subTitleStyle: React.CSSProperties = {
-  fontSize: 13,
-  color: "#9ca3af",
-  marginTop: 4,
-};
-
 const gridStyle: React.CSSProperties = {
   display: "grid",
   gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
@@ -158,9 +152,6 @@ export default function StudentsPage() {
     return (
       <div style={cardStyle}>
         <div style={titleStyle}>{title}</div>
-        <div style={subTitleStyle}>
-          {CURRENT_YEAR} · {PREV_YEAR} ile karşılaştırmalı
-        </div>
 
         <div style={rowStyle}>
           <span>🟢 Yeni kayıt</span>
@@ -195,10 +186,6 @@ export default function StudentsPage() {
   return (
     <div style={{ padding: 24, color: "white" }}>
       <h2 style={{ margin: 0 }}>🧑‍🎓 Yeni Kayıt – Kayıt Yenileme</h2>
-      <div style={{ color: "#9ca3af", marginTop: 6 }}>
-        {CURRENT_YEAR} verileri, {PREV_YEAR} kayıtları ile karşılaştırılarak
-        hesaplanır.
-      </div>
 
       <div style={gridStyle}>
         <StudentCard title="Mefkure LGS" data={lgs} />

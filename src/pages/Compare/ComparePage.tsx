@@ -16,6 +16,19 @@ function normalizeDate(input: any): Date | null {
   return new Date(input);
 }
 
+// 🔥 Excel 06 / 07 problemi
+function normClass(v: any) {
+  const s = String(v ?? "").trim();
+  return s.length === 2 && s.startsWith("0") ? s.slice(1) : s;
+}
+
+// 🔥 Metin temizleme (branch, label vs)
+function cleanText(v: any) {
+  return String(v ?? "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function trendInfo(prev: number, curr: number) {
   if (prev === 0) {
     return { text: "—", color: "#9ca3af", arrow: "" };
@@ -55,17 +68,13 @@ function mergeGroups<T extends { [key: string]: any }>(
 }
 
 /* ================================
-   PROGRAM SABİT LİSTESİ (KORUNDU)
-================================ */
-
-/* ================================
-   PROGRAM GERÇEK TANIMI
+   PROGRAM TANIMLARI
 ================================ */
 
 const PROGRAM_DEFS = [
-  { label: "6", classType: "6" },
-  { label: "7", classType: "7" },
-  { label: "8", classType: "8" },
+  { label: "6", classType: "6", branch: "Mefkure LGS" },
+  { label: "7", classType: "7", branch: "Mefkure LGS" },
+  { label: "8", classType: "8", branch: "Mefkure LGS" },
 
   { label: "Mefkure Plus – 11", classType: "11", branch: "Mefkure Plus" },
   { label: "Mefkure Plus – 12", classType: "12", branch: "Mefkure Plus" },
@@ -76,10 +85,11 @@ const PROGRAM_DEFS = [
   { label: "Mefkure Vip – Mezun", classType: "Mezun", branch: "Mefkure Vip" },
 ];
 
+// 🔥 ASIL KRİTİK NOKTA – PROGRAM FİLTRESİ
 function filterProgramRecords(records: any[], def: any) {
   return records.filter((r) => {
-    if (r.classType !== def.classType) return false;
-    if (def.branch && r.branch !== def.branch) return false;
+    if (normClass(r.classType) !== normClass(def.classType)) return false;
+    if (def.branch && cleanText(r.branch) !== cleanText(def.branch)) return false;
     return true;
   });
 }
@@ -162,7 +172,6 @@ export default function ComparePage() {
     <div style={{ padding: 24, color: "white" }}>
       <h2>⚖️ Yıl Karşılaştırması</h2>
 
-      {/* ✅ TARİH PENCERESİ – GERİ GELDİ */}
       <label style={{ display: "block", marginTop: 12 }}>
         Karşılaştırma tarihi:
         <input
@@ -253,11 +262,15 @@ export default function ComparePage() {
               </div>
               <div style={rowStyle}>
                 <span>💰 Ciro</span>
-                <strong>₺{prev.totalRevenue.toLocaleString("tr-TR")} → ₺{curr.totalRevenue.toLocaleString("tr-TR")}</strong>
+                <strong>
+                  ₺{prev.totalRevenue.toLocaleString("tr-TR")} → ₺{curr.totalRevenue.toLocaleString("tr-TR")}
+                </strong>
               </div>
               <div style={rowStyle}>
                 <span>📊 Ortalama</span>
-                <strong>₺{prev.avgRevenue.toLocaleString("tr-TR")} → ₺{curr.avgRevenue.toLocaleString("tr-TR")}</strong>
+                <strong>
+                  ₺{prev.avgRevenue.toLocaleString("tr-TR")} → ₺{curr.avgRevenue.toLocaleString("tr-TR")}
+                </strong>
               </div>
               <div style={{ marginTop: 10, color: trend.color, fontWeight: 600 }}>
                 {trend.arrow} {trend.text}
@@ -292,11 +305,15 @@ export default function ComparePage() {
               </div>
               <div style={rowStyle}>
                 <span>💰 Ciro</span>
-                <strong>₺{prev.totalRevenue.toLocaleString("tr-TR")} → ₺{curr.totalRevenue.toLocaleString("tr-TR")}</strong>
+                <strong>
+                  ₺{prev.totalRevenue.toLocaleString("tr-TR")} → ₺{curr.totalRevenue.toLocaleString("tr-TR")}
+                </strong>
               </div>
               <div style={rowStyle}>
                 <span>📊 Ortalama</span>
-                <strong>₺{prev.avgRevenue.toLocaleString("tr-TR")} → ₺{curr.avgRevenue.toLocaleString("tr-TR")}</strong>
+                <strong>
+                  ₺{prev.avgRevenue.toLocaleString("tr-TR")} → ₺{curr.avgRevenue.toLocaleString("tr-TR")}
+                </strong>
               </div>
               <div style={{ marginTop: 10, color: trend.color, fontWeight: 600 }}>
                 {trend.arrow} {trend.text}

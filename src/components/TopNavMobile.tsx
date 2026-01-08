@@ -41,6 +41,11 @@ export default function TopNavMobile() {
           <NavLink to="/targets" onClick={() => setOpen(false)}>
             🎯 Hedefler
           </NavLink>
+
+          {/* ✅ YENİ EKLENEN */}
+          <NavLink to="/students" onClick={() => setOpen(false)}>
+            🎓 Yeni Kayıt / Kayıt Yenileme
+          </NavLink>
         </nav>
       )}
     </div>
