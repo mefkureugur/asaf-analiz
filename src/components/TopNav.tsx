@@ -3,15 +3,22 @@ import { Link, useLocation } from "react-router-dom";
 export default function TopNav() {
   const { pathname } = useLocation();
 
-  const linkStyle = (path: string): React.CSSProperties => ({
-    padding: "8px 12px",
-    borderRadius: 6,
-    textDecoration: "none",
-    color: "#fff",
-    background: pathname === path ? "#ffffff22" : "transparent",
-    fontWeight: 500,
-    whiteSpace: "nowrap",
-  });
+  // 🔥 prefix destekli aktif kontrol (alt sayfaları da kapsar)
+  const linkStyle = (path: string): React.CSSProperties => {
+    const isActive =
+      pathname === path || pathname.startsWith(path + "/");
+
+    return {
+      padding: "8px 12px",
+      borderRadius: 8,
+      textDecoration: "none",
+      color: "#fff",
+      background: isActive ? "#ffffff22" : "transparent",
+      fontWeight: isActive ? 600 : 500,
+      whiteSpace: "nowrap",
+      transition: "background 0.15s ease",
+    };
+  };
 
   return (
     <nav
@@ -19,17 +26,17 @@ export default function TopNav() {
         display: "flex",
         alignItems: "center",
         gap: 12,
-        padding: "12px 16px",
+        padding: "12px 20px",
         background: "#020617",
         borderBottom: "1px solid #ffffff22",
         overflowX: "auto",
       }}
     >
-      {/* LOGO / BAŞLIK */}
+      {/* LOGO */}
       <div
         style={{
-          fontWeight: 600,
-          marginRight: 16,
+          fontWeight: 700,
+          marginRight: 20,
           color: "#e5e7eb",
           whiteSpace: "nowrap",
         }}
@@ -59,6 +66,11 @@ export default function TopNav() {
 
       <Link to="/students" style={linkStyle("/students")}>
         🧑‍🎓 Yeni Kayıt / Kayıt Yenileme
+      </Link>
+
+      {/* 💰 FİNANS */}
+      <Link to="/finance/view" style={linkStyle("/finance")}>
+        💰 Finans
       </Link>
     </nav>
   );

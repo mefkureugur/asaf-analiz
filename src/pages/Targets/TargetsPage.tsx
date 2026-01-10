@@ -305,26 +305,34 @@ export default function TargetsPage() {
 
   // ✅ Toplam hedef (otomatik) — burada hesap düzgün kalsın diye number'a çeviriyoruz
   const monthlyTargetTotal = useMemo(() => {
-    const lgs = cleanNums(monthlyTargets.lgs);
-    const plus = cleanNums(monthlyTargets.plus);
-    const vip = cleanNums(monthlyTargets.vip);
+  const lgs = cleanNums(monthlyTargets.lgs);
+  const plus = cleanNums(monthlyTargets.plus);
+  const vip = cleanNums(monthlyTargets.vip);
 
-    const student = lgs.student + plus.student + vip.student;
-    const revenue = lgs.revenue + plus.revenue + vip.revenue;
-    const avg = lgs.avg + plus.avg + vip.avg;
-    return { student, revenue, avg };
-  }, [monthlyTargets]);
+  const student = lgs.student + plus.student + vip.student;
+  const revenue = lgs.revenue + plus.revenue + vip.revenue;
+
+  // ✅ DOĞRU ORTALAMA
+  const avg = student > 0 ? Math.round(revenue / student) : 0;
+
+  return { student, revenue, avg };
+}, [monthlyTargets]);
+
 
   const yearlyTargetTotal = useMemo(() => {
-    const lgs = cleanNums(targets.yearly.lgs);
-    const plus = cleanNums(targets.yearly.plus);
-    const vip = cleanNums(targets.yearly.vip);
+  const lgs = cleanNums(targets.yearly.lgs);
+  const plus = cleanNums(targets.yearly.plus);
+  const vip = cleanNums(targets.yearly.vip);
 
-    const student = lgs.student + plus.student + vip.student;
-    const revenue = lgs.revenue + plus.revenue + vip.revenue;
-    const avg = lgs.avg + plus.avg + vip.avg;
-    return { student, revenue, avg };
-  }, [targets.yearly]);
+  const student = lgs.student + plus.student + vip.student;
+  const revenue = lgs.revenue + plus.revenue + vip.revenue;
+
+  // ✅ DOĞRU ORTALAMA
+  const avg = student > 0 ? Math.round(revenue / student) : 0;
+
+  return { student, revenue, avg };
+}, [targets.yearly]);
+
 
   // ✅ Input değiştiriciler (ARTIK CLAMP YOK → rahat yaz)
   function setMonthly(scope: ScopeKey, field: keyof TargetNums, value: any) {
