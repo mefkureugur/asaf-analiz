@@ -5,76 +5,70 @@ import { loadFinance, saveFinance } from "../../store/FinanceStore";
 import type { Branch, FinanceState } from "../../store/FinanceStore";
 
 import { calculateFinance } from "../../services/financeCalculator";
-import { saveFinanceSnapshot } from "../../services/financeSnapshot.service"; // 🧠 HAFIZA
-import { getFinanceSnapshot } from "../../services/financeSnapshot.read"; // 🔥 PRELOAD
+import { saveFinanceSnapshot } from "../../services/financeSnapshot.service"; 
+import { getFinanceSnapshot } from "../../services/financeSnapshot.read";
+
+// ASAF Şube Listesi
+const BRANCH_LIST: Branch[] = [
+  "Mefkure LGS",
+  "Mefkure VİP",
+  "Mefkure PLUS",
+  "Altınküre İlköğretim",
+  "Altınküre Lise",
+  "Altınküre Teknokent"
+];
 
 const MONTHS = [
-  "Ağustos",
-  "Eylül",
-  "Ekim",
-  "Kasım",
-  "Aralık",
-  "Ocak",
-  "Şubat",
-  "Mart",
-  "Nisan",
-  "Mayıs",
-  "Haziran",
-  "Temmuz",
+  "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık", "Ocak",
+  "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz",
 ];
 
 export default function FinanceInputPage() {
   const navigate = useNavigate();
 
-  const [branch, setBranch] = useState<Branch>("YKS");
+  // Varsayılan şubeyi Mefkure LGS yapalım
+  const [branch, setBranch] = useState<Branch>("Mefkure LGS");
   const [finance, setFinance] = useState<FinanceState>(() => loadFinance());
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  const data = finance[branch];
+  const data = finance[branch] || { income: { student: 0, food: 0, other: 0 }, expenses: Array(12).fill(0) };
   const calc = calculateFinance(data);
 
   /* ======================================================
-     🔥 PRELOAD: SAYFA AÇILINCA FIRESTORE → FORM
+     🔥 PRELOAD: TÜM ŞUBELERİ FIRESTORE'DAN ÇEK
      ====================================================== */
   useEffect(() => {
     const year = new Date().getFullYear();
 
-    Promise.all([
-      getFinanceSnapshot(year, "YKS"),
-      getFinanceSnapshot(year, "LGS"),
-    ])
-      .then(([yksSnap, lgsSnap]) => {
-        setFinance((prev) => ({
-          YKS: yksSnap
-            ? {
-                income: {
-                  student: yksSnap.revenueTotal ?? prev.YKS.income.student,
-                  food: prev.YKS.income.food,
-                  other: prev.YKS.income.other,
-                },
-                expenses: [...prev.YKS.expenses], // giderler korunur
-              }
-            : prev.YKS,
+    // Dinamik olarak tüm şubelerin verilerini çekiyoruz
+    const fetchAllSnapshots = async () => {
+      const updatedFinance = { ...finance };
+      
+      for (const b of BRANCH_LIST) {
+        try {
+          const snap = await getFinanceSnapshot(year, b);
+          if (snap) {
+            updatedFinance[b] = {
+              income: {
+                student: snap.revenueTotal ?? updatedFinance[b].income.student,
+                food: updatedFinance[b].income.food,
+                other: updatedFinance[b].income.other,
+              },
+              expenses: [...updatedFinance[b].expenses],
+            };
+          }
+        } catch (e) {
+          console.error(`${b} verisi çekilemedi:`, e);
+        }
+      }
+      setFinance(updatedFinance);
+    };
 
-          LGS: lgsSnap
-            ? {
-                income: {
-                  student: lgsSnap.revenueTotal ?? prev.LGS.income.student,
-                  food: prev.LGS.income.food,
-                  other: prev.LGS.income.other,
-                },
-                expenses: [...prev.LGS.expenses],
-              }
-            : prev.LGS,
-        }));
-      })
-      .catch((err) => {
-        console.error("Finance preload error:", err);
-      });
+    fetchAllSnapshots();
   }, []);
 
-  /* 🔒 Otomatik local kayıt (arka plan) */
+  /* 🔒 Otomatik local kayıt */
   useEffect(() => {
     saveFinance(finance);
     setSaved(false);
@@ -100,248 +94,119 @@ export default function FinanceInputPage() {
     }));
   }
 
-  /* 💾 KAYDET = local + Firestore snapshot (YKS + LGS + GENERAL) */
+  /* 💾 KAYDET = Mevcut şube + GENEL Toplam */
   async function handleSave() {
     try {
       setSaving(true);
-
       const year = new Date().getFullYear();
 
-      // 1️⃣ Local kayıt (mevcut davranış KORUNDU)
       saveFinance(finance);
 
-      // 2️⃣ Firestore snapshot – YKS
-      await saveFinanceSnapshot(year, "YKS", finance.YKS);
+      // 1️⃣ Aktif şubeyi buluta gönder
+      await saveFinanceSnapshot(year, branch, finance[branch]);
 
-      // 3️⃣ Firestore snapshot – LGS
-      await saveFinanceSnapshot(year, "LGS", finance.LGS);
-
-      // 4️⃣ Firestore snapshot – GENERAL (YKS + LGS BİRLEŞİMİ)
-      const generalInput = {
-        income: {
-          student:
-            finance.YKS.income.student + finance.LGS.income.student,
-          food:
-            finance.YKS.income.food + finance.LGS.income.food,
-          other:
-            finance.YKS.income.other + finance.LGS.income.other,
-        },
-        expenses: finance.YKS.expenses.map(
-          (v, i) => v + finance.LGS.expenses[i]
-        ),
-      };
+      // 2️⃣ GENERAL (Tüm Şubelerin Toplamı) Hesapla ve Gönder
+      const generalInput = BRANCH_LIST.reduce((acc, b) => {
+        const bData = finance[b];
+        return {
+          income: {
+            student: acc.income.student + bData.income.student,
+            food: acc.income.food + bData.income.food,
+            other: acc.income.other + bData.income.other,
+          },
+          expenses: acc.expenses.map((v, i) => v + bData.expenses[i])
+        };
+      }, { income: { student: 0, food: 0, other: 0 }, expenses: Array(12).fill(0) });
 
       await saveFinanceSnapshot(year, "GENERAL", generalInput);
 
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (err) {
-      console.error("Finance snapshot error:", err);
-      // 🔒 fail-safe: local kayıt zaten yapıldı
+      console.error("Finans kayıt hatası:", err);
     } finally {
       setSaving(false);
     }
   }
 
-  /* ================================
-     STYLES
-  ================================ */
-
-  const cardStyle: React.CSSProperties = {
-    background: "rgba(255,255,255,0.04)",
-    border: "1px solid rgba(255,255,255,0.12)",
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 20,
-  };
-
-  const inputStyle: React.CSSProperties = {
-    width: "100%",
-    padding: "10px 12px",
-    borderRadius: 10,
-    border: "1px solid rgba(255,255,255,0.2)",
-    background: "rgba(255,255,255,0.08)",
-    color: "white",
-  };
-
-  const labelStyle: React.CSSProperties = {
-    fontSize: 12,
-    opacity: 0.8,
-    marginBottom: 6,
-  };
-
-  /* ================================
-     RENDER
-  ================================ */
-
   return (
-    <div
-      style={{
-        color: "white",
-        maxWidth: 1100,
-        margin: "0 auto",
-        padding: "0 16px",
-      }}
-    >
-      {/* HEADER */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          marginBottom: 16,
-        }}
-      >
-        <h2 style={{ margin: 0 }}>
-          Finans – Veri Girişi ({branch})
-        </h2>
-
-        <button
-          onClick={() => navigate("/finance/view")}
-          style={{
-            padding: "6px 12px",
-            borderRadius: 10,
-            border: "1px solid rgba(255,255,255,0.25)",
-            background: "rgba(255,255,255,0.06)",
-            color: "white",
-            fontWeight: 600,
-            cursor: "pointer",
-          }}
-        >
-          ← Finans’a Dön
-        </button>
+    <div style={{ color: "white", maxWidth: 1100, margin: "0 auto", padding: "24px 16px" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+        <h2 style={{ margin: 0 }}>💰 Finans Veri Girişi</h2>
+        <button onClick={() => navigate("/finance/view")} style={navButtonStyle}>← Finans Özetine Dön</button>
       </div>
 
-      {/* ŞUBE SEÇİCİ */}
-      <div
-        style={{
-          display: "inline-flex",
-          padding: 4,
-          borderRadius: 14,
-          background: "rgba(255,255,255,0.08)",
-          border: "1px solid rgba(255,255,255,0.18)",
-          marginBottom: 24,
-        }}
-      >
-        {(["YKS", "LGS"] as const).map((b) => {
+      {/* ŞUBE SEÇİCİ - 6 ŞUBELİ YAPI */}
+      <div style={branchSelectorWrapper}>
+        {BRANCH_LIST.map((b) => {
           const active = branch === b;
-
           return (
-            <button
-              key={b}
-              onClick={() => setBranch(b)}
-              style={{
-                padding: "8px 20px",
-                borderRadius: 10,
-                border: "none",
-                cursor: "pointer",
-                background: active
-                  ? "linear-gradient(135deg, #22c55e, #16a34a)"
-                  : "transparent",
-                color: active ? "#052e16" : "white",
-                fontWeight: 700,
-              }}
-            >
+            <button key={b} onClick={() => setBranch(b)} style={active ? activeTabStyle : tabStyle}>
               {b}
             </button>
           );
         })}
       </div>
 
-      {/* GELİRLER */}
-      <div style={cardStyle}>
-        <h3 style={{ marginTop: 0 }}>Gelirler (Yıllık)</h3>
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: 16,
-          }}
-        >
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+        {/* GELİRLER */}
+        <div style={cardStyle}>
+          <h3 style={{ marginTop: 0, color: "#22c55e" }}>📈 Gelirler (Yıllık Tahmin)</h3>
           {(["student", "food", "other"] as const).map((k) => (
-            <div key={k}>
-              <div style={labelStyle}>
-                {k === "student"
-                  ? "Öğrenci Geliri"
-                  : k === "food"
-                  ? "Yemek Geliri"
-                  : "Diğer Gelirler"}{" "}
-                (Yıllık)
-              </div>
-              <input
-                style={inputStyle}
-                type="number"
-                value={data.income[k]}
-                onChange={(e) => setIncome(k, +e.target.value)}
-              />
+            <div key={k} style={{ marginBottom: 12 }}>
+              <div style={labelStyle}>{k === "student" ? "Eğitim" : k === "food" ? "Yemek" : "Diğer"} Geliri</div>
+              <input style={inputStyle} type="number" value={data.income[k]} onChange={(e) => setIncome(k, +e.target.value)} />
             </div>
           ))}
+          <div style={totalHighlight}>Toplam: {calc.income.toLocaleString("tr-TR")} ₺</div>
         </div>
 
-        <div style={{ marginTop: 12, fontWeight: 600 }}>
-          Yıllık Toplam Gelir:{" "}
-          {calc.income.toLocaleString("tr-TR")} ₺
+        {/* ÖZET DURUM */}
+        <div style={cardStyle}>
+          <h3 style={{ marginTop: 0, color: "#38bdf8" }}>📊 Finansal Özet</h3>
+          <div style={summaryRow}><span>Tahmini Ciro:</span> <strong>{calc.income.toLocaleString("tr-TR")} ₺</strong></div>
+          <div style={summaryRow}><span>Aylık Ort. Gider:</span> <strong>{calc.avgExpense.toLocaleString("tr-TR")} ₺</strong></div>
+          <div style={{ ...summaryRow, borderTop: "1px solid #334155", paddingTop: 10, marginTop: 10 }}>
+            <span>Yıllık Tahmini Kar:</span> 
+            <strong style={{ color: calc.income - (calc.avgExpense * 12) > 0 ? "#22c55e" : "#ef4444" }}>
+              {(calc.income - (calc.avgExpense * 12)).toLocaleString("tr-TR")} ₺
+            </strong>
+          </div>
         </div>
       </div>
 
-      {/* GİDERLER */}
-      <div style={cardStyle}>
-        <h3 style={{ marginTop: 0 }}>Giderler (Aylık)</h3>
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
-            gap: 12,
-          }}
-        >
+      {/* GİDERLER (AYLIK) */}
+      <div style={{ ...cardStyle, marginTop: 20 }}>
+        <h3 style={{ marginTop: 0, color: "#f87171" }}>📉 Aylık Gider Girişi</h3>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
           {MONTHS.map((m, i) => (
             <div key={i}>
               <div style={labelStyle}>{m}</div>
-              <input
-                style={inputStyle}
-                type="number"
-                value={data.expenses[i]}
-                onChange={(e) => setExpense(i, +e.target.value)}
-              />
+              <input style={inputStyle} type="number" value={data.expenses[i]} onChange={(e) => setExpense(i, +e.target.value)} />
             </div>
           ))}
         </div>
-
-        <div style={{ marginTop: 12, opacity: 0.85 }}>
-          Girilen ay sayısı: {calc.months} <br />
-          Ortalama Aylık Gider:{" "}
-          {calc.avgExpense.toLocaleString("tr-TR")} ₺
-        </div>
       </div>
 
-      {/* KAYDET */}
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          style={{
-            padding: "10px 18px",
-            borderRadius: 12,
-            border: "none",
-            background: saving
-              ? "linear-gradient(135deg,#64748b,#475569)"
-              : "linear-gradient(135deg,#3b82f6,#2563eb)",
-            color: "white",
-            fontWeight: 700,
-            cursor: saving ? "not-allowed" : "pointer",
-          }}
-        >
-          {saving ? "⏳ Kaydediliyor…" : "💾 Kaydet"}
+      {/* KAYDET BUTONU */}
+      <div style={{ marginTop: 24, display: "flex", alignItems: "center", gap: 15 }}>
+        <button onClick={handleSave} disabled={saving} style={saveButtonStyle}>
+          {saving ? "⏳ Kaydediliyor..." : "💾 Verileri Sisteme İşle"}
         </button>
-
-        {saved && (
-          <span style={{ color: "#22c55e", fontWeight: 600 }}>
-            ✔ Kaydedildi
-          </span>
-        )}
+        {saved && <span style={{ color: "#22c55e", fontWeight: 700 }}>✔ Şube ve Genel Toplam Güncellendi!</span>}
       </div>
     </div>
   );
 }
+
+/* ================================ STYLES ================================ */
+const cardStyle: React.CSSProperties = { background: "#0f172a", border: "1px solid #1e293b", borderRadius: 16, padding: 20 };
+const inputStyle: React.CSSProperties = { width: "100%", padding: "10px", borderRadius: 8, border: "1px solid #334155", background: "#020617", color: "white" };
+const labelStyle: React.CSSProperties = { fontSize: 12, color: "#94a3b8", marginBottom: 4 };
+const totalHighlight: React.CSSProperties = { marginTop: 15, fontSize: 18, fontWeight: 700, color: "#22c55e", textAlign: "right" };
+const summaryRow: React.CSSProperties = { display: "flex", justifyContent: "space-between", marginBottom: 8, color: "#e2e8f0" };
+const branchSelectorWrapper: React.CSSProperties = { display: "flex", gap: 8, marginBottom: 20, overflowX: "auto", paddingBottom: 10 };
+const tabStyle: React.CSSProperties = { padding: "8px 16px", borderRadius: 8, border: "1px solid #1e293b", background: "transparent", color: "#94a3b8", cursor: "pointer", whiteSpace: "nowrap" };
+const activeTabStyle: React.CSSProperties = { ...tabStyle, background: "#3b82f6", color: "white", borderColor: "#3b82f6", fontWeight: 700 };
+const saveButtonStyle: React.CSSProperties = { padding: "12px 24px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#3b82f6,#2563eb)", color: "white", fontWeight: 700, cursor: "pointer" };
+const navButtonStyle: React.CSSProperties = { padding: "8px 16px", borderRadius: 10, border: "1px solid #334155", background: "#1e293b", color: "white", cursor: "pointer" };

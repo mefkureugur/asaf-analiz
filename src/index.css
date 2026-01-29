@@ -3,24 +3,25 @@
 ========================= */
 * {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent; /* Mobil tıklama efektini temizler */
 }
 
 html,
 body {
   margin: 0;
   padding: 0;
-  overflow-x: hidden; /* 🔒 YATAY KAYMAYI KÖKTEN BİTİRİR */
+  overflow-x: hidden; 
+  background-color: #020617; /* Daha derin kurumsal lacivert */
 }
 
 /* =========================
    BASE TYPO & THEME
 ========================= */
 body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue",
-    sans-serif;
-  background-color: #0f172a; /* koyu arka plan */
-  color: #e5e7eb;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: #f8fafc;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* =========================
@@ -28,74 +29,108 @@ body {
 ========================= */
 .page {
   width: 100%;
-  max-width: 100%;
   padding: 16px;
-  overflow-x: hidden; /* ekstra güvenlik */
+  min-height: calc(100vh - 60px);
 }
 
 /* =========================
    TYPOGRAPHY
 ========================= */
+h1, h2, h3 {
+  letter-spacing: -0.02em;
+  color: #f8fafc;
+}
+
 h2 {
-  font-size: 1.25rem;
-  margin-bottom: 8px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 12px;
 }
 
 p {
   font-size: 0.95rem;
-  opacity: 0.85;
+  color: #94a3b8; /* Slate-400 rengi (daha okunaklı) */
 }
 
 /* =========================
-   DESKTOP LAYOUT
+   DESKTOP LAYOUT (Tablet ve Üstü)
 ========================= */
-@media (min-width: 768px) {
+@media (min-width: 900px) {
   .page {
-    max-width: 1100px;
+    max-width: 1280px;
     margin: 0 auto;
     padding: 32px;
   }
 }
 
 /* =========================
-   MOBILE NAV (HAMBURGER)
+   MOBILE NAV & BRANDING
 ========================= */
 .mobileNavWrapper {
   width: 100%;
+  border-bottom: 1px solid #1e293b;
 }
 
 .mobileTopBar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
+  padding: 14px 20px;
   background-color: #020617;
 }
 
 .mobileLogo {
-  font-weight: 600;
-  font-size: 15px;
-  letter-spacing: 0.3px;
+  font-weight: 800;
+  font-size: 1.1rem;
+  letter-spacing: 0.5px;
+  color: #f8fafc;
+}
+
+.mobileLogo span {
+  color: #38bdf8; /* ASAF Açık Mavi */
 }
 
 .hamburgerBtn {
-  font-size: 24px;
-  background: none;
-  border: none;
-  color: inherit;
-  cursor: pointer;
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #f8fafc;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
+/* =========================
+   MOBILE MENU LINKS
+========================= */
 .mobileMenu {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 16px;
+  padding: 8px;
   background-color: #020617;
+  border-bottom: 2px solid #38bdf8;
+  animation: slideDown 0.2s ease-out;
 }
 
 .mobileMenu a {
-  color: inherit;
+  color: #cbd5e1;
   text-decoration: none;
-  font-size: 16px;
+  font-size: 1rem;
+  font-weight: 500;
+  padding: 14px 16px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.mobileMenu a:active {
+  background-color: #1e293b;
+  color: #38bdf8;
+}
+
+/* Animasyonlar */
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

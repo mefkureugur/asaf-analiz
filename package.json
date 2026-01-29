@@ -1,20 +1,22 @@
 {
-  "name": "edu-analytics",
+  "name": "asaf-analiz",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy": "npm run build && firebase deploy"
   },
   "dependencies": {
     "firebase": "^12.7.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.11.0",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "lucide-react": "^0.400.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

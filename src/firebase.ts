@@ -1,15 +1,21 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+import { getAuth } from "firebase/auth"; // 👈 Giriş servisi eklendi
+import { getFirestore } from "firebase/firestore"; // 👈 Veritabanı servisi eklendi
 
 const firebaseConfig = {
-  apiKey: "AIzaSyC0GVKvu_iChih-Dmt0pMbTgSdaUSwP0ZI",
-  authDomain: "edu-analytics-47769.firebaseapp.com",
-  projectId: "edu-analytics-47769",
-  storageBucket: "edu-analytics-47769.firebasestorage.app",
-  messagingSenderId: "642369041252",
-  appId: "1:642369041252:web:cc7c27c1f22800ef6b8071",
+  apiKey: "AIzaSyCILtbLmDourU4xKZu-zKntMABpemBLOXc",
+  authDomain: "asaf-analiz.firebaseapp.com",
+  projectId: "asaf-analiz",
+  storageBucket: "asaf-analiz.firebasestorage.app",
+  messagingSenderId: "43481419846",
+  appId: "1:43481419846:web:b9dd2bbd986d2188e9fa47"
 };
 
+// Firebase'i başlat
 const app = initializeApp(firebaseConfig);
 
+// Servisleri dışarı aktar (Diğer dosyalar buradan okuyacak)
+export const auth = getAuth(app);
 export const db = getFirestore(app);
+
+export default app;

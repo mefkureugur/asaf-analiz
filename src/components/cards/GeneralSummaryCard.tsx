@@ -1,4 +1,24 @@
-export default function GeneralSummaryCard() {
+import React from "react";
+
+// Props yapısını isteğe bağlı (optional) yaptık ki hata vermesin
+interface GeneralSummaryCardProps {
+  currentCiro?: string; 
+  currentOgrenci?: string; 
+  currentOrtalama?: string;
+}
+
+export default function GeneralSummaryCard({
+  currentCiro = "+%0,0", // Veri yoksa 0 gösterir
+  currentOgrenci = "+%0,0",
+  currentOrtalama = "+%0,0",
+}: GeneralSummaryCardProps) {
+  
+  const getColor = (val: string) => {
+    if (val.startsWith("+")) return "#22c55e"; 
+    if (val.startsWith("-")) return "#ef4444"; 
+    return "#94a3b8"; 
+  };
+
   return (
     <div
       style={{
@@ -9,11 +29,36 @@ export default function GeneralSummaryCard() {
         marginTop: 16,
       }}
     >
-      <h3 style={{ marginBottom: 12 }}>📊 Genel Toplam</h3>
+      <h3 style={{ marginBottom: 16, fontSize: "1.1rem", color: "#f8fafc" }}>
+        📊 Geçen Yıla Göre Durum
+      </h3>
 
-      <MetricRow label="Ciro" value="+%18,4" color="green" />
-      <MetricRow label="Öğrenci" value="-%4,2" color="red" />
-      <MetricRow label="Ortalama" value="+%22,1" color="green" />
+      <MetricRow 
+        label="Ciro Değişimi" 
+        value={currentCiro} 
+        color={getColor(currentCiro)} 
+      />
+      <MetricRow 
+        label="Öğrenci Sayısı" 
+        value={currentOgrenci} 
+        color={getColor(currentOgrenci)} 
+      />
+      <MetricRow 
+        label="Ortalama Kayıt" 
+        value={currentOrtalama} 
+        color={getColor(currentOrtalama)} 
+      />
+      
+      <div style={{ 
+        marginTop: 12, 
+        paddingTop: 8, 
+        borderTop: "1px solid #1e293b", 
+        fontSize: "0.75rem", 
+        color: "#64748b",
+        textAlign: "center"
+      }}>
+        * Bugünün tarihi ile geçen yılın aynı günü kıyaslanmaktadır.
+      </div>
     </div>
   );
 }
@@ -25,18 +70,24 @@ function MetricRow({
 }: {
   label: string;
   value: string;
-  color: "green" | "red";
+  color: string;
 }) {
   return (
     <div
       style={{
         display: "flex",
         justifyContent: "space-between",
-        marginBottom: 8,
+        alignItems: "center",
+        marginBottom: 10,
       }}
     >
-      <span>{label}</span>
-      <span style={{ color }}>{value}</span>
+      <span style={{ color: "#94a3b8", fontSize: "0.9rem" }}>{label}</span>
+      <span style={{ 
+        color: color, 
+        fontWeight: "bold", 
+        fontSize: "1rem",
+        fontFamily: "monospace" 
+      }}>{value}</span>
     </div>
   );
 }

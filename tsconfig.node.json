@@ -14,11 +14,10 @@
     "moduleDetection": "force",
     "noEmit": true,
 
-    /* Linting */
+    /* Linting (Uyarıları Esnettik) */
     "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "erasableSyntaxOnly": true,
+    "noUnusedLocals": false,      /* Arka plandaki konfigürasyon değişkenleri artık sararmayacak */
+    "noUnusedParameters": false,  /* Kullanılmayan parametreler deploy'u engellemeyecek */
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },

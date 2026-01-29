@@ -1,14 +1,13 @@
-import  type { FinanceInput } from "../store/FinanceStore";
+import type { FinanceInput } from "../store/FinanceStore";
 
 /* ======================================================
-   1️⃣ TEMEL HESAPLAR (MEVCUT YAPI – BOZULMADI)
+   1️⃣ TEMEL HESAPLAR
 ====================================================== */
-
 export function calculateFinance(input: FinanceInput) {
   const income =
-    input.income.student +
-    input.income.food +
-    input.income.other;
+    (Number(input.income.student) || 0) +
+    (Number(input.income.food) || 0) +
+    (Number(input.income.other) || 0);
 
   const filled = input.expenses.filter((x) => x > 0);
   const months = filled.length;
@@ -16,72 +15,68 @@ export function calculateFinance(input: FinanceInput) {
   const totalExpense = filled.reduce((a, b) => a + b, 0);
   const avgExpense = months ? totalExpense / months : 0;
 
-  // ⚠️ NOT:
-  // Buradaki profit = aylık ortalama bazlı fark
-  // (dashboard’ta yıllık hesap ayrı yapılıyor)
-  const profit = income - avgExpense;
-
-  const baseMargin = income > 0 ? (profit / income) * 100 : null;
+  // Yıllık projeksiyon için: Gelir (Yıllık Tahmin) - (Aylık Ort Gider * 12)
+  const estimatedYearlyProfit = income - (avgExpense * 12);
+  const profitMargin = income > 0 ? (estimatedYearlyProfit / income) * 100 : 0;
 
   return {
     income,
     months,
     totalExpense,
     avgExpense: Math.round(avgExpense),
-    profit: Math.round(profit),
-
-    // senaryolar (dashboard’ta opsiyonel kullanılıyor)
-    pessimistic: baseMargin ? baseMargin * 0.7 : null,
-    realistic: baseMargin,
-    optimistic: baseMargin ? baseMargin * 1.15 : null,
+    estimatedYearlyProfit: Math.round(estimatedYearlyProfit),
+    profitMargin: Number(profitMargin.toFixed(2)),
+    
+    // Senaryo Analizleri
+    pessimistic: profitMargin * 0.8,
+    realistic: profitMargin,
+    optimistic: profitMargin * 1.2,
   };
 }
 
 /* ======================================================
-   2️⃣ YKS + LGS BİRLEŞTİRME
+   2️⃣ ÇOKLU ŞUBE BİRLEŞTİRME (Dinamik ASAF Yapısı)
 ====================================================== */
-
-export function combineFinance(
-  a: FinanceInput,
-  b: FinanceInput
-): FinanceInput {
-  return {
+/**
+ * Artık sadece YKS+LGS değil, sınırsız sayıda şubeyi 
+ * tek bir genel tabloda birleştirebilir.
+ */
+export function combineMultipleFinances(finances: FinanceInput[]): FinanceInput {
+  return finances.reduce((acc, curr) => ({
     income: {
-      student: a.income.student + b.income.student,
-      food: a.income.food + b.income.food,
-      other: a.income.other + b.income.other,
+      student: acc.income.student + (Number(curr.income.student) || 0),
+      food: acc.income.food + (Number(curr.income.food) || 0),
+      other: acc.income.other + (Number(curr.income.other) || 0),
     },
-    expenses: a.expenses.map((v, i) => v + b.expenses[i]),
-  };
+    expenses: acc.expenses.map((v, i) => v + (Number(curr.expenses[i]) || 0)),
+  }), {
+    income: { student: 0, food: 0, other: 0 },
+    expenses: Array(12).fill(0)
+  });
 }
 
 /* ======================================================
-   3️⃣ MEVSİMSEL KATSAYILAR (GERÇEK VERİDEN)
-   Ağustos → Temmuz
+   3️⃣ MEVSİMSEL KATSAYILAR (Eğitim Sektörü Uyumlu)
 ====================================================== */
-
-// ⛳️ Geçen yılın gerçek giderlerinden çıkarılmış katsayılar
+// Ağustos'tan Temmuz'a kadar gider ağırlıkları
 export const SEASON_WEIGHTS_AUG_TO_JUL = [
-  0.39, // Ağustos
-  1.11, // Eylül
-  0.92, // Ekim
+  0.40, // Ağustos (Düşük gider)
+  1.10, // Eylül (Açılış maliyetleri)
+  0.95, // Ekim
   1.00, // Kasım
-  1.62, // Aralık
-  0.81, // Ocak
-  1.59, // Şubat
+  1.60, // Aralık (Yıl sonu giderleri)
+  0.85, // Ocak
+  1.50, // Şubat (Isınma ve 2. dönem başlangıcı)
   0.90, // Mart
-  0.93, // Nisan
-  1.12, // Mayıs
-  0.84, // Haziran
-  0.77, // Temmuz
+  0.95, // Nisan
+  1.10, // Mayıs
+  0.85, // Haziran
+  0.80, // Temmuz
 ];
 
 /* ======================================================
    4️⃣ MEVSİMSEL YILLIK GİDER TAHMİNİ
-   - Girilen aylar GERÇEK
-   - Boş aylar KATSAYI ile TAHMİN
 ====================================================== */
-
 export function estimateSeasonalYearlyExpensePartial(
   expenses: number[],
   weights: number[] = SEASON_WEIGHTS_AUG_TO_JUL
@@ -91,58 +86,37 @@ export function estimateSeasonalYearlyExpensePartial(
     return Number.isFinite(x) ? x : 0;
   };
 
-  const exp = Array.isArray(expenses)
-    ? expenses.map(safe)
-    : [];
+  const exp = expenses.map(safe);
+  const w = weights.length === 12 ? weights : SEASON_WEIGHTS_AUG_TO_JUL;
 
-  const w =
-    Array.isArray(weights) && weights.length === 12
-      ? weights
-      : SEASON_WEIGHTS_AUG_TO_JUL;
-
-  let sumActual = 0;     // gerçek girilen gider toplamı
-  let sumWActual = 0;   // o ayların katsayı toplamı
+  let sumActual = 0;      // Gerçekten girilmiş ayların toplamı
+  let sumWActual = 0;     // O ayların katsayı toplamı
   let actualMonths = 0;
 
-  // 🔎 Girilmiş ayları bul
   for (let i = 0; i < 12; i++) {
-    const e = safe(exp[i]);
-    if (e > 0) {
-      sumActual += e;
-      sumWActual += safe(w[i]);
+    if (exp[i] > 0) {
+      sumActual += exp[i];
+      sumWActual += w[i];
       actualMonths++;
     }
   }
 
-  // hiç veri yoksa → tahmin yapma
-  if (actualMonths === 0 || sumWActual <= 0) {
-    return {
-      yearlyTotal: 0,
-      actualMonths: 0,
-      base: 0,
-      predictedByMonth: Array(12).fill(0),
-    };
+  if (actualMonths === 0 || sumWActual === 0) {
+    return { yearlyTotal: 0, actualMonths: 0, predictedByMonth: Array(12).fill(0) };
   }
 
-  // 🎯 Baz gider (katsayı birimi başına)
+  // Birim katsayı başına düşen harcama (Baz)
   const base = sumActual / sumWActual;
 
-  // 📆 12 ayın tamamı (gerçek + tahmin)
-  const predictedByMonth = Array.from({ length: 12 }, (_, i) => {
-    const e = safe(exp[i]);
-    if (e > 0) return Math.round(e);              // gerçek
-    return Math.round(base * safe(w[i]));         // tahmin
+  const predictedByMonth = exp.map((e, i) => {
+    return e > 0 ? Math.round(e) : Math.round(base * w[i]);
   });
 
-  const yearlyTotal = predictedByMonth.reduce(
-    (a, b) => a + safe(b),
-    0
-  );
+  const yearlyTotal = predictedByMonth.reduce((a, b) => a + b, 0);
 
   return {
     yearlyTotal: Math.round(yearlyTotal),
     actualMonths,
-    base,
     predictedByMonth,
   };
 }

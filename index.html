@@ -2,37 +2,63 @@
 <html lang="tr">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
-    <!-- Responsive -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ASAF ANALİZ | Eğitim & Finans Yönetimi</title>
 
-    <!-- Title -->
-    <title>Mefkure Kayıt Sayfası</title>
-
-    <!-- PWA Manifest -->
     <link rel="manifest" href="/manifest.json" />
-
-    <!-- Theme colors -->
     <meta name="theme-color" content="#020617" />
-
-    <!-- iOS PWA support -->
+    <meta name="msapplication-navbutton-color" content="#020617" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta
-      name="apple-mobile-web-app-status-bar-style"
-      content="black-translucent"
-    />
-    <meta name="apple-mobile-web-app-title" content="Mefkure" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="ASAF Analiz" />
 
-    <!-- App Icons -->
     <link rel="apple-touch-icon" href="/icon-192.png" />
     <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
     <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
+    <link rel="shortcut icon" href="/favicon.png" type="image/png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+      body {
+        margin: 0;
+        background-color: #020617;
+        font-family: 'Inter', sans-serif;
+        overflow: hidden; /* Yüklenirken kaymayı önler */
+      }
+      #loader {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        display: flex; flex-direction: column; justify-content: center; align-items: center;
+        background-color: #020617;
+        color: #fbbf24; /* ASAF Altın Sarısı tonu */
+        font-weight: 700; font-size: 1.2rem;
+        z-index: 9999;
+        gap: 15px;
+      }
+      /* Minik bir yüklenme animasyonu (isteğe bağlı) */
+      .spinner {
+        width: 40px; height: 40px;
+        border: 4px solid #1e293b;
+        border-top: 4px solid #fbbf24;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
   </head>
 
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div id="loader">
+        <div class="spinner"></div>
+        ASAF ANALİZ Yükleniyor...
+      </div>
+    </div>
 
-    <!-- Vite entry -->
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

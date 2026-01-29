@@ -1,73 +1,30 @@
-# React + TypeScript + Vite
+# 📊 ASAF ANALİZ v1.0
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Sakarya'daki tüm **Mefkure** ve **Altınküre** şubelerinin kayıt verilerini, finansal projeksiyonlarını ve büyüme hedeflerini tek bir merkezden yönetmek için geliştirilmiş profesyonel ERP ve Analiz yazılımıdır.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Temel Özellikler
 
-## React Compiler
+* **Dinamik Dashboard:** 6 şube (LGS, VİP, PLUS, İlköğretim, Lise, Teknokent) ve Anaokulu dahil tüm sınıf seviyelerinin anlık ciro ve öğrenci takibi.
+* **Finansal Zeka:** Eğitim sektörüne özel mevsimsel katsayılar ile yıl sonu kâr/zarar tahmini (Seasonal Projections).
+* **Kayıt Analizi:** Yeni kayıt ve kayıt yenileme (Retention) oranlarının isim bazlı takibi.
+* **Karşılaştırmalı Analiz:** 2025 ve 2026 yıllarının "gün bazlı" elma-elma kıyaslaması.
+* **PWA Desteği:** Mobil cihazlara uygulama olarak yüklenebilir, hızlı erişim sağlar.
 
-The React Compiler is currently not compatible with SWC. See [this issue](https://github.com/vitejs/vite-plugin-react/issues/428) for tracking the progress.
+---
 
-## Expanding the ESLint configuration
+## 🛠 Teknik Altyapı
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+* **Frontend:** React 19 + TypeScript + Vite
+* **Backend/Database:** Firebase Firestore (Real-time sync)
+* **Excel Engine:** SheetJS (XLSX) - Toplu veri içe aktarımı için.
+* **Hosting:** Firebase Hosting
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+---
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## 💻 Geliştirici Notları
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### Kurulum
+```bash
+npm install

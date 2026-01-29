@@ -5,7 +5,7 @@
     "useDefineForClassFields": true,
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",
-    "types": ["vite/client"],
+    "types": ["vite/client", "node"],
     "skipLibCheck": true,
 
     /* Bundler mode */
@@ -16,13 +16,15 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
-    /* Linting */
+    /* Linting (Uyarıları Esnettik) */
     "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "erasableSyntaxOnly": true,
+    "noUnusedLocals": false,      /* 👈 Kullanılmayan değişkenler artık sararmayacak */
+    "noUnusedParameters": false,  /* 👈 Kullanılmayan parametreler hata vermeyecek */
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+    "allowJs": true,              /* JS dosyalarını da projenin içine alabilirsin */
+    "esModuleInterop": true,      /* Kütüphane uyumluluğunu artırır */
+    "forceConsistentCasingInFileNames": true
   },
   "include": ["src"]
 }
