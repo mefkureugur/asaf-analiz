@@ -24,7 +24,7 @@ export default function TopNav({ isAdmin }: TopNavProps) {
     };
   };
 
-  // 🛡️ Admin yetkisi kontrolü
+  // 🛡️ Admin yetkisi kontrolü (Maksimum güvenlik)
   const showAdminMenu = isAdmin || user?.role === 'admin' || user?.email === 'ugur@asaf.com';
 
   return (
@@ -54,19 +54,19 @@ export default function TopNav({ isAdmin }: TopNavProps) {
           <Link to="/performans" style={linkStyle("/performans")}>🚀 Performans İzleme</Link>
         )}
 
-        {/* 📋 ANALİZ VE YÖNETİM AYRIMI */}
         <Link to="/students" style={linkStyle("/students")}>🧑‍🎓 Kayıt Analizi</Link>
         
-        {/* 🛡️ KRİTİK DEĞİŞİKLİK: Kayıt Listesi Admin'e gözükmez, sadece müdürlere gözükür */}
         {!showAdminMenu && (
           <Link to="/ogrenci-listesi" style={linkStyle("/ogrenci-listesi")}>✍️ Kayıt Listesi</Link>
         )}
         
-        <Link to="/finance/view" style={linkStyle("/finance")}>💰 Finans</Link>
+        {/* 🛡️ KRİTİK DEĞİŞİKLİK: Finans sekmesi artık sadece Admin ve Uğur Bey'e gözükür */}
+        {showAdminMenu && (
+          <Link to="/finance/view" style={linkStyle("/finance")}>💰 Finans</Link>
+        )}
         
         {showAdminMenu && (
           <>
-            <Link to="/import" style={linkStyle("/import")}>📥 Veri Aktar</Link>
             <Link to="/user-management" style={{ 
                 ...linkStyle("/user-management"), 
                 color: "#38bdf8", 

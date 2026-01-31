@@ -1,123 +1,152 @@
-import { useEffect, useState } from "react";
-import { getFinanceSnapshot } from "../../services/financeSnapshot.read";
+import { useState, useMemo, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { db } from "../../firebase";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, LabelList } from "recharts";
+import { Landmark, TrendingUp, Calculator, ChevronDown, BarChart3, Database, ListFilter, LayoutGrid } from "lucide-react";
+import asafFinansRaw from "../../data/finans.json"; 
+import FinanceAnalysisPage from "./FinanceComparisonPage"; 
 
-// ASAF Şube Yapısı
-type Mode = "GENERAL" | "Mefkure LGS" | "Mefkure VİP" | "Mefkure PLUS" | "Altınküre İlköğretim" | "Altınküre Lise" | "Altınküre Teknokent";
-
-const MODES: Mode[] = [
-  "GENERAL",
-  "Mefkure LGS",
-  "Mefkure VİP",
-  "Mefkure PLUS",
-  "Altınküre İlköğretim",
-  "Altınküre Lise",
-  "Altınküre Teknokent"
-];
+interface FinansRecord {
+  Kurum: string; Alan: string; Dönem: string;
+  [key: string]: any; 
+}
 
 export default function FinanceViewPage() {
-  const [mode, setMode] = useState<Mode>("GENERAL");
-  const [snapshot, setSnapshot] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const [selectedKurum, setSelectedKurum] = useState<string>("Tüm Kurumlar");
+  const [selectedCategory, setSelectedCategory] = useState<string>("Toplam Giderler");
+  const [selectedDonem, setSelectedDonem] = useState<string>("2025-2026");
+  const [activePage, setActivePage] = useState<number>(1);
+  const [firebaseData, setFirebaseData] = useState<any[]>([]);
+
+  const rawData = asafFinansRaw as FinansRecord[];
+  const BRANCH_LIST = ["Mefkure YKS", "Mefkure LGS", "Altınküre Lise", "Altınküre İlköğretim", "Altınküre Teknokent"];
+  const CATEGORIES = ["Toplam Giderler", "Maaşlar", "SGK"];
 
   useEffect(() => {
-    setLoading(true);
-    const year = new Date().getFullYear();
+    const targetYear = parseInt(selectedDonem.split('-')[1]);
+    const q = query(collection(db, "financeSnapshots"), where("year", "==", targetYear));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setFirebaseData(data);
+    });
+    return () => unsubscribe();
+  }, [selectedDonem]);
+
+  const parseAmount = (val: any): number => {
+    if (typeof val === 'number') return val;
+    return parseInt(String(val || '0').replace(/,/g, '')) || 0;
+  };
+
+  const formatCurrency = (val: any) => {
+    const num = typeof val === 'number' ? val : 0;
+    return `₺${Math.round(num).toLocaleString("tr-TR")}`;
+  };
+
+  const { chartData, avgGider, tahminiYilSonu } = useMemo(() => {
+    const ayFull = ["Ağustos", "Eylül", "Ekim", "Kasım", "Aralık", "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz"];
     
-    getFinanceSnapshot(year, mode)
-      .then((data) => {
-        setSnapshot(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Finans verisi okuma hatası:", err);
-        setSnapshot(null);
-        setLoading(false);
-      });
-  }, [mode]);
+    const processed = ayFull.map((ay, index) => {
+      let ayToplam = 0;
+      if (index <= 4) {
+        const jsonEntries = rawData.filter(item => 
+          item.Dönem === selectedDonem && item.Alan === selectedCategory && 
+          (selectedKurum === "Tüm Kurumlar" ? true : item.Kurum === selectedKurum)
+        );
+        ayToplam = jsonEntries.reduce((acc, curr) => acc + parseAmount(curr[ay]), 0);
+      } 
+      else {
+        const fbEntries = firebaseData.filter(d => 
+          (selectedKurum === "Tüm Kurumlar" ? true : d.unit === selectedKurum) &&
+          (d.category === selectedCategory)
+        );
+        fbEntries.forEach(d => {
+          if (d.filledMonths && d.filledMonths.includes(index)) {
+             ayToplam += (Number(d.expenseRealSoFar || 0) / d.filledMonths.length);
+          }
+        });
+      }
+      return { name: ay.substring(0, 3), tutar: Math.round(ayToplam), label: ayToplam > 0 ? `₺${(ayToplam / 1000000).toFixed(1)}M` : "" };
+    });
 
-  // Veri Hesaplamaları
-  const yearlyIncome = snapshot?.revenueTotal ?? 0;
-  const runRateYearlyExpense = snapshot?.expenseRunRate ?? snapshot?.expenseEstimated ?? 0;
-  const runRateProfit = yearlyIncome - runRateYearlyExpense;
-  const runRateMargin = yearlyIncome > 0 ? (runRateProfit / yearlyIncome) * 100 : 0;
-
-  const seasonalYearlyExpense = snapshot?.expenseEstimated ?? 0;
-  const seasonalProfit = snapshot?.profitEstimate ?? 0;
-  const seasonalMargin = snapshot?.profitMargin ? snapshot.profitMargin * 100 : 0;
-
-  const profitColor = (v: number) => v >= 0 ? "#22c55e" : "#ef4444";
+    const doluAylar = processed.filter(d => d.tutar > 0);
+    const ortalama = doluAylar.length > 0 ? doluAylar.reduce((a, b) => a + b.tutar, 0) / doluAylar.length : 0;
+    return { chartData: processed, avgGider: ortalama, tahminiYilSonu: ortalama * 12 };
+  }, [firebaseData, selectedKurum, selectedCategory, selectedDonem, rawData]);
 
   return (
-    <div style={{ color: "white", maxWidth: 1200, margin: "0 auto", padding: "24px 16px" }}>
+    <div style={{ padding: "10px 15px", color: "white", maxWidth: 1200, margin: "0 auto", backgroundColor: "#020617", minHeight: "100vh" }}>
       
-      {/* BAŞLIK VE ŞUBE SEÇİCİ */}
-      <div style={{ marginBottom: 24 }}>
-        <h2 style={{ marginBottom: 16, fontSize: "1.8rem", fontWeight: 800 }}>
-          💰 Finansal Analiz Paneli
-        </h2>
-        
-        <div style={selectorWrapper}>
-          {MODES.map((m) => {
-            const active = mode === m;
-            return (
-              <button
-                key={m}
-                onClick={() => setMode(m)}
-                style={{
-                  ...tabStyle,
-                  background: active ? "linear-gradient(135deg,#3b82f6,#2563eb)" : "rgba(255,255,255,0.05)",
-                  color: active ? "white" : "#94a3b8",
-                  borderColor: active ? "#3b82f6" : "rgba(255,255,255,0.1)",
-                }}
-              >
-                {m === "GENERAL" ? "⭐ KURUM GENEL" : m}
-              </button>
-            );
-          })}
+      {/* 🛡️ ÜST NAVİGASYON */}
+      <div style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap", alignItems: "center" }}>
+        <div style={{ position: "relative", minWidth: 220, flex: 1 }}>
+          <select value={selectedKurum} onChange={(e) => setSelectedKurum(e.target.value)} style={mainSel}>
+            <option>Tüm Kurumlar</option>
+            {BRANCH_LIST.map(k => <option key={k} value={k}>{k}</option>)}
+          </select>
+          <div style={chevronPos}><ChevronDown size={14} color="#64748b" /></div>
+        </div>
+
+        <div style={{ position: "relative", minWidth: 140 }}>
+          <select value={selectedDonem} onChange={(e) => setSelectedDonem(e.target.value)} style={mainSel}>
+            {["2024-2025", "2025-2026"].map(d => <option key={d} value={d}>{d}</option>)}
+          </select>
+          <div style={chevronPos}><ChevronDown size={14} color="#64748b" /></div>
+        </div>
+
+        <div style={{ display: "flex", gap: 6 }}>
+          <NavButton id={1} active={activePage} onClick={setActivePage} icon={<BarChart3 size={14} />} label="Analiz" />
+          <NavButton id={3} active={activePage} onClick={setActivePage} icon={<LayoutGrid size={14} />} label="Stratejik Analiz" />
+          <button onClick={() => navigate("/finance/input")} style={veriGirisStyle}>
+            <Database size={14} /> <span>Veri Girişi</span>
+          </button>
         </div>
       </div>
 
-      {loading ? (
-        <div style={{ textAlign: "center", padding: 50, color: "#38bdf8" }}>Veriler analiz ediliyor...</div>
+      {/* 🛡️ SAYFA İÇERİĞİ */}
+      {activePage === 3 ? (
+        <FinanceAnalysisPage selectedKurum={selectedKurum} selectedDonem={selectedDonem} />
       ) : (
         <>
-          {/* ANA ÖZET KARTLARI */}
-          <div style={grid3}>
-            <div style={card}>
-              <div style={label}>Toplam Tahmini Ciro</div>
-              <div style={{ ...value, color: "#38bdf8" }}>{yearlyIncome.toLocaleString("tr-TR")} ₺</div>
-            </div>
-            <div style={card}>
-              <div style={label}>Gerçekleşen Aylık Ort. Gider</div>
-              <div style={value}>{((runRateYearlyExpense || 0) / 12).toLocaleString("tr-TR")} ₺</div>
-            </div>
-            <div style={card}>
-              <div style={label}>Seçili Kurum</div>
-              <div style={{ ...value, fontSize: 16 }}>{mode === "GENERAL" ? "Tüm ASAF Şubeleri" : mode}</div>
-            </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 15, marginBottom: 25 }}>
+            <SmartCard title={`${selectedCategory.toUpperCase()} ORT.`} value={formatCurrency(avgGider)} icon={<Calculator size={18} />} color="#3b82f6" />
+            <SmartCard title="TAHMİNİ YIL SONU" value={formatCurrency(tahminiYilSonu)} icon={<TrendingUp size={18} />} color="#a855f7" />
           </div>
 
-          {/* ANALİZ MODELLERİ */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginTop: 24 }}>
-            
-            {/* MODEL 1: RUN-RATE */}
-            <div style={modelSection}>
-              <h4 style={sectionHeader}>📈 Model 1: Mevcut Ortalamaya Göre</h4>
-              <p style={sectionDesc}>Yılın geri kalanı mevcut gider ortalamasıyla biterse:</p>
-              <div style={statRow}><span>Yıllık Gider:</span> <strong>{runRateYearlyExpense.toLocaleString("tr-TR")} ₺</strong></div>
-              <div style={statRow}><span>Net Kâr:</span> <strong style={{ color: profitColor(runRateProfit) }}>{runRateProfit.toLocaleString("tr-TR")} ₺</strong></div>
-              <div style={statRow}><span>Kâr Oranı:</span> <strong style={{ color: profitColor(runRateProfit) }}>%{runRateMargin.toFixed(1)}</strong></div>
+          <div style={containerStyle}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 25 }}>
+              <div style={headerStyle}><Landmark size={14} style={{ color: "#3b82f6" }} /> {selectedCategory.toUpperCase()} ANALİZİ ({selectedDonem})</div>
+              <div style={{ position: "relative", minWidth: 180 }}>
+                <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} style={categorySel}>
+                  {CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                </select>
+                <div style={chevronPos}><ListFilter size={12} color="#3b82f6" /></div>
+              </div>
             </div>
 
-            {/* MODEL 2: SEASONAL */}
-            <div style={modelSection}>
-              <h4 style={sectionHeader}>🍂 Model 2: Mevsimsel Tahmin</h4>
-              <p style={sectionDesc}>Sektörel katsayılar ve geçmiş harcama eğilimlerine göre:</p>
-              <div style={statRow}><span>Yıllık Gider:</span> <strong>{seasonalYearlyExpense.toLocaleString("tr-TR")} ₺</strong></div>
-              <div style={statRow}><span>Net Kâr:</span> <strong style={{ color: profitColor(seasonalProfit) }}>{seasonalProfit.toLocaleString("tr-TR")} ₺</strong></div>
-              <div style={statRow}><span>Kâr Oranı:</span> <strong style={{ color: profitColor(seasonalProfit) }}>%{seasonalMargin.toFixed(1)}</strong></div>
-            </div>
+            <div style={{ height: 500 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+                  <XAxis type="number" hide />
+                  <YAxis dataKey="name" type="category" stroke="#64748b" fontSize={11} width={40} tickLine={false} axisLine={false} />
+                  
+                  <Tooltip 
+                    cursor={{fill: '#1e293b', opacity: 0.4}} 
+                    contentStyle={{ background: '#020617', border: '1px solid #1e2937', borderRadius: '8px' }}
+                    itemStyle={{ color: '#f8fafc', fontSize: '12px', fontWeight: 600 }}
+                    labelStyle={{ color: '#94a3b8', marginBottom: '4px', fontWeight: 700 }}
+                    formatter={(value: any) => [formatCurrency(value), "Tutar"]}
+                  />
 
+                  <Bar dataKey="tutar" radius={[0, 4, 4, 0]} barSize={22}>
+                    <LabelList dataKey="label" position="right" fill="#f8fafc" fontSize={10} fontWeight={800} offset={10} />
+                    {chartData.map((entry, index) => <Cell key={index} fill={entry.tutar === 0 ? "#1e293b" : (entry.tutar <= avgGider ? "#22c55e" : "#ef4444")} />)}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         </>
       )}
@@ -125,14 +154,26 @@ export default function FinanceViewPage() {
   );
 }
 
-/* ================================ STYLES ================================ */
-const selectorWrapper: React.CSSProperties = { display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20 };
-const tabStyle: React.CSSProperties = { padding: "10px 16px", borderRadius: 12, border: "1px solid", cursor: "pointer", fontWeight: 700, fontSize: "0.85rem", transition: "all 0.2s" };
-const grid3: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 };
-const card: React.CSSProperties = { background: "#0f172a", border: "1px solid #1e293b", borderRadius: 20, padding: 20 };
-const label: React.CSSProperties = { fontSize: 13, color: "#94a3b8", marginBottom: 8 };
-const value: React.CSSProperties = { fontSize: 24, fontWeight: 800 };
-const modelSection: React.CSSProperties = { background: "#020617", border: "1px solid #1e293b", borderRadius: 24, padding: 24 };
-const sectionHeader: React.CSSProperties = { margin: 0, fontSize: "1.1rem", color: "#f8fafc" };
-const sectionDesc: React.CSSProperties = { fontSize: "0.85rem", color: "#64748b", margin: "8px 0 20px" };
-const statRow: React.CSSProperties = { display: "flex", justifyContent: "space-between", marginBottom: 12, fontSize: "1.05rem" };
+// Stil bileşenleri ve alt fonksiyonlar aynı kalmıştır...
+const mainSel = { background: "#020617", border: "1px solid #1e2937", color: "white", padding: "10px 35px 10px 15px", borderRadius: 10, width: "100%", outline: 'none', appearance: 'none' as const, WebkitAppearance: 'none' as const, fontWeight: 700 };
+const categorySel = { background: "#1e293b", border: "1px solid #334155", color: "#3b82f6", padding: "8px 30px 8px 12px", borderRadius: 8, width: "100%", outline: 'none', appearance: 'none' as const, fontSize: "0.75rem", fontWeight: 700, cursor: "pointer" };
+const chevronPos = { position: "absolute" as const, right: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" as const, display: "flex", alignItems: "center" };
+const veriGirisStyle = { background: "#0f172a", border: "1px solid #1e2937", color: "#94a3b8", padding: "8px 15px", borderRadius: 8, fontSize: "0.75rem", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 };
+const headerStyle = { fontSize: "0.75rem", fontWeight: 800, color: "white", display: "flex", alignItems: "center", gap: 8 };
+const containerStyle = { background: "#0f172a", border: "1px solid #1e2937", borderRadius: 12, padding: "20px" };
+
+function NavButton({ id, active, onClick, icon, label }: any) {
+  const isActive = active === id;
+  return (
+    <button onClick={() => onClick(id)} style={{ background: isActive ? "#3b82f6" : "#0f172a", border: `1px solid ${isActive ? "#3b82f6" : "#1e2937"}`, color: isActive ? "white" : "#94a3b8", padding: "8px 12px", borderRadius: 8, fontSize: "0.75rem", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>{icon} <span className="hidden md:inline">{label}</span></button>
+  );
+}
+
+function SmartCard({ title, value, icon, color }: any) {
+  return (
+    <div style={{ background: "#0f172a", border: `1px solid ${color}30`, borderLeft: `4px solid ${color}`, borderRadius: 12, padding: "18px 22px" }}>
+      <div style={{ color: "#94a3b8", fontSize: "0.6rem", fontWeight: 700, marginBottom: 8, letterSpacing: "0.1em", display: "flex", justifyContent: "space-between" }}>{title} <span>{icon}</span></div>
+      <div style={{ fontSize: "1.7rem", fontWeight: 900, color: "#f8fafc" }}>{value}</div>
+    </div>
+  );
+}

@@ -8,12 +8,11 @@ import { useAuth } from "./store/AuthContext";
 // PAGES
 import DashboardPage from "./pages/Dashboard/DashboardPage";
 import ComparePage from "./pages/Compare/ComparePage";
-import ImportLastYearPage from "./pages/ImportLastYear/ImportLastYearPage";
 import DailyEntryPage from "./pages/DailyEntry/DailyEntryPage";
 import TargetsPage from "./pages/Targets/TargetsPage";
 import ManagerTargets from "./pages/ManagerTargets"; 
 import StudentsPage from "./pages/Students/StudentsPage";
-import StudentList from "./pages/Students/StudentList"; // ✅ YENİ SAYFAYI IMPORT ETTİK
+import StudentList from "./pages/Students/StudentList"; 
 import FinanceInputPage from "./pages/Finance/FinanceInputPage";
 import FinanceViewPage from "./pages/Finance/FinanceViewPage";
 import LoginPage from "./pages/Login/LoginPage"; 
@@ -49,6 +48,7 @@ function AppContent() {
     return <LoginPage />;
   }
 
+  // 🛡️ Admin ve Uğur Bey yetkisi (Sistemdeki tek yetkili giriş kapısı)
   const isAdmin = user.role?.trim().toLowerCase() === 'admin' || user.email === 'ugur@asaf.com';
 
   return (
@@ -62,30 +62,29 @@ function AppContent() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/compare" element={<ComparePage />} />
           <Route path="/students" element={<StudentsPage />} />
-          {/* ✅ ÖĞRENCİ LİSTESİ (YÖNETİM) ROTASI EKLENDİ */}
           <Route path="/ogrenci-listesi" element={<StudentList />} /> 
           <Route path="/daily" element={<DailyEntryPage />} />
 
-          {/* 🎯 HEDEF & PERFORMANS AYRIMI */}
+          {/* 🎯 HEDEF, YÖNETİM & FİNANS AYRIMI */}
           {isAdmin ? (
             <>
               <Route path="/targets" element={<TargetsPage />} />
               <Route path="/performans" element={<Navigate to="/dashboard" replace />} /> 
-              <Route path="/import" element={<ImportLastYearPage />} />
               <Route path="/user-management" element={<UserManagement />} />
+              {/* 💰 FİNANS: Sadece Admin ve Uğur Bey girebilir */}
+              <Route path="/finance" element={<Navigate to="/finance/view" replace />} />
+              <Route path="/finance/input" element={<FinanceInputPage />} />
+              <Route path="/finance/view" element={<FinanceViewPage />} />
             </>
           ) : (
             <>
               <Route path="/targets" element={<Navigate to="/performans" replace />} /> 
               <Route path="/performans" element={<ManagerTargets />} />
-              <Route path="/import" element={<Navigate to="/dashboard" replace />} />
               <Route path="/user-management" element={<Navigate to="/dashboard" replace />} />
+              {/* 🚫 FİNANS KİLİDİ: Müdürler girmeye çalışırsa Dashboard'a atılır */}
+              <Route path="/finance/*" element={<Navigate to="/dashboard" replace />} />
             </>
           )}
-
-          <Route path="/finance" element={<Navigate to="/finance/view" replace />} />
-          <Route path="/finance/input" element={<FinanceInputPage />} />
-          <Route path="/finance/view" element={<FinanceViewPage />} />
 
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>

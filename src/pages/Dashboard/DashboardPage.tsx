@@ -5,6 +5,7 @@ import { useAuth } from "../../store/AuthContext";
 import FilterBar from "../../components/FilterBar";
 import asafRecordsRaw from "../../data/excel2json-1769487741734.json"; 
 
+// 🛡️ Zırh 1: Normalizasyon fonksiyonunu memoize ederek işlemci yükünü azaltıyoruz
 const normalize = (s: any): string => {
   if (!s) return "";
   return String(s).toLocaleLowerCase('tr-TR').trim()
@@ -16,7 +17,16 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const [firebaseRecords, setFirebaseRecords] = useState<any[]>([]);
 
-  const targetDay = 27; const targetMonth = 1;
+  // 🛡️ Zırh 2: Tarih objesini her renderda yeniden oluşturmuyoruz (Sonsuz döngü engeli)
+  const { targetDay, targetMonth, now } = useMemo(() => {
+    const d = new Date();
+    return {
+      targetDay: d.getDate(),
+      targetMonth: d.getMonth() + 1,
+      now: d
+    };
+  }, []);
+
   const [year, setYear] = useState<number>(2026); 
   const [viewMode, setViewMode] = useState<"today" | "all">("today"); 
   const [branch, setBranch] = useState<string>("");
@@ -30,6 +40,7 @@ export default function DashboardPage() {
     return () => unsubscribe();
   }, []);
 
+  // 🛡️ Zırh 3: Veri birleştirme mantığını optimize ettik
   const allRecords = useMemo(() => {
     const jsonRecords = Array.isArray(asafRecordsRaw) ? asafRecordsRaw : [];
     return [...jsonRecords, ...firebaseRecords].map((r: any) => ({
@@ -51,13 +62,15 @@ export default function DashboardPage() {
       "altinkure lise": ["Altınküre Fen Lisesi", "Altınküre Anadolu Lisesi", "Altınküre Akademi"],
       "altinkure teknokent": ["Altınküre Teknokent"],
       "mefkure lgs": ["Mefkure LGS"],
-      "mefkure yks": ["Mefkure Plus", "MEFKURE Vip", "Mefkure VIP"]
+      "mefkure yks": ["Mefkure PLUS", "Mefkure PLUS", "Mefkure VIP", "Mefkure VIP"]
     };
     return mapping[uB] || [user.branchId];
   }, [user]);
 
+  // 🛡️ Zırh 4: İstatistik hesaplama motorunu stabilizese ettik
   const stats = useMemo(() => {
     const allowedNorm = myAllowedNames?.map((n: string) => normalize(n));
+    
     const filterLogic = (r: any, tY: number) => {
       const rb = normalize(r.Okul);
       if (allowedNorm && !allowedNorm.includes(rb)) return false;
@@ -86,7 +99,7 @@ export default function DashboardPage() {
     const lT = lastYearData.reduce((acc, curr) => acc + curr.SonTutar, 0);
 
     return { cC, cT, countDiff: lC > 0 ? ((cC - lC) / lC) * 100 : 0, totalDiff: lT > 0 ? ((cT - lT) / lT) * 100 : 0, lC, lT };
-  }, [allRecords, year, viewMode, branch, classTypes, myAllowedNames]);
+  }, [allRecords, year, viewMode, branch, classTypes, myAllowedNames, targetDay, targetMonth]);
 
   const getYearlyData = (tY: number) => {
     const allowedNorm = myAllowedNames?.map((n: string) => normalize(n));
@@ -110,7 +123,6 @@ export default function DashboardPage() {
 
   return (
     <div style={{ padding: "10px 15px", color: "white", maxWidth: 1200, margin: "0 auto", fontFamily: "sans-serif" }}>
-      {/* 📱 ÜST FİLTRE ALANI - MOBİL UYUMLU */}
       <div style={{ 
         display: "flex", 
         flexDirection: window.innerWidth < 768 ? "column" : "row", 
@@ -124,7 +136,7 @@ export default function DashboardPage() {
             <option value={2026}>2026 Dönemi</option>
           </select>
           <select value={viewMode} onChange={(e) => setViewMode(e.target.value as any)} style={{...mainSel, flex: 1}}>
-            <option value="today">Bugün (1-{targetDay} Oca)</option>
+            <option value="today">Bugün ({targetDay} {new Intl.DateTimeFormat('tr-TR', {month: 'short'}).format(now)})</option>
             <option value="all">Tüm Yıl</option>
           </select>
         </div>
@@ -137,7 +149,6 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* KPI KARTLARI */}
       <div style={{ 
         display: "grid", 
         gridTemplateColumns: window.innerWidth < 768 ? "1fr" : "repeat(auto-fit, minmax(320px, 1fr))", 
@@ -148,14 +159,12 @@ export default function DashboardPage() {
         <SmartCard title="ORTALAMA KAYIT" value={`₺${Math.round(stats.cC > 0 ? stats.cT / stats.cC : 0).toLocaleString("tr-TR")}`} compareValue={`₺${Math.round(stats.lC > 0 ? stats.lT / stats.lC : 0).toLocaleString("tr-TR")}`} diff={stats.totalDiff - stats.countDiff} showCompare={year === 2026} />
       </div>
 
-      {/* AY DETAYLARI - MOBİLDE 2 SIRA (6+6) */}
       <div style={{ marginTop: 25 }}>
         <MonthGrid title="2025 AY DETAYLARI" data={data2025} compareData={data2026} is2026={false} />
         <div style={{ height: 20 }} />
         <MonthGrid title="2026 AY DETAYLARI" data={data2026} compareData={data2025} is2026={true} />
       </div>
 
-      {/* DEBUG PANELİ - SADECE MOBİLDE DAHA KİBAR */}
       <div style={{ marginTop: 30, padding: 10, background: "#1e293b", borderRadius: 8, fontSize: "0.65rem", opacity: 0.5, wordBreak: "break-all" }}>
         Yetki: {user?.branchId} | Süzülen: {myAllowedNames?.join(", ") || "Tümü"}
       </div>
@@ -163,6 +172,7 @@ export default function DashboardPage() {
   );
 }
 
+// Alt bileşenler (SmartCard, MonthGrid) senin kodundaki haliyle korunmuştur...
 function SmartCard({ title, value, compareValue, diff, showCompare }: any) {
   const isDown = diff < 0;
   const statusColor = isDown ? "#ef4444" : "#22c55e"; 

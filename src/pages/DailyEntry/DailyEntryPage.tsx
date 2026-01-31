@@ -3,7 +3,7 @@ import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../../firebase";
 import { useAuth } from "../../store/AuthContext";
 
-// 📚 SINIF KADEMELERİ HARİTASI (Senin verdiğin özel liste)
+// Sabitler aynı kalıyor...
 const CLASS_OPTIONS: { [key: string]: string[] } = {
   "İlköğretim": ["Ana Sınıfı", "1", "2", "3", "4", "5", "6", "7", "8"],
   "LGS": ["5", "6", "7", "8"],
@@ -12,23 +12,14 @@ const CLASS_OPTIONS: { [key: string]: string[] } = {
   "Teknokent": ["9", "10", "11", "12"]
 };
 
-// 🛡️ BRANŞ GRUPLAMA (Hangi alt şube hangi sınıfları seçebilir?)
 const BRANCH_TO_GROUP: { [key: string]: string } = {
-  "Altınküre Anaokulu": "İlköğretim",
-  "Altınküre İlkokul": "İlköğretim",
-  "Altınküre Ortaokul": "İlköğretim",
-  "Altınküre Fen Lisesi": "Lise",
-  "AltınKüre Anadolu Lisesi": "Lise",
-  "Altınküre Akademi": "Lise",
-  "Altınküre Teknokent": "Teknokent",
-  "Mefkure LGS": "LGS",
-  "Mefkure PLUS": "YKS",
-  "Mefkure VİP": "YKS"
+  "Altınküre Anaokulu": "İlköğretim", "Altınküre İlkokul": "İlköğretim", "Altınküre Ortaokul": "İlköğretim",
+  "Altınküre Fen Lisesi": "Lise", "AltınKüre Anadolu Lisesi": "Lise", "Altınküre Akademi": "Lise",
+  "Altınküre Teknokent": "Teknokent", "Mefkure LGS": "LGS", "Mefkure PLUS": "YKS", "Mefkure VİP": "YKS"
 };
 
 const BRANCH_MAPPING: { [key: string]: string[] } = {
-  "Mefkure LGS": ["Mefkure LGS"],
-  "Mefkure YKS": ["Mefkure PLUS", "Mefkure VİP"],
+  "Mefkure LGS": ["Mefkure LGS"], "Mefkure YKS": ["Mefkure PLUS", "Mefkure VİP"],
   "Altınküre İlköğretim": ["Altınküre İlkokul", "Altınküre Ortaokul", "Altınküre Anaokulu"],
   "Altınküre Lise": ["Altınküre Fen Lisesi", "AltınKüre Anadolu Lisesi", "Altınküre Akademi"],
   "Altınküre Teknokent": ["Altınküre Teknokent"]
@@ -49,19 +40,16 @@ export default function DailyEntryPage() {
 
   const isAdmin = user?.role === 'admin' || user?.email === 'ugur@asaf.com';
 
-  // 🛡️ YETKİ KİLİDİ 1: Şubeler
   const availableBranches = useMemo(() => {
     return isAdmin ? ALL_SUB_BRANCHES : (BRANCH_MAPPING[user?.branchId || ""] || []);
   }, [isAdmin, user]);
 
-  // 🛡️ YETKİ KİLİDİ 2: Dinamik Sınıflar (Seçilen şubeye göre değişir)
   const availableClasses = useMemo(() => {
     if (!branch) return [];
     const groupKey = BRANCH_TO_GROUP[branch];
     return CLASS_OPTIONS[groupKey] || [];
   }, [branch]);
 
-  // Otomatik Seçim Mantığı
   useEffect(() => {
     if (!isAdmin && availableBranches.length === 1) {
       setBranch(availableBranches[0]);
@@ -70,6 +58,8 @@ export default function DailyEntryPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Eksik alan kontrolü
     if (!studentName || !classType || !branch || !amount) {
       alert("Lütfen tüm alanları eksiksiz doldurun.");
       return;
@@ -77,28 +67,34 @@ export default function DailyEntryPage() {
 
     try {
       setSaving(true);
-      const formattedDate = date.split('-').reverse().join('.');
+      console.log("Kayıt veritabanına gönderiliyor...");
 
-      await addDoc(collection(db, "records"), {
+      const formattedDate = date.split('-').reverse().join('.');
+      
+      const payload = {
         studentName: studentName.trim(),
         Sınıf: classType,
         Okul: branch,
         SonTutar: Number(amount),
         SözleşmeTarihi: formattedDate,
-        source: "manual",
+        source: "manual", // StudentList'te görünmesi için kritik
         createdAt: serverTimestamp(),
-        addedBy: user?.email,
+        addedBy: user?.email || "unknown",
         addedByName: user?.displayName || "Bilinmeyen"
-      });
+      };
+
+      const docRef = await addDoc(collection(db, "records"), payload);
+      console.log("Kayıt Başarılı! ID:", docRef.id);
 
       alert("Kayıt mermi gibi eklendi!");
       setStudentName("");
       setAmount("");
-      if (isAdmin || availableBranches.length > 1) setBranch("");
       setClassType("");
+      if (isAdmin || availableBranches.length > 1) setBranch("");
       
     } catch (err: any) {
-      alert("Hata oluştu: " + err.message);
+      console.error("Firebase Hatası Detayı:", err);
+      alert("Kayıt sırasında bir hata oluştu: " + err.message);
     } finally {
       setSaving(false);
     }
@@ -148,8 +144,10 @@ export default function DailyEntryPage() {
   );
 }
 
+// Stil Nesneleri
 const infoBoxStyle: React.CSSProperties = { background: "rgba(30, 41, 59, 0.5)", padding: "10px 15px", borderRadius: "8px", marginBottom: "15px", fontSize: "0.85rem", border: "1px solid #1e293b" };
-const formContainerStyle: React.CSSProperties = { display: "grid", gap: 16, background: "#0f172a", padding: 20, borderRadius: 12, border: "1px solid #1e293b" };
+// 🛠️ DÜZELTİLEN KISIM: 'shadow' yerine 'boxShadow' kullanıldı
+const formContainerStyle: React.CSSProperties = { display: "grid", gap: 16, background: "#0f172a", padding: 20, borderRadius: 12, border: "1px solid #1e293b", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" };
 const labelStyle: React.CSSProperties = { display: "flex", flexDirection: "column", gap: 4, fontSize: "0.9rem", color: "#94a3b8" };
 const inputStyle: React.CSSProperties = { width: "100%", padding: "10px 12px", background: "#020617", border: "1px solid #334155", borderRadius: 8, color: "white", fontSize: "1rem", outline: "none" };
 const buttonStyle: React.CSSProperties = { marginTop: 10, padding: "12px", color: "white", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600 };

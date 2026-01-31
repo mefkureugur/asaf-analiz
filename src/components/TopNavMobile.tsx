@@ -12,7 +12,7 @@ export default function TopNavMobile({ isAdmin }: MobileProps) {
 
   const closeMenu = () => setOpen(false);
 
-  // 🛡️ Admin yetkisi kontrolü (Masaüstü ile aynı mantık)
+  // 🛡️ Admin yetkisi kontrolü (Masaüstü ile senkronize)
   const showAdminMenu = isAdmin || user?.role === 'admin' || user?.email === 'ugur@asaf.com';
 
   return (
@@ -58,30 +58,27 @@ export default function TopNavMobile({ isAdmin }: MobileProps) {
             </NavLink>
           )}
 
-          {/* 📋 ANALİZ VE YÖNETİM AYRIMI (MOBİL) */}
           <NavLink to="/students" onClick={closeMenu} style={({ isActive }) => isActive ? activeNavLinkStyle : navLinkStyle}>
             🧑‍🎓 Kayıt Analizi
           </NavLink>
 
-          {/* 🛡️ KRİTİK DEĞİŞİKLİK: Kayıt Listesi Admin'e gözükmez, müdürlere özeldir */}
           {!showAdminMenu && (
             <NavLink to="/ogrenci-listesi" onClick={closeMenu} style={({ isActive }) => isActive ? activeNavLinkStyle : navLinkStyle}>
               ✍️ Kayıt Listesi (Yönetim)
             </NavLink>
           )}
 
-          <NavLink to="/finance/view" onClick={closeMenu} style={({ isActive }) => isActive ? activeNavLinkStyle : navLinkStyle}>
-            💰 Finans Analizi
-          </NavLink>
+          {/* 🛡️ KRİTİK DEĞİŞİKLİK: Finans Analizi mobilde de sadece Admin ve Uğur Bey'e gözükür */}
+          {showAdminMenu && (
+            <NavLink to="/finance/view" onClick={closeMenu} style={({ isActive }) => isActive ? activeNavLinkStyle : navLinkStyle}>
+              💰 Finans Analizi
+            </NavLink>
+          )}
 
           {showAdminMenu && (
             <>
               <div style={{ height: "1px", background: "#1e293b", margin: "8px 12px" }} />
               
-              <NavLink to="/import" onClick={closeMenu} style={({ isActive }) => isActive ? activeNavLinkStyle : navLinkStyle}>
-                📥 Veri Aktarımı
-              </NavLink>
-
               <NavLink to="/user-management" onClick={closeMenu} style={({ isActive }) => isActive ? { ...activeNavLinkStyle, color: "#38bdf8" } : { ...navLinkStyle, color: "#38bdf8" }}>
                 🛡️ Yetki Yönetimi
               </NavLink>
@@ -107,7 +104,7 @@ export default function TopNavMobile({ isAdmin }: MobileProps) {
   );
 }
 
-// STİLLER (Aynı kalıyor)
+// STİLLER (Bozmadan koruyoruz)
 const wrapperStyle: React.CSSProperties = { position: "sticky", top: 0, zIndex: 1000, background: "#020617" };
 const topBarStyle: React.CSSProperties = { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 16px", borderBottom: "1px solid #1e293b", height: "60px" };
 const logoStyle: React.CSSProperties = { fontWeight: 900, color: "#f8fafc", fontSize: "1.2rem", letterSpacing: "1px" };

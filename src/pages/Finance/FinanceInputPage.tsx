@@ -1,212 +1,185 @@
-import { useEffect, useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { TrendingUp, Calculator, ChevronDown, Save, ArrowLeft, Database, Edit3 } from "lucide-react";
+import { saveFinanceSnapshot } from "../../services/financeSnapshot.service";
 import { loadFinance, saveFinance } from "../../store/FinanceStore";
-import type { Branch, FinanceState } from "../../store/FinanceStore";
 
-import { calculateFinance } from "../../services/financeCalculator";
-import { saveFinanceSnapshot } from "../../services/financeSnapshot.service"; 
-import { getFinanceSnapshot } from "../../services/financeSnapshot.read";
+/* ======================================================
+   🛡️ ZIRH: KATEGORİ BAZLI VERİ YAPISI
+   ====================================================== */
+interface FinanceInput {
+  income: { student: number; food: number; other: number; }; 
+  expenses: number[];
+}
 
-// ASAF Şube Listesi
-const BRANCH_LIST: Branch[] = [
-  "Mefkure LGS",
-  "Mefkure VİP",
-  "Mefkure PLUS",
-  "Altınküre İlköğretim",
-  "Altınküre Lise",
-  "Altınküre Teknokent"
-];
+interface FinanceState { 
+  [branch: string]: {
+    [category: string]: FinanceInput;
+  };
+}
 
-const MONTHS = [
-  "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık", "Ocak",
-  "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz",
-];
+const BRANCH_LIST = ["Mefkure YKS", "Mefkure LGS", "Altınküre Lise", "Altınküre İlköğretim", "Altınküre Teknokent"];
+const DONEM_LIST = ["2024-2025", "2025-2026"];
+const EXPENSE_TYPES = ["Toplam Giderler", "Maaşlar", "SGK"];
+const ALL_MONTHS = ["Ağustos", "Eylül", "Ekim", "Kasım", "Aralık", "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz"];
+const ENTRY_MONTHS = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz"];
 
 export default function FinanceInputPage() {
   const navigate = useNavigate();
-
-  // Varsayılan şubeyi Mefkure LGS yapalım
-  const [branch, setBranch] = useState<Branch>("Mefkure LGS");
-  const [finance, setFinance] = useState<FinanceState>(() => loadFinance());
-  const [saved, setSaved] = useState(false);
+  const [incomeBranch, setIncomeBranch] = useState("Mefkure YKS");
+  const [incomeDonem, setIncomeDonem] = useState("2025-2026"); 
+  const [expenseBranch, setExpenseBranch] = useState("Mefkure YKS");
+  const [expenseType, setExpenseType] = useState("Toplam Giderler");
+  const [finance, setFinance] = useState<FinanceState>(() => loadFinance() as any);
   const [saving, setSaving] = useState(false);
 
-  const data = finance[branch] || { income: { student: 0, food: 0, other: 0 }, expenses: Array(12).fill(0) };
-  const calc = calculateFinance(data);
+  // 🛡️ ZIRH: Rakamları görseldeki tok formata sokar
+  const formatCurrency = (val: number) => {
+    return `₺${Math.round(val).toLocaleString("tr-TR")}`;
+  };
+
+  // 🛡️ Seçili kategoriye ait veriyi çek
+  const currentExpenseEntry = useMemo(() => 
+    finance[expenseBranch]?.[expenseType] || { income: { student: 0, food: 0, other: 0 }, expenses: Array(12).fill(0) },
+  [finance, expenseBranch, expenseType]);
+
+  const currentIncomeEntry = useMemo(() => 
+    finance[incomeBranch]?.["Ciro"] || { income: { student: 0, food: 0, other: 0 }, expenses: Array(12).fill(0) },
+  [finance, incomeBranch]);
 
   /* ======================================================
-     🔥 PRELOAD: TÜM ŞUBELERİ FIRESTORE'DAN ÇEK
+     💾 FİREBASE MÜHÜRLEME MOTORU (CİRO & GİDER AYRIMI)
      ====================================================== */
-  useEffect(() => {
-    const year = new Date().getFullYear();
-
-    // Dinamik olarak tüm şubelerin verilerini çekiyoruz
-    const fetchAllSnapshots = async () => {
-      const updatedFinance = { ...finance };
-      
-      for (const b of BRANCH_LIST) {
-        try {
-          const snap = await getFinanceSnapshot(year, b);
-          if (snap) {
-            updatedFinance[b] = {
-              income: {
-                student: snap.revenueTotal ?? updatedFinance[b].income.student,
-                food: updatedFinance[b].income.food,
-                other: updatedFinance[b].income.other,
-              },
-              expenses: [...updatedFinance[b].expenses],
-            };
-          }
-        } catch (e) {
-          console.error(`${b} verisi çekilemedi:`, e);
-        }
-      }
-      setFinance(updatedFinance);
-    };
-
-    fetchAllSnapshots();
-  }, []);
-
-  /* 🔒 Otomatik local kayıt */
-  useEffect(() => {
-    saveFinance(finance);
-    setSaved(false);
-  }, [finance]);
-
-  function setIncome(key: keyof typeof data.income, value: number) {
-    setFinance((prev) => ({
-      ...prev,
-      [branch]: {
-        ...prev[branch],
-        income: { ...prev[branch].income, [key]: Math.max(0, value) },
-      },
-    }));
-  }
-
-  function setExpense(i: number, value: number) {
-    const next = [...data.expenses];
-    next[i] = Math.max(0, value);
-
-    setFinance((prev) => ({
-      ...prev,
-      [branch]: { ...prev[branch], expenses: next },
-    }));
-  }
-
-  /* 💾 KAYDET = Mevcut şube + GENEL Toplam */
-  async function handleSave() {
+  const handleAction = async (targetUnit: string, targetData: FinanceInput, category: string, isRevision: boolean = false) => {
     try {
       setSaving(true);
-      const year = new Date().getFullYear();
+      saveFinance(finance as any); 
+      
+      const targetYear = parseInt(incomeDonem.split('-')[1]); 
+      const dbCategory = category === "Ciro Yönetimi" ? "Ciro" : category;
 
-      saveFinance(finance);
-
-      // 1️⃣ Aktif şubeyi buluta gönder
-      await saveFinanceSnapshot(year, branch, finance[branch]);
-
-      // 2️⃣ GENERAL (Tüm Şubelerin Toplamı) Hesapla ve Gönder
-      const generalInput = BRANCH_LIST.reduce((acc, b) => {
-        const bData = finance[b];
-        return {
-          income: {
-            student: acc.income.student + bData.income.student,
-            food: acc.income.food + bData.income.food,
-            other: acc.income.other + bData.income.other,
-          },
-          expenses: acc.expenses.map((v, i) => v + bData.expenses[i])
-        };
-      }, { income: { student: 0, food: 0, other: 0 }, expenses: Array(12).fill(0) });
-
-      await saveFinanceSnapshot(year, "GENERAL", generalInput);
-
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
-    } catch (err) {
-      console.error("Finans kayıt hatası:", err);
-    } finally {
-      setSaving(false);
-    }
-  }
+      await saveFinanceSnapshot(targetYear, targetUnit, {
+          ...targetData,
+          category: dbCategory, 
+          updatedAt: new Date().toISOString()
+      } as any); 
+      
+      alert(`${targetUnit} - ${dbCategory} (${targetYear}) verileri Firebase'e hatasız mühürlendi!`);
+    } catch (err) { console.error(err); } finally { setSaving(false); }
+  };
 
   return (
-    <div style={{ color: "white", maxWidth: 1100, margin: "0 auto", padding: "24px 16px" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-        <h2 style={{ margin: 0 }}>💰 Finans Veri Girişi</h2>
-        <button onClick={() => navigate("/finance/view")} style={navButtonStyle}>← Finans Özetine Dön</button>
-      </div>
+    <div style={{ padding: "20px", color: "white", maxWidth: 1200, margin: "0 auto", backgroundColor: "#020617", minHeight: "100vh", fontFamily: "sans-serif" }}>
+      <button onClick={() => navigate("/finance/view")} style={backBtn}>
+        <ArrowLeft size={14}/> Analize Dön
+      </button>
 
-      {/* ŞUBE SEÇİCİ - 6 ŞUBELİ YAPI */}
-      <div style={branchSelectorWrapper}>
-        {BRANCH_LIST.map((b) => {
-          const active = branch === b;
-          return (
-            <button key={b} onClick={() => setBranch(b)} style={active ? activeTabStyle : tabStyle}>
-              {b}
-            </button>
-          );
-        })}
-      </div>
-
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
-        {/* GELİRLER */}
+      <div style={{ display: "grid", gridTemplateColumns: window.innerWidth < 1024 ? "1fr" : "400px 1fr", gap: 20, marginTop: 20 }}>
+        
+        {/* 🛡️ SOL PANEL: CİRO YÖNETİMİ */}
         <div style={cardStyle}>
-          <h3 style={{ marginTop: 0, color: "#22c55e" }}>📈 Gelirler (Yıllık Tahmin)</h3>
-          {(["student", "food", "other"] as const).map((k) => (
-            <div key={k} style={{ marginBottom: 12 }}>
-              <div style={labelStyle}>{k === "student" ? "Eğitim" : k === "food" ? "Yemek" : "Diğer"} Geliri</div>
-              <input style={inputStyle} type="number" value={data.income[k]} onChange={(e) => setIncome(k, +e.target.value)} />
+          <div style={{ ...headerStyle, marginBottom: 20 }}><TrendingUp size={16} color="#3b82f6"/> CİRO YÖNETİMİ</div>
+          
+          <div style={{ display: "flex", gap: 10, marginBottom: 15 }}>
+            <div style={{ flex: 1 }}>
+              <div style={labelStyle}>KURUM</div>
+              <div style={{ position: "relative" }}>
+                <select value={incomeBranch} onChange={(e) => setIncomeBranch(e.target.value)} style={mainSel}>
+                  {BRANCH_LIST.map(b => <option key={b} value={b}>{b}</option>)}
+                </select>
+                <ChevronDown style={chevronStyle} size={14} />
+              </div>
             </div>
-          ))}
-          <div style={totalHighlight}>Toplam: {calc.income.toLocaleString("tr-TR")} ₺</div>
-        </div>
+            <div style={{ width: 140 }}>
+              <div style={labelStyle}>DÖNEM</div>
+              <div style={{ position: "relative" }}>
+                <select value={incomeDonem} onChange={(e) => setIncomeDonem(e.target.value)} style={mainSel}>
+                  {DONEM_LIST.map(d => <option key={d} value={d}>{d}</option>)}
+                </select>
+                <ChevronDown style={chevronStyle} size={14} />
+              </div>
+            </div>
+          </div>
 
-        {/* ÖZET DURUM */}
-        <div style={cardStyle}>
-          <h3 style={{ marginTop: 0, color: "#38bdf8" }}>📊 Finansal Özet</h3>
-          <div style={summaryRow}><span>Tahmini Ciro:</span> <strong>{calc.income.toLocaleString("tr-TR")} ₺</strong></div>
-          <div style={summaryRow}><span>Aylık Ort. Gider:</span> <strong>{calc.avgExpense.toLocaleString("tr-TR")} ₺</strong></div>
-          <div style={{ ...summaryRow, borderTop: "1px solid #334155", paddingTop: 10, marginTop: 10 }}>
-            <span>Yıllık Tahmini Kar:</span> 
-            <strong style={{ color: calc.income - (calc.avgExpense * 12) > 0 ? "#22c55e" : "#ef4444" }}>
-              {(calc.income - (calc.avgExpense * 12)).toLocaleString("tr-TR")} ₺
-            </strong>
+          <div style={{ marginBottom: 25 }}>
+            {/* 🛡️ Mevcut Ciro Formatlanmış halde başlıkta gösterilir */}
+            <div style={labelStyle}>NET CİRO GİRİŞİ ({formatCurrency(currentIncomeEntry.income.student)})</div>
+            <input type="number" value={currentIncomeEntry.income.student} onChange={e => setFinance(prev => ({
+                ...prev, [incomeBranch]: { ...(prev[incomeBranch] || {}), ["Ciro"]: { ...currentIncomeEntry, income: { ...currentIncomeEntry.income, student: +e.target.value } } }
+            }))} style={inputStyle} />
+          </div>
+          
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <button onClick={() => handleAction(incomeBranch, currentIncomeEntry, "Ciro Yönetimi")} disabled={saving} style={saveBtnStyle}>
+              <Save size={16}/> GELİRİ KAYDET
+            </button>
+            <button onClick={() => handleAction(incomeBranch, currentIncomeEntry, "Ciro Yönetimi", true)} disabled={saving} style={revizeBtnStyle}>
+              <Edit3 size={14}/> VERİYİ REVİZE ET
+            </button>
           </div>
         </div>
-      </div>
 
-      {/* GİDERLER (AYLIK) */}
-      <div style={{ ...cardStyle, marginTop: 20 }}>
-        <h3 style={{ marginTop: 0, color: "#f87171" }}>📉 Aylık Gider Girişi</h3>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
-          {MONTHS.map((m, i) => (
-            <div key={i}>
-              <div style={labelStyle}>{m}</div>
-              <input style={inputStyle} type="number" value={data.expenses[i]} onChange={(e) => setExpense(i, +e.target.value)} />
+        {/* 🛡️ SAĞ PANEL: GİDERLER */}
+        <div style={cardStyle}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 10 }}>
+            <div style={headerStyle}><Calculator size={16} color="#ef4444"/> GİDER GİRİŞİ</div>
+            <div style={{ display: "flex", gap: 8 }}>
+                <div style={{ position: "relative", minWidth: 150 }}>
+                    <select value={expenseType} onChange={(e) => setExpenseType(e.target.value)} style={typeSel}>
+                        {EXPENSE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                    <ChevronDown style={chevronStyle} size={12} color="#3b82f6" />
+                </div>
+                <div style={{ position: "relative", minWidth: 180 }}>
+                    <select value={expenseBranch} onChange={(e) => setExpenseBranch(e.target.value)} style={mainSel}>
+                        {BRANCH_LIST.map(b => <option key={b} value={b}>{b}</option>)}
+                    </select>
+                    <ChevronDown style={chevronStyle} size={14} />
+                </div>
             </div>
-          ))}
-        </div>
-      </div>
+          </div>
 
-      {/* KAYDET BUTONU */}
-      <div style={{ marginTop: 24, display: "flex", alignItems: "center", gap: 15 }}>
-        <button onClick={handleSave} disabled={saving} style={saveButtonStyle}>
-          {saving ? "⏳ Kaydediliyor..." : "💾 Verileri Sisteme İşle"}
-        </button>
-        {saved && <span style={{ color: "#22c55e", fontWeight: 700 }}>✔ Şube ve Genel Toplam Güncellendi!</span>}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: 10, marginBottom: 25 }}>
+            {ENTRY_MONTHS.map((m) => {
+              const monthIdx = ALL_MONTHS.indexOf(m);
+              const val = currentExpenseEntry.expenses[monthIdx] || 0;
+              return (
+                <div key={m} style={monthBoxStyle}>
+                  {/* 🛡️ Aylık rakam formatlanmış halde etikette gösterilir */}
+                  <div style={labelStyle}>{m.toUpperCase()} ({val > 0 ? formatCurrency(val) : "₺0"})</div>
+                  <input type="number" value={currentExpenseEntry.expenses[monthIdx] || ""} onChange={e => {
+                      const nextExp = [...currentExpenseEntry.expenses];
+                      nextExp[monthIdx] = +e.target.value;
+                      setFinance(prev => ({ ...prev, [expenseBranch]: { ...(prev[expenseBranch] || {}), [expenseType]: { ...currentExpenseEntry, expenses: nextExp } } }));
+                  }} style={inputStyle} />
+                </div>
+              );
+            })}
+          </div>
+          
+          <div style={{ display: "flex", gap: 12 }}>
+            <button onClick={() => handleAction(expenseBranch, currentExpenseEntry, expenseType)} disabled={saving} style={{ ...saveBtnStyle, flex: 2, background: "#ef4444" }}>
+              <Database size={16}/> GİDERLERİ KAYDET
+            </button>
+            <button onClick={() => handleAction(expenseBranch, currentExpenseEntry, expenseType, true)} disabled={saving} style={revizeBtnStyle}>
+              <Edit3 size={14}/> REVİZE ET
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
-/* ================================ STYLES ================================ */
-const cardStyle: React.CSSProperties = { background: "#0f172a", border: "1px solid #1e293b", borderRadius: 16, padding: 20 };
-const inputStyle: React.CSSProperties = { width: "100%", padding: "10px", borderRadius: 8, border: "1px solid #334155", background: "#020617", color: "white" };
-const labelStyle: React.CSSProperties = { fontSize: 12, color: "#94a3b8", marginBottom: 4 };
-const totalHighlight: React.CSSProperties = { marginTop: 15, fontSize: 18, fontWeight: 700, color: "#22c55e", textAlign: "right" };
-const summaryRow: React.CSSProperties = { display: "flex", justifyContent: "space-between", marginBottom: 8, color: "#e2e8f0" };
-const branchSelectorWrapper: React.CSSProperties = { display: "flex", gap: 8, marginBottom: 20, overflowX: "auto", paddingBottom: 10 };
-const tabStyle: React.CSSProperties = { padding: "8px 16px", borderRadius: 8, border: "1px solid #1e293b", background: "transparent", color: "#94a3b8", cursor: "pointer", whiteSpace: "nowrap" };
-const activeTabStyle: React.CSSProperties = { ...tabStyle, background: "#3b82f6", color: "white", borderColor: "#3b82f6", fontWeight: 700 };
-const saveButtonStyle: React.CSSProperties = { padding: "12px 24px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#3b82f6,#2563eb)", color: "white", fontWeight: 700, cursor: "pointer" };
-const navButtonStyle: React.CSSProperties = { padding: "8px 16px", borderRadius: 10, border: "1px solid #334155", background: "#1e293b", color: "white", cursor: "pointer" };
+// 🛡️ TASARIM PARAMETRELERİ
+const cardStyle = { background: "#0f172a", border: "1px solid #1e2937", borderRadius: 16, padding: "24px", boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.4)" };
+const inputStyle = { width: "100%", background: "#020617", border: "1px solid #334155", borderRadius: 10, padding: "12px", color: "white", outline: "none", fontSize: "0.9rem" };
+const mainSel = { background: "#020617", border: "1px solid #1e2937", color: "white", padding: "10px 35px 10px 15px", borderRadius: 10, outline: 'none', appearance: 'none' as const, WebkitAppearance: 'none' as const, fontWeight: 700, width: '100%', fontSize: "0.8rem", cursor: "pointer" };
+const typeSel = { background: "#1e293b", border: "1px solid #334155", color: "#3b82f6", padding: "10px 35px 10px 15px", borderRadius: 10, outline: 'none', appearance: 'none' as const, WebkitAppearance: 'none' as const, fontWeight: 800, fontSize: "0.75rem", cursor: "pointer" };
+const chevronStyle = { position: "absolute" as const, right: 12, top: "50%", transform: "translateY(-50%)", color: "#64748b", pointerEvents: "none" as const };
+const labelStyle = { fontSize: "0.65rem", fontWeight: 700, color: "#64748b", marginBottom: 6, letterSpacing: "0.05em" };
+const headerStyle = { fontSize: "0.8rem", fontWeight: 800, color: "white", display: "flex", alignItems: "center", gap: 8, letterSpacing: "0.05em" };
+const saveBtnStyle = { background: "#3b82f6", color: "white", border: "none", width: "100%", padding: "14px", borderRadius: 12, fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, transition: "0.2s" };
+const revizeBtnStyle = { background: "transparent", border: "1px solid #334155", color: "#94a3b8", flex: 1, padding: "12px", borderRadius: 12, fontWeight: 700, cursor: "pointer", fontSize: "0.7rem", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, transition: "0.2s" };
+const backBtn = { background: "transparent", border: "1px solid #334155", color: "#94a3b8", padding: "10px 18px", borderRadius: 10, cursor: "pointer", display: "flex", alignItems: "center", gap: 8, fontSize: "0.75rem", fontWeight: 600 };
+const monthBoxStyle = { background: "#1e293b30", padding: "12px", borderRadius: 12, border: "1px solid #1e2937" };

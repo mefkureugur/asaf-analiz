@@ -8,6 +8,9 @@
     "composite": true,
     "declaration": true,
     "declarationMap": true,
-    "moduleResolution": "bundler"
+    "moduleResolution": "bundler",
+    /* JSON dosyalarını import edebilmek için eklenen kısımlar */
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true
   }
 }
