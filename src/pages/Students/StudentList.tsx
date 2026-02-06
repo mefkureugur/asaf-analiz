@@ -52,14 +52,21 @@ export default function StudentList() {
     return () => unsub();
   }, []);
 
+  // 🛡️ SIRALAMA VE FİLTRELEME MOTORU
   const filteredList = useMemo(() => {
-    return firebaseRecords.filter(r => {
+    let list = firebaseRecords.filter(r => {
       if (r.source !== "manual") return false;
       if (user?.role?.toLowerCase() === 'admin') return true;
       
       const rB = normalize(r.Okul || "");
-      // ✅ HATA 1 ÇÖZÜMÜ: mb'ye tip atadık (mb: string)
       return userSettings.branches.some((mb: string) => normalize(mb) === rB);
+    });
+
+    // 🚀 SIRALAMA: En yeni eklenenden eskiye doğru (Tarih bazlı ters sıralama)
+    return list.sort((a, b) => {
+      const dateA = new Date(a.SözleşmeTarihi?.split('.').reverse().join('-')).getTime() || 0;
+      const dateB = new Date(b.SözleşmeTarihi?.split('.').reverse().join('-')).getTime() || 0;
+      return dateB - dateA; // Büyük olan (yeni) üste gelir
     });
   }, [firebaseRecords, user, userSettings]);
 
@@ -93,14 +100,18 @@ export default function StudentList() {
         {filteredList.map((s) => (
           <div key={s.id} style={cardStyle}>
             <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 700 }}>{s.studentName}</div>
-              <div style={{ fontSize: "0.75rem", color: "#94a3b8" }}>
-                📍 {s.Okul} | 🎓 Sınıf: {s.Sınıf} | 💰 {s.SonTutar} TL
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <div style={{ fontWeight: 700 }}>{s.studentName}</div>
+                {/* 🚀 TARİH BADGE: İsmin hemen yanında kayıt tarihi */}
+                <span style={dateBadge}>{s.SözleşmeTarihi}</span>
+              </div>
+              <div style={{ fontSize: "0.75rem", color: "#94a3b8", marginTop: "4px" }}>
+                📍 {s.Okul} | 🎓 Sınıf: {s.Sınıf} | 💰 {s.SonTutar?.toLocaleString("tr-TR")} TL
               </div>
             </div>
             <div style={{ display: "flex", gap: "8px" }}>
               <button onClick={() => setEditingStudent(s)} style={btnEdit}>Düzenle</button>
-              <button onClick={() => deleteDoc(doc(db, "records", s.id))} style={btnDel}>Sil</button>
+              <button onClick={() => { if(window.confirm("Siliyorum?")) deleteDoc(doc(db, "records", s.id))}} style={btnDel}>Sil</button>
             </div>
           </div>
         ))}
@@ -123,7 +134,6 @@ export default function StudentList() {
                   onChange={e => setEditingStudent({...editingStudent, Okul: e.target.value})}
                 >
                   <option value="">Seçiniz...</option>
-                  {/* ✅ HATA 2 ÇÖZÜMÜ: opt: string */}
                   {userSettings.branches.map((opt: string) => <option key={opt} value={opt}>{opt}</option>)}
                 </select>
               </div>
@@ -135,7 +145,6 @@ export default function StudentList() {
                   onChange={e => setEditingStudent({...editingStudent, Sınıf: e.target.value})}
                 >
                   <option value="">Seç...</option>
-                  {/* ✅ HATA 3 ÇÖZÜMÜ: opt: string */}
                   {userSettings.grades.map((opt: string) => <option key={opt} value={opt}>{opt}</option>)}
                 </select>
               </div>
@@ -163,8 +172,9 @@ export default function StudentList() {
   );
 }
 
-// Stiller aynı kalıyor...
+// STİLLER
 const cardStyle: any = { background: "#111827", padding: "15px", borderRadius: "12px", border: "1px solid #1f2937", display: "flex", alignItems: "center", gap: "10px" };
+const dateBadge: any = { background: "rgba(56, 189, 248, 0.1)", color: "#38bdf8", padding: "2px 8px", borderRadius: "6px", fontSize: "0.65rem", fontWeight: 700 };
 const btnEdit: any = { background: "#3b82f6", color: "white", border: "none", padding: "8px 14px", borderRadius: "8px", cursor: "pointer", fontWeight: 600 };
 const btnDel: any = { background: "rgba(239, 68, 68, 0.1)", color: "#ef4444", border: "1px solid #ef4444", padding: "8px 14px", borderRadius: "8px", cursor: "pointer" };
 const modalOverlay: any = { position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(2, 6, 23, 0.95)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000, backdropFilter: "blur(4px)" };

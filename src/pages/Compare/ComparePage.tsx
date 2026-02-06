@@ -23,7 +23,9 @@ const normalize = (s: any): string => {
 export default function ComparePage() {
   const { user } = useAuth();
   const [firebaseRecords, setFirebaseRecords] = useState<any[]>([]);
-  const [cutoff, setCutoff] = useState("2026-01-27");
+  
+  // 🕒 27 Ocak kilidini kaldırıp, sayfanın her zaman o günün tarihinde açılmasını sağladık
+  const [cutoff, setCutoff] = useState(new Date().toISOString().split('T')[0]);
 
   // 🛡️ KURUM VE ŞUBE HARİTASI (Normalize Edilmiş Liste İçin)
   const institutionGroups: Record<string, string[]> = {

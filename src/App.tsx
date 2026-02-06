@@ -15,6 +15,8 @@ import StudentsPage from "./pages/Students/StudentsPage";
 import StudentList from "./pages/Students/StudentList"; 
 import FinanceInputPage from "./pages/Finance/FinanceInputPage";
 import FinanceViewPage from "./pages/Finance/FinanceViewPage";
+// 🚀 YENİ RAPOR SAYFASI EKLENDİ
+import DailyEnrollmentReport from "./pages/reports/DailyEnrollmentReport"; 
 import LoginPage from "./pages/Login/LoginPage"; 
 import UserManagement from "./pages/admin/UserManagement"; 
 
@@ -64,6 +66,9 @@ function AppContent() {
           <Route path="/students" element={<StudentsPage />} />
           <Route path="/ogrenci-listesi" element={<StudentList />} /> 
           <Route path="/daily" element={<DailyEntryPage />} />
+          
+          {/* 🚀 GÜNLÜK KAYIT RAPORU: Hem Admin Hem Müdür Görebilir */}
+          <Route path="/reports/daily" element={<DailyEnrollmentReport />} />
 
           {/* 🎯 HEDEF, YÖNETİM & FİNANS AYRIMI */}
           {isAdmin ? (

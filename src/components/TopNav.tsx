@@ -74,7 +74,7 @@ export default function TopNav({ isAdmin }: TopNavProps) {
         position: "relative" 
       }}
     >
-      {/* 🚀 LOGO VE İSİM BÖLÜMÜ - logo512.png EKLENDİ */}
+      {/* 🚀 LOGO VE İSİM BÖLÜMÜ */}
       <div 
         onClick={handleLogoClick}
         style={{ 
@@ -97,9 +97,7 @@ export default function TopNav({ isAdmin }: TopNavProps) {
       </div>
 
       <div style={{ display: "flex", gap: 8, flex: 1 }}>
-        {/* 🏠 DASHBOARD -> ANA SAYFA OLDU */}
         <Link to="/dashboard" style={linkStyle("/dashboard")}>🏠 Ana Sayfa</Link>
-        <Link to="/daily" style={linkStyle("/daily")}>✍️ Günlük Giriş</Link>
         <Link to="/compare" style={linkStyle("/compare")}>⚖️ Karşılaştırma</Link>
         
         {showAdminMenu ? (
@@ -127,9 +125,15 @@ export default function TopNav({ isAdmin }: TopNavProps) {
             🛡️ Yetki Yönetimi
           </Link>
         )}
+
+        {/* 🚀 EN SAĞA TAŞINAN OPERASYONEL BUTONLAR */}
+        <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
+          <Link to="/daily" style={linkStyle("/daily")}>✍️ Günlük Giriş</Link>
+          <Link to="/reports/daily" style={linkStyle("/reports/daily")}>📋 Günlük Rapor</Link>
+        </div>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 15 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 15, marginLeft: 15 }}>
         <div style={{ textAlign: "right", marginRight: 10 }}>
           <div style={{ fontSize: "0.85rem", fontWeight: 600, color: "white" }}>{user?.displayName}</div>
           <div style={{ fontSize: "0.7rem", color: "#94a3b8" }}>{user?.branchId}</div>
