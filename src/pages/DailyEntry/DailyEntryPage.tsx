@@ -2,6 +2,8 @@ import { useState, useEffect, useMemo } from "react";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../../firebase";
 import { useAuth } from "../../store/AuthContext";
+import confetti from 'canvas-confetti';
+import Swal from 'sweetalert2'; // 🚀 Modern uyarı motoru eklendi
 
 // Sabitler aynı kalıyor...
 const CLASS_OPTIONS: { [key: string]: string[] } = {
@@ -59,16 +61,20 @@ export default function DailyEntryPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Eksik alan kontrolü
     if (!studentName || !classType || !branch || !amount) {
-      alert("Lütfen tüm alanları eksiksiz doldurun.");
+      Swal.fire({
+        icon: 'warning',
+        title: 'Eksik Alan!',
+        text: 'Lütfen tüm alanları doldurun.',
+        background: '#0f172a',
+        color: '#fff',
+        confirmButtonColor: '#38bdf8'
+      });
       return;
     }
 
     try {
       setSaving(true);
-      console.log("Kayıt veritabanına gönderiliyor...");
-
       const formattedDate = date.split('-').reverse().join('.');
       
       const payload = {
@@ -77,24 +83,53 @@ export default function DailyEntryPage() {
         Okul: branch,
         SonTutar: Number(amount),
         SözleşmeTarihi: formattedDate,
-        source: "manual", // StudentList'te görünmesi için kritik
+        source: "manual",
         createdAt: serverTimestamp(),
         addedBy: user?.email || "unknown",
         addedByName: user?.displayName || "Bilinmeyen"
       };
 
-      const docRef = await addDoc(collection(db, "records"), payload);
-      console.log("Kayıt Başarılı! ID:", docRef.id);
+      await addDoc(collection(db, "records"), payload);
 
-      alert("Kayıt mermi gibi eklendi!");
+      // 🎆 EFEKTLERİ TETİKLE (Pencereyi beklemeden başlar)
+      confetti({
+        particleCount: 150,
+        spread: 70,
+        origin: { y: 0.6 },
+        zIndex: 9999,
+        colors: ['#38bdf8', '#22c55e', '#ffffff']
+      });
+
+      const audio = new Audio('/sounds/alkis.mp3');
+      audio.volume = 0.5;
+      audio.play().catch(e => console.warn("Ses engellendi:", e));
+
+      // 📱 MODERN UYARI PENCERESİ
+      Swal.fire({
+        title: 'Kayıt Başarılı!',
+        text: 'Kayıt mermi gibi eklendi! 🚀',
+        icon: 'success',
+        background: '#0f172a',
+        color: '#ffffff',
+        confirmButtonColor: '#22c55e',
+        confirmButtonText: 'Tamam',
+        timer: 3500, // 3.5 saniye sonra kendi kapanır
+        timerProgressBar: true
+      });
+
       setStudentName("");
       setAmount("");
       setClassType("");
       if (isAdmin || availableBranches.length > 1) setBranch("");
       
     } catch (err: any) {
-      console.error("Firebase Hatası Detayı:", err);
-      alert("Kayıt sırasında bir hata oluştu: " + err.message);
+      Swal.fire({
+        icon: 'error',
+        title: 'Hata!',
+        text: 'Kayıt sırasında bir hata oluştu: ' + err.message,
+        background: '#0f172a',
+        color: '#ffffff'
+      });
     } finally {
       setSaving(false);
     }
@@ -146,7 +181,6 @@ export default function DailyEntryPage() {
 
 // Stil Nesneleri
 const infoBoxStyle: React.CSSProperties = { background: "rgba(30, 41, 59, 0.5)", padding: "10px 15px", borderRadius: "8px", marginBottom: "15px", fontSize: "0.85rem", border: "1px solid #1e293b" };
-// 🛠️ DÜZELTİLEN KISIM: 'shadow' yerine 'boxShadow' kullanıldı
 const formContainerStyle: React.CSSProperties = { display: "grid", gap: 16, background: "#0f172a", padding: 20, borderRadius: 12, border: "1px solid #1e293b", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" };
 const labelStyle: React.CSSProperties = { display: "flex", flexDirection: "column", gap: 4, fontSize: "0.9rem", color: "#94a3b8" };
 const inputStyle: React.CSSProperties = { width: "100%", padding: "10px 12px", background: "#020617", border: "1px solid #334155", borderRadius: 8, color: "white", fontSize: "1rem", outline: "none" };

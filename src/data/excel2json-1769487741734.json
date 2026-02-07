@@ -99,39 +99,12 @@
         "Okul": "Altınküre Ortaokul"
     },
     {
-        "ÖğrenciAdSoyad": "DERİN ÖZBAHÇE",
-        "Sınıf": 3,
-        "SözleşmeTarihi": "1.1.2025",
-        "SözleşmeBitişTarihi": "26.8.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 0,
-        "Okul": "Altınküre İlkokul"
-    },
-    {
-        "ÖğrenciAdSoyad": "Elif Masal Özbahçe",
-        "Sınıf": 5,
-        "SözleşmeTarihi": "1.1.2025",
-        "SözleşmeBitişTarihi": "8.9.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 0,
-        "Okul": "Altınküre Ortaokul"
-    },
-    {
         "ÖğrenciAdSoyad": "ESLEM BATTAL",
         "Sınıf": "Akademi",
         "SözleşmeTarihi": "1.1.2025",
         "SözleşmeBitişTarihi": "",
         "KayıtDurumu": "Aktif",
         "SonTutar": 320000,
-        "Okul": "Altınküre Fen Lisesi"
-    },
-    {
-        "ÖğrenciAdSoyad": "HİLAL EZGİ KARA",
-        "Sınıf": "12",
-        "SözleşmeTarihi": "1.1.2025",
-        "SözleşmeBitişTarihi": "19.12.2024",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 0,
         "Okul": "Altınküre Fen Lisesi"
     },
     {
@@ -747,15 +720,6 @@
         "Okul": "Altınküre Anadolu Lisesi"
     },
     {
-        "ÖğrenciAdSoyad": "YUSUF EREN CEVİZ",
-        "Sınıf": "10",
-        "SözleşmeTarihi": "8.1.2025",
-        "SözleşmeBitişTarihi": "18.1.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 0,
-        "Okul": "Altınküre Anadolu Lisesi"
-    },
-    {
         "ÖğrenciAdSoyad": "ZEYNEP GÖZDE GÖKGÖZ",
         "Sınıf": "12",
         "SözleşmeTarihi": "8.1.2025",
@@ -1359,15 +1323,6 @@
         "Okul": "MEFKURE Vip"
     },
     {
-        "ÖğrenciAdSoyad": "FİLİZ KESKİN",
-        "Sınıf": "12",
-        "SözleşmeTarihi": "16.1.2025",
-        "SözleşmeBitişTarihi": "20.06.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 37500,
-        "Okul": "Mefkure Plus"
-    },
-    {
         "ÖğrenciAdSoyad": "BAHADIR GENÇ",
         "Sınıf": "12",
         "SözleşmeTarihi": "17.1.2025",
@@ -1386,21 +1341,12 @@
         "Okul": "Altınküre İlkokul"
     },
     {
-        "ÖğrenciAdSoyad": "ENSAR TEKİRDAĞLI",
-        "Sınıf": "10",
-        "SözleşmeTarihi": "17.1.2025",
-        "SözleşmeBitişTarihi": "18.8.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 31000,
-        "Okul": "Altınküre Teknokent"
-    },
-    {
         "ÖğrenciAdSoyad": "MİRALİ KILIÇKAN",
         "Sınıf": "10",
         "SözleşmeTarihi": "17.1.2025",
         "SözleşmeBitişTarihi": "",
         "KayıtDurumu": "Aktif",
-        "SonTutar": 156023,
+        "SonTutar": 187023,
         "Okul": "Altınküre Teknokent"
     },
     {
@@ -1616,7 +1562,7 @@
         "SözleşmeTarihi": "21.1.2025",
         "SözleşmeBitişTarihi": "",
         "KayıtDurumu": "Aktif",
-        "SonTutar": 120000,
+        "SonTutar": 157500,
         "Okul": "Mefkure Plus"
     },
     {
@@ -1679,16 +1625,7 @@
         "SözleşmeTarihi": "22.1.2025",
         "SözleşmeBitişTarihi": "",
         "KayıtDurumu": "Aktif",
-        "SonTutar": 15000,
-        "Okul": "Mefkure Plus"
-    },
-    {
-        "ÖğrenciAdSoyad": "CEMRE ÇETİNKAYA",
-        "Sınıf": "12",
-        "SözleşmeTarihi": "22.1.2025",
-        "SözleşmeBitişTarihi": "9.10.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 11250,
+        "SonTutar": 26250,
         "Okul": "Mefkure Plus"
     },
     {
@@ -2705,7 +2642,7 @@
         "SözleşmeTarihi": "30.1.2025",
         "SözleşmeBitişTarihi": "",
         "KayıtDurumu": "Aktif",
-        "SonTutar": 250000,
+        "SonTutar": 270000,
         "Okul": "Altınküre Anadolu Lisesi"
     },
     {
@@ -2715,15 +2652,6 @@
         "SözleşmeBitişTarihi": "",
         "KayıtDurumu": "Aktif",
         "SonTutar": 297000,
-        "Okul": "Altınküre Anadolu Lisesi"
-    },
-    {
-        "ÖğrenciAdSoyad": "AYŞE DEFNE DUMAN",
-        "Sınıf": "10",
-        "SözleşmeTarihi": "30.1.2025",
-        "SözleşmeBitişTarihi": "4.9.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 20000,
         "Okul": "Altınküre Anadolu Lisesi"
     },
     {
@@ -2871,15 +2799,6 @@
         "Okul": "Mefkure LGS"
     },
     {
-        "ÖğrenciAdSoyad": "NİHAL BEGÜM ÇELİK",
-        "Sınıf": "10",
-        "SözleşmeTarihi": "31.1.2025",
-        "SözleşmeBitişTarihi": "24.11.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 31000,
-        "Okul": "Altınküre Anadolu Lisesi"
-    },
-    {
         "ÖğrenciAdSoyad": "METİN ERKUL DOĞRUCAN",
         "Sınıf": 9,
         "SözleşmeTarihi": "31.1.2025",
@@ -2903,16 +2822,7 @@
         "SözleşmeTarihi": "31.1.2025",
         "SözleşmeBitişTarihi": "",
         "KayıtDurumu": "Aktif",
-        "SonTutar": 285000,
-        "Okul": "Altınküre Anadolu Lisesi"
-    },
-    {
-        "ÖğrenciAdSoyad": "METEHAN KOÇMAR",
-        "Sınıf": "12",
-        "SözleşmeTarihi": "31.1.2025",
-        "SözleşmeBitişTarihi": "6.8.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 0,
+        "SonTutar": 316000,
         "Okul": "Altınküre Anadolu Lisesi"
     },
     {
@@ -2931,15 +2841,6 @@
         "SözleşmeBitişTarihi": "",
         "KayıtDurumu": "Aktif",
         "SonTutar": 320000,
-        "Okul": "Altınküre Fen Lisesi"
-    },
-    {
-        "ÖğrenciAdSoyad": "HURİYE DÖĞER",
-        "Sınıf": "10",
-        "SözleşmeTarihi": "31.1.2025",
-        "SözleşmeBitişTarihi": "28.2.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 0,
         "Okul": "Altınküre Fen Lisesi"
     },
     {
@@ -3265,24 +3166,6 @@
         "KayıtDurumu": "Aktif",
         "SonTutar": 85000,
         "Okul": "Mefkure LGS"
-    },
-    {
-        "ÖğrenciAdSoyad": "BURAK DELAL",
-        "Sınıf": 8,
-        "SözleşmeTarihi": "2.2.2025",
-        "SözleşmeBitişTarihi": "21.03.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 0,
-        "Okul": "Mefkure LGS"
-    },
-    {
-        "ÖğrenciAdSoyad": "ZEYNEP AZRA SARICA",
-        "Sınıf": "12",
-        "SözleşmeTarihi": "3.2.2025",
-        "SözleşmeBitişTarihi": "30.7.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 0,
-        "Okul": "Altınküre Anadolu Lisesi"
     },
     {
         "ÖğrenciAdSoyad": "AYŞE NEHİR KOYUNCU",
@@ -4005,15 +3888,6 @@
         "Okul": "Mefkure Plus"
     },
     {
-        "ÖğrenciAdSoyad": "AYBİKE ZEYNEP SERT",
-        "Sınıf": 8,
-        "SözleşmeTarihi": "5.2.2025",
-        "SözleşmeBitişTarihi": "5.09.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 23000,
-        "Okul": "Mefkure LGS"
-    },
-    {
         "ÖğrenciAdSoyad": "Zümra Bade Yağmur",
         "Sınıf": 7,
         "SözleşmeTarihi": "6.2.2025",
@@ -4464,15 +4338,6 @@
         "Okul": "Altınküre Fen Lisesi"
     },
     {
-        "ÖğrenciAdSoyad": "AYŞE PORGALI",
-        "Sınıf": "11",
-        "SözleşmeTarihi": "11.2.2025",
-        "SözleşmeBitişTarihi": "21.8.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 0,
-        "Okul": "Altınküre Fen Lisesi"
-    },
-    {
         "ÖğrenciAdSoyad": "ELİF HİLAL ALTIN",
         "Sınıf": 3,
         "SözleşmeTarihi": "11.2.2025",
@@ -4779,15 +4644,6 @@
         "Okul": "Altınküre İlkokul"
     },
     {
-        "ÖğrenciAdSoyad": "KAĞAN ÇUHADAR",
-        "Sınıf": 2,
-        "SözleşmeTarihi": "12.2.2025",
-        "SözleşmeBitişTarihi": "21.8.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 0,
-        "Okul": "Altınküre İlkokul"
-    },
-    {
         "ÖğrenciAdSoyad": "Yağız Ayhan Şengönül",
         "Sınıf": 7,
         "SözleşmeTarihi": "12.2.2025",
@@ -4815,30 +4671,12 @@
         "Okul": "Altınküre Ortaokul"
     },
     {
-        "ÖğrenciAdSoyad": "Dila Yıldız Küçükbalkaya",
-        "Sınıf": 6,
-        "SözleşmeTarihi": "12.2.2025",
-        "SözleşmeBitişTarihi": "25.8.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 0,
-        "Okul": "Altınküre Ortaokul"
-    },
-    {
         "ÖğrenciAdSoyad": "Zülal Serra Cicioğlu",
         "Sınıf": 5,
         "SözleşmeTarihi": "12.2.2025",
         "SözleşmeBitişTarihi": "",
         "KayıtDurumu": "Aktif",
         "SonTutar": 135000,
-        "Okul": "Altınküre Ortaokul"
-    },
-    {
-        "ÖğrenciAdSoyad": "Arda Çuhadar",
-        "Sınıf": 5,
-        "SözleşmeTarihi": "12.2.2025",
-        "SözleşmeBitişTarihi": "12.8.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 0,
         "Okul": "Altınküre Ortaokul"
     },
     {
@@ -4866,15 +4704,6 @@
         "SözleşmeBitişTarihi": "",
         "KayıtDurumu": "Aktif",
         "SonTutar": 143956,
-        "Okul": "Altınküre Teknokent"
-    },
-    {
-        "ÖğrenciAdSoyad": "MUHAMMET EYMEN ŞAHİN",
-        "Sınıf": "11",
-        "SözleşmeTarihi": "12.2.2025",
-        "SözleşmeBitişTarihi": "18.8.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 0,
         "Okul": "Altınküre Teknokent"
     },
     {
@@ -4965,15 +4794,6 @@
         "SözleşmeBitişTarihi": "",
         "KayıtDurumu": "Aktif",
         "SonTutar": 270000,
-        "Okul": "Altınküre Ortaokul"
-    },
-    {
-        "ÖğrenciAdSoyad": "Ahmet Enes Kasab",
-        "Sınıf": 5,
-        "SözleşmeTarihi": "13.2.2025",
-        "SözleşmeBitişTarihi": "12.8.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 0,
         "Okul": "Altınküre Ortaokul"
     },
     {
@@ -5099,17 +4919,8 @@
         "SözleşmeTarihi": "14.2.2025",
         "SözleşmeBitişTarihi": "",
         "KayıtDurumu": "Aktif",
-        "SonTutar": 130000,
+        "SonTutar": 153000,
         "Okul": "Mefkure LGS"
-    },
-    {
-        "ÖğrenciAdSoyad": "ÖMER ASAF KINALI",
-        "Sınıf": 9,
-        "SözleşmeTarihi": "15.2.2025",
-        "SözleşmeBitişTarihi": "2.9.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 0,
-        "Okul": "Altınküre Teknokent"
     },
     {
         "ÖğrenciAdSoyad": "BENGİSU YAVAŞOĞLU",
@@ -5155,15 +4966,6 @@
         "KayıtDurumu": "Aktif",
         "SonTutar": 165000,
         "Okul": "MEFKURE Vip"
-    },
-    {
-        "ÖğrenciAdSoyad": "HÜMEYRA ÇETİN",
-        "Sınıf": 8,
-        "SözleşmeTarihi": "15.2.2025",
-        "SözleşmeBitişTarihi": "3.03.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 0,
-        "Okul": "Mefkure LGS"
     },
     {
         "ÖğrenciAdSoyad": "SÜEDA ŞADİYE ÇETİN",
@@ -5396,16 +5198,7 @@
         "SözleşmeTarihi": "19.2.2025",
         "SözleşmeBitişTarihi": "",
         "KayıtDurumu": "Aktif",
-        "SonTutar": 148956,
-        "Okul": "Altınküre Teknokent"
-    },
-    {
-        "ÖğrenciAdSoyad": "DEMİR ALİ GÖKYALAZ",
-        "Sınıf": "10",
-        "SözleşmeTarihi": "19.2.2025",
-        "SözleşmeBitişTarihi": "8.9.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 10000,
+        "SonTutar": 158956,
         "Okul": "Altınküre Teknokent"
     },
     {
@@ -5567,16 +5360,7 @@
         "SözleşmeTarihi": "24.2.2025",
         "SözleşmeBitişTarihi": "",
         "KayıtDurumu": "Aktif",
-        "SonTutar": 330000,
-        "Okul": "Altınküre Anadolu Lisesi"
-    },
-    {
-        "ÖğrenciAdSoyad": "BENGİSU SOMUNCUOĞLU",
-        "Sınıf": "10",
-        "SözleşmeTarihi": "24.2.2025",
-        "SözleşmeBitişTarihi": "13.5.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 25000,
+        "SonTutar": 354000,
         "Okul": "Altınküre Anadolu Lisesi"
     },
     {
@@ -5722,15 +5506,6 @@
         "KayıtDurumu": "Aktif",
         "SonTutar": 75000,
         "Okul": "Mefkure Plus"
-    },
-    {
-        "ÖğrenciAdSoyad": "MERYEM NURDAN GÜNER",
-        "Sınıf": 8,
-        "SözleşmeTarihi": "25.2.2025",
-        "SözleşmeBitişTarihi": "28.07.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 0,
-        "Okul": "Mefkure LGS"
     },
     {
         "ÖğrenciAdSoyad": "ZEYNEP HÜSNA ATAY",
@@ -5929,15 +5704,6 @@
         "KayıtDurumu": "Aktif",
         "SonTutar": 95000,
         "Okul": "Altınküre Teknokent"
-    },
-    {
-        "ÖğrenciAdSoyad": "NİSANUR GÜNGÖR",
-        "Sınıf": "12",
-        "SözleşmeTarihi": "27.2.2025",
-        "SözleşmeBitişTarihi": "13.04.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 0,
-        "Okul": "Mefkure Plus"
     },
     {
         "ÖğrenciAdSoyad": "YUSUF NİHAT YENER",
@@ -6156,15 +5922,6 @@
         "Okul": "Altınküre Ortaokul"
     },
     {
-        "ÖğrenciAdSoyad": "YAĞMUR KARA",
-        "Sınıf": "11",
-        "SözleşmeTarihi": "4.3.2025",
-        "SözleşmeBitişTarihi": "19.11.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 0,
-        "Okul": "Mefkure Plus"
-    },
-    {
         "ÖğrenciAdSoyad": "MELİS CEYLAN",
         "Sınıf": 4,
         "SözleşmeTarihi": "5.3.2025",
@@ -6318,15 +6075,6 @@
         "Okul": "Mefkure LGS"
     },
     {
-        "ÖğrenciAdSoyad": "CEM EMİR MAKAR",
-        "Sınıf": "11",
-        "SözleşmeTarihi": "8.3.2025",
-        "SözleşmeBitişTarihi": "13.5.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 27500,
-        "Okul": "Altınküre Anadolu Lisesi"
-    },
-    {
         "ÖğrenciAdSoyad": "AFFAN URAS YALÇIN",
         "Sınıf": "Ana Sınıfı",
         "SözleşmeTarihi": "8.3.2025",
@@ -6395,7 +6143,7 @@
         "SözleşmeTarihi": "10.3.2025",
         "SözleşmeBitişTarihi": "",
         "KayıtDurumu": "Aktif",
-        "SonTutar": 250000,
+        "SonTutar": 277500,
         "Okul": "Altınküre Anadolu Lisesi"
     },
     {
@@ -6424,15 +6172,6 @@
         "KayıtDurumu": "Aktif",
         "SonTutar": 260000,
         "Okul": "Altınküre Ortaokul"
-    },
-    {
-        "ÖğrenciAdSoyad": "ELİF İREM KARADAĞ",
-        "Sınıf": 8,
-        "SözleşmeTarihi": "10.3.2025",
-        "SözleşmeBitişTarihi": "7.09.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 0,
-        "Okul": "Mefkure LGS"
     },
     {
         "ÖğrenciAdSoyad": "ZEYNEP BENGİSU KARADAĞ",
@@ -6642,15 +6381,6 @@
         "Okul": "Altınküre Anadolu Lisesi"
     },
     {
-        "ÖğrenciAdSoyad": "AHMET FARUK GÜNER",
-        "Sınıf": "Ana Sınıfı",
-        "SözleşmeTarihi": "24.3.2025",
-        "SözleşmeBitişTarihi": "21.7.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 0,
-        "Okul": "Altınküre Anaokulu"
-    },
-    {
         "ÖğrenciAdSoyad": "Sara Nas Çorlu",
         "Sınıf": 6,
         "SözleşmeTarihi": "24.3.2025",
@@ -6813,15 +6543,6 @@
         "Okul": "Altınküre Fen Lisesi"
     },
     {
-        "ÖğrenciAdSoyad": "Kamal Bou Akl",
-        "Sınıf": 6,
-        "SözleşmeTarihi": "8.4.2025",
-        "SözleşmeBitişTarihi": "12.8.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 30000,
-        "Okul": "Altınküre Ortaokul"
-    },
-    {
         "ÖğrenciAdSoyad": "YAREN  MERYEM KURT",
         "Sınıf": "Mezun",
         "SözleşmeTarihi": "8.4.2025",
@@ -6973,15 +6694,6 @@
         "KayıtDurumu": "Aktif",
         "SonTutar": 190000,
         "Okul": "MEFKURE Vip"
-    },
-    {
-        "ÖğrenciAdSoyad": "HAYRUNNİSA KURT",
-        "Sınıf": "12",
-        "SözleşmeTarihi": "17.4.2025",
-        "SözleşmeBitişTarihi": "5.05.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 0,
-        "Okul": "Mefkure Plus"
     },
     {
         "ÖğrenciAdSoyad": "Umut Kaan Aydoğan",
@@ -7398,15 +7110,6 @@
         "Okul": "Altınküre Teknokent"
     },
     {
-        "ÖğrenciAdSoyad": "HAMZA SUBAŞI",
-        "Sınıf": 9,
-        "SözleşmeTarihi": "13.5.2025",
-        "SözleşmeBitişTarihi": "16.5.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 0,
-        "Okul": "Altınküre Teknokent"
-    },
-    {
         "ÖğrenciAdSoyad": "SERDAR KIRIK",
         "Sınıf": "11",
         "SözleşmeTarihi": "13.5.2025",
@@ -7677,15 +7380,6 @@
         "Okul": "Altınküre Anadolu Lisesi"
     },
     {
-        "ÖğrenciAdSoyad": "YAĞIZ ALİ DALYANOĞLU",
-        "Sınıf": 9,
-        "SözleşmeTarihi": "30.5.2025",
-        "SözleşmeBitişTarihi": "8.7.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 0,
-        "Okul": "Altınküre Teknokent"
-    },
-    {
         "ÖğrenciAdSoyad": "Eyüp Ensar Göksu",
         "Sınıf": 8,
         "SözleşmeTarihi": "31.5.2025",
@@ -7729,15 +7423,6 @@
         "KayıtDurumu": "Aktif",
         "SonTutar": 250000,
         "Okul": "Altınküre Ortaokul"
-    },
-    {
-        "ÖğrenciAdSoyad": "TAN RÜZGAR TURÇALI",
-        "Sınıf": 9,
-        "SözleşmeTarihi": "3.6.2025",
-        "SözleşmeBitişTarihi": "11.9.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 30000,
-        "Okul": "Altınküre Teknokent"
     },
     {
         "ÖğrenciAdSoyad": "SİBEL AYCEL",
@@ -7961,25 +7646,7 @@
         "SözleşmeTarihi": "19.6.2025",
         "SözleşmeBitişTarihi": "",
         "KayıtDurumu": "Aktif",
-        "SonTutar": 176023,
-        "Okul": "Altınküre Teknokent"
-    },
-    {
-        "ÖğrenciAdSoyad": "AHMET ENSAR SEVİM",
-        "Sınıf": "10",
-        "SözleşmeTarihi": "19.6.2025",
-        "SözleşmeBitişTarihi": "6.8.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 300,
-        "Okul": "Altınküre Teknokent"
-    },
-    {
-        "ÖğrenciAdSoyad": "EYÜP ENSAR KARACA",
-        "Sınıf": 9,
-        "SözleşmeTarihi": "19.6.2025",
-        "SözleşmeBitişTarihi": "27.8.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 500,
+        "SonTutar": 206023,
         "Okul": "Altınküre Teknokent"
     },
     {
@@ -8008,24 +7675,6 @@
         "KayıtDurumu": "Aktif",
         "SonTutar": 80000,
         "Okul": "Mefkure LGS"
-    },
-    {
-        "ÖğrenciAdSoyad": "ALİ ANAHAR",
-        "Sınıf": 9,
-        "SözleşmeTarihi": "20.6.2025",
-        "SözleşmeBitişTarihi": "19.7.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 0,
-        "Okul": "Altınküre Fen Lisesi"
-    },
-    {
-        "ÖğrenciAdSoyad": "ZEHRA ANAHAR",
-        "Sınıf": 9,
-        "SözleşmeTarihi": "20.6.2025",
-        "SözleşmeBitişTarihi": "19.7.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 0,
-        "Okul": "Altınküre Fen Lisesi"
     },
     {
         "ÖğrenciAdSoyad": "ZEYNEP RANA TAN",
@@ -8078,7 +7727,7 @@
         "SözleşmeTarihi": "21.6.2025",
         "SözleşmeBitişTarihi": "",
         "KayıtDurumu": "Aktif",
-        "SonTutar": 173956,
+        "SonTutar": 175756,
         "Okul": "Altınküre Teknokent"
     },
     {
@@ -8178,15 +7827,6 @@
         "SözleşmeBitişTarihi": "",
         "KayıtDurumu": "Aktif",
         "SonTutar": 171023,
-        "Okul": "Altınküre Teknokent"
-    },
-    {
-        "ÖğrenciAdSoyad": "UMUT ÇAYKIRAN",
-        "Sınıf": 9,
-        "SözleşmeTarihi": "24.6.2025",
-        "SözleşmeBitişTarihi": "28.7.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 500,
         "Okul": "Altınküre Teknokent"
     },
     {
@@ -8379,15 +8019,6 @@
         "Okul": "Altınküre Teknokent"
     },
     {
-        "ÖğrenciAdSoyad": "DORUK DİNÇEL",
-        "Sınıf": 9,
-        "SözleşmeTarihi": "1.7.2025",
-        "SözleşmeBitişTarihi": "4.7.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 0,
-        "Okul": "Altınküre Teknokent"
-    },
-    {
         "ÖğrenciAdSoyad": "BATUHAN YILDIRIM",
         "Sınıf": 9,
         "SözleşmeTarihi": "1.7.2025",
@@ -8440,15 +8071,6 @@
         "KayıtDurumu": "Aktif",
         "SonTutar": 0,
         "Okul": "Mefkure Plus"
-    },
-    {
-        "ÖğrenciAdSoyad": "FATİH SİNAN BALCI",
-        "Sınıf": 9,
-        "SözleşmeTarihi": "5.7.2025",
-        "SözleşmeBitişTarihi": "7.7.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 500,
-        "Okul": "Altınküre Teknokent"
     },
     {
         "ÖğrenciAdSoyad": "AYŞE EZGİ KARTAL",
@@ -8512,15 +8134,6 @@
         "KayıtDurumu": "Aktif",
         "SonTutar": 160000,
         "Okul": "Mefkure Plus"
-    },
-    {
-        "ÖğrenciAdSoyad": "MİRAÇ CAN TURAK",
-        "Sınıf": 8,
-        "SözleşmeTarihi": "7.7.2025",
-        "SözleşmeBitişTarihi": "2.10.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 26000,
-        "Okul": "Mefkure LGS"
     },
     {
         "ÖğrenciAdSoyad": "AHMET BURAK ÖKSÜZ",
@@ -8721,15 +8334,6 @@
         "Okul": "Altınküre Teknokent"
     },
     {
-        "ÖğrenciAdSoyad": "TEOMAN RÜZGAR VELA",
-        "Sınıf": 9,
-        "SözleşmeTarihi": "16.7.2025",
-        "SözleşmeBitişTarihi": "18.7.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 0,
-        "Okul": "Altınküre Teknokent"
-    },
-    {
         "ÖğrenciAdSoyad": "BİLAL KAYRA ARDA",
         "Sınıf": 9,
         "SözleşmeTarihi": "16.7.2025",
@@ -8834,7 +8438,7 @@
         "SözleşmeTarihi": "18.7.2025",
         "SözleşmeBitişTarihi": "",
         "KayıtDurumu": "Aktif",
-        "SonTutar": 250000,
+        "SonTutar": 280000,
         "Okul": "Altınküre Ortaokul"
     },
     {
@@ -8955,15 +8559,6 @@
         "Okul": "Altınküre Anadolu Lisesi"
     },
     {
-        "ÖğrenciAdSoyad": "ERVA YASEMİN YAVUZ",
-        "Sınıf": 9,
-        "SözleşmeTarihi": "21.7.2025",
-        "SözleşmeBitişTarihi": "14.8.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 0,
-        "Okul": "Altınküre Fen Lisesi"
-    },
-    {
         "ÖğrenciAdSoyad": "ALP EREN ÖZDEMİR",
         "Sınıf": 9,
         "SözleşmeTarihi": "21.7.2025",
@@ -8996,7 +8591,7 @@
         "SözleşmeTarihi": "21.7.2025",
         "SözleşmeBitişTarihi": "",
         "KayıtDurumu": "Aktif",
-        "SonTutar": 90000,
+        "SonTutar": 116000,
         "Okul": "Mefkure LGS"
     },
     {
@@ -9180,15 +8775,6 @@
         "Okul": "Altınküre Teknokent"
     },
     {
-        "ÖğrenciAdSoyad": "MUHAMMED RAŞİT CEVAHİR",
-        "Sınıf": 9,
-        "SözleşmeTarihi": "24.7.2025",
-        "SözleşmeBitişTarihi": "26.7.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 0,
-        "Okul": "Altınküre Teknokent"
-    },
-    {
         "ÖğrenciAdSoyad": "HÜMEYRA DÖNMEZ",
         "Sınıf": 9,
         "SözleşmeTarihi": "24.7.2025",
@@ -9214,15 +8800,6 @@
         "KayıtDurumu": "Aktif",
         "SonTutar": 180000,
         "Okul": "Altınküre Anaokulu"
-    },
-    {
-        "ÖğrenciAdSoyad": "HÜMA TÜTENKAN",
-        "Sınıf": 9,
-        "SözleşmeTarihi": "25.7.2025",
-        "SözleşmeBitişTarihi": "6.8.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 0,
-        "Okul": "Altınküre Fen Lisesi"
     },
     {
         "ÖğrenciAdSoyad": "KEMAL YİĞİT ÇAKMAK",
@@ -9306,15 +8883,6 @@
         "Okul": "Altınküre Anaokulu"
     },
     {
-        "ÖğrenciAdSoyad": "ASIM ASLAN BAŞAR",
-        "Sınıf": "Ana Sınıfı",
-        "SözleşmeTarihi": "28.7.2025",
-        "SözleşmeBitişTarihi": "6.8.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 0,
-        "Okul": "Altınküre Anaokulu"
-    },
-    {
         "ÖğrenciAdSoyad": "ÖMER EREN ERDEM",
         "Sınıf": "MOOD",
         "SözleşmeTarihi": "28.7.2025",
@@ -9367,15 +8935,6 @@
         "KayıtDurumu": "Aktif",
         "SonTutar": 96023,
         "Okul": "Altınküre Teknokent"
-    },
-    {
-        "ÖğrenciAdSoyad": "YAĞIZ YİĞİT ÇALLI",
-        "Sınıf": "Mezun",
-        "SözleşmeTarihi": "29.7.2025",
-        "SözleşmeBitişTarihi": "26.09.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 35000,
-        "Okul": "Mefkure Plus"
     },
     {
         "ÖğrenciAdSoyad": "EFLAL FEYZA TURAN",
@@ -9446,7 +9005,7 @@
         "SözleşmeTarihi": "30.7.2025",
         "SözleşmeBitişTarihi": "",
         "KayıtDurumu": "Aktif",
-        "SonTutar": 175000,
+        "SonTutar": 210000,
         "Okul": "Mefkure Plus"
     },
     {
@@ -9457,15 +9016,6 @@
         "KayıtDurumu": "Aktif",
         "SonTutar": 270000,
         "Okul": "Altınküre Anadolu Lisesi"
-    },
-    {
-        "ÖğrenciAdSoyad": "ZÜMRA KELEŞ",
-        "Sınıf": "10",
-        "SözleşmeTarihi": "31.7.2025",
-        "SözleşmeBitişTarihi": "6.8.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 0,
-        "Okul": "Altınküre Teknokent"
     },
     {
         "ÖğrenciAdSoyad": "ESNEM SU TUĞRUL",
@@ -9873,15 +9423,6 @@
         "Okul": "Altınküre İlkokul"
     },
     {
-        "ÖğrenciAdSoyad": "KEREM CAN KARS",
-        "Sınıf": "10",
-        "SözleşmeTarihi": "7.8.2025",
-        "SözleşmeBitişTarihi": "21.8.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 0,
-        "Okul": "Altınküre Teknokent"
-    },
-    {
         "ÖğrenciAdSoyad": "ZEYNEP OKUŞ",
         "Sınıf": "11",
         "SözleşmeTarihi": "8.8.2025",
@@ -9932,16 +9473,7 @@
         "SözleşmeTarihi": "8.8.2025",
         "SözleşmeBitişTarihi": "",
         "KayıtDurumu": "Aktif",
-        "SonTutar": 120000,
-        "Okul": "Mefkure Plus"
-    },
-    {
-        "ÖğrenciAdSoyad": "MELEK ERDEM",
-        "Sınıf": "Mezun",
-        "SözleşmeTarihi": "8.8.2025",
-        "SözleşmeBitişTarihi": "10.11.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 32000,
+        "SonTutar": 152000,
         "Okul": "Mefkure Plus"
     },
     {
@@ -10203,15 +9735,6 @@
         "SözleşmeBitişTarihi": "",
         "KayıtDurumu": "Aktif",
         "SonTutar": 176023,
-        "Okul": "Altınküre Teknokent"
-    },
-    {
-        "ÖğrenciAdSoyad": "EREN YİĞİT PEKBAL",
-        "Sınıf": 9,
-        "SözleşmeTarihi": "12.8.2025",
-        "SözleşmeBitişTarihi": "21.8.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 0,
         "Okul": "Altınküre Teknokent"
     },
     {
@@ -10593,15 +10116,6 @@
         "Okul": "Mefkure Plus"
     },
     {
-        "ÖğrenciAdSoyad": "ASEL EDA KARA",
-        "Sınıf": "Ana Sınıfı",
-        "SözleşmeTarihi": "18.8.2025",
-        "SözleşmeBitişTarihi": "2.9.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 0,
-        "Okul": "Altınküre Anaokulu"
-    },
-    {
         "ÖğrenciAdSoyad": "YUSUF SEHA SICAK",
         "Sınıf": 3,
         "SözleşmeTarihi": "18.8.2025",
@@ -10764,15 +10278,6 @@
         "Okul": "MEFKURE Vip"
     },
     {
-        "ÖğrenciAdSoyad": "ADA TAŞPINAR",
-        "Sınıf": "Mezun",
-        "SözleşmeTarihi": "20.8.2025",
-        "SözleşmeBitişTarihi": "22.8.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 0,
-        "Okul": "Altınküre Akademi"
-    },
-    {
         "ÖğrenciAdSoyad": "BİLAL KAAN GÜVE",
         "Sınıf": "11",
         "SözleşmeTarihi": "20.8.2025",
@@ -10780,15 +10285,6 @@
         "KayıtDurumu": "Aktif",
         "SonTutar": 280000,
         "Okul": "Altınküre Anadolu Lisesi"
-    },
-    {
-        "ÖğrenciAdSoyad": "EYLÜL ELİF ZAFER",
-        "Sınıf": 1,
-        "SözleşmeTarihi": "20.8.2025",
-        "SözleşmeBitişTarihi": "15.9.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 0,
-        "Okul": "Altınküre İlkokul"
     },
     {
         "ÖğrenciAdSoyad": "KEREM FURKAN ÇETİNKAYA",
@@ -11005,15 +10501,6 @@
         "KayıtDurumu": "Aktif",
         "SonTutar": 250000,
         "Okul": "Altınküre İlkokul"
-    },
-    {
-        "ÖğrenciAdSoyad": "SERDAR AKYURT",
-        "Sınıf": 9,
-        "SözleşmeTarihi": "22.8.2025",
-        "SözleşmeBitişTarihi": "26.8.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 0,
-        "Okul": "Altınküre Teknokent"
     },
     {
         "ÖğrenciAdSoyad": "KADİR EKSİLMEZ",
@@ -11664,15 +11151,6 @@
         "Okul": "Altınküre İlkokul"
     },
     {
-        "ÖğrenciAdSoyad": "UMUT BEYAZADAM",
-        "Sınıf": 1,
-        "SözleşmeTarihi": "1.9.2025",
-        "SözleşmeBitişTarihi": "8.9.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 0,
-        "Okul": "Altınküre İlkokul"
-    },
-    {
         "ÖğrenciAdSoyad": "KEREM ÇETİN",
         "Sınıf": 8,
         "SözleşmeTarihi": "1.9.2025",
@@ -11752,15 +11230,6 @@
         "KayıtDurumu": "Aktif",
         "SonTutar": 17000,
         "Okul": "Mefkure Plus"
-    },
-    {
-        "ÖğrenciAdSoyad": "ESLEM GÜLER",
-        "Sınıf": "12",
-        "SözleşmeTarihi": "2.9.2025",
-        "SözleşmeBitişTarihi": "2.9.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 0,
-        "Okul": "Altınküre Anadolu Lisesi"
     },
     {
         "ÖğrenciAdSoyad": "MUHAMMED KERİM PEHLİVAN",
@@ -11887,15 +11356,6 @@
         "KayıtDurumu": "Aktif",
         "SonTutar": 130000,
         "Okul": "Mefkure Plus"
-    },
-    {
-        "ÖğrenciAdSoyad": "AYSİMA MELEK TIĞZEYBEK",
-        "Sınıf": "Mezun",
-        "SözleşmeTarihi": "3.9.2025",
-        "SözleşmeBitişTarihi": "3.10.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 24000,
-        "Okul": "MEFKURE Vip"
     },
     {
         "ÖğrenciAdSoyad": "DOĞUKAN SOYKAN",
@@ -12065,7 +11525,7 @@
         "SözleşmeTarihi": "5.9.2025",
         "SözleşmeBitişTarihi": "",
         "KayıtDurumu": "Aktif",
-        "SonTutar": 144000,
+        "SonTutar": 168000,
         "Okul": "MEFKURE Vip"
     },
     {
@@ -12074,7 +11534,7 @@
         "SözleşmeTarihi": "5.9.2025",
         "SözleşmeBitişTarihi": "",
         "KayıtDurumu": "Aktif",
-        "SonTutar": 150000,
+        "SonTutar": 168000,
         "Okul": "Mefkure Plus"
     },
     {
@@ -12085,15 +11545,6 @@
         "KayıtDurumu": "Aktif",
         "SonTutar": 215000,
         "Okul": "MEFKURE Vip"
-    },
-    {
-        "ÖğrenciAdSoyad": "HAMZA BUDAK",
-        "Sınıf": "Mezun",
-        "SözleşmeTarihi": "5.9.2025",
-        "SözleşmeBitişTarihi": "13.10.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 18000,
-        "Okul": "Mefkure Plus"
     },
     {
         "ÖğrenciAdSoyad": "ÖMER KAĞAN NAR",
@@ -12632,16 +12083,7 @@
         "SözleşmeTarihi": "12.9.2025",
         "SözleşmeBitişTarihi": "",
         "KayıtDurumu": "Aktif",
-        "SonTutar": 165000,
-        "Okul": "Mefkure Plus"
-    },
-    {
-        "ÖğrenciAdSoyad": "AYŞENAZ DAYIOĞLU",
-        "Sınıf": "Mezun",
-        "SözleşmeTarihi": "12.9.2025",
-        "SözleşmeBitişTarihi": "21.10.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 21875,
+        "SonTutar": 186875,
         "Okul": "Mefkure Plus"
     },
     {
@@ -13347,15 +12789,6 @@
         "Okul": "MEFKURE Vip"
     },
     {
-        "ÖğrenciAdSoyad": "BERRE GÖBEKCİOĞLU",
-        "Sınıf": "11",
-        "SözleşmeTarihi": "4.10.2025",
-        "SözleşmeBitişTarihi": "1.11.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 7500,
-        "Okul": "Mefkure Plus"
-    },
-    {
         "ÖğrenciAdSoyad": "TUANA CEYLİN KARAYEL",
         "Sınıf": "12",
         "SözleşmeTarihi": "4.10.2025",
@@ -13388,7 +12821,7 @@
         "SözleşmeTarihi": "6.10.2025",
         "SözleşmeBitişTarihi": "",
         "KayıtDurumu": "Aktif",
-        "SonTutar": 90000,
+        "SonTutar": 97500,
         "Okul": "Mefkure Plus"
     },
     {
@@ -13599,15 +13032,6 @@
         "Okul": "Mefkure Plus"
     },
     {
-        "ÖğrenciAdSoyad": "MEHMET CAN BEKİRLER",
-        "Sınıf": "MOOD",
-        "SözleşmeTarihi": "21.10.2025",
-        "SözleşmeBitişTarihi": "20.12.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 10000,
-        "Okul": "Mefkure Plus"
-    },
-    {
         "ÖğrenciAdSoyad": "GÜLCE MEYRA UYSAL",
         "Sınıf": "Ana Sınıfı",
         "SözleşmeTarihi": "23.10.2025",
@@ -13644,15 +13068,6 @@
         "Okul": "Mefkure Plus"
     },
     {
-        "ÖğrenciAdSoyad": "NAZ KOCACENK",
-        "Sınıf": "MOOD",
-        "SözleşmeTarihi": "25.10.2025",
-        "SözleşmeBitişTarihi": "20.12.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 10000,
-        "Okul": "Mefkure Plus"
-    },
-    {
         "ÖğrenciAdSoyad": "MİNA ORGUN",
         "Sınıf": "11",
         "SözleşmeTarihi": "28.10.2025",
@@ -13680,15 +13095,6 @@
         "Okul": "MEFKURE Vip"
     },
     {
-        "ÖğrenciAdSoyad": "RAVZANUR PALGIN",
-        "Sınıf": "11",
-        "SözleşmeTarihi": "30.10.2025",
-        "SözleşmeBitişTarihi": "11.12.2025",
-        "KayıtDurumu": "Pasif",
-        "SonTutar": 10000,
-        "Okul": "Mefkure Plus"
-    },
-    {
         "ÖğrenciAdSoyad": "ESLEM HİLAL ÇELİK",
         "Sınıf": "11",
         "SözleşmeTarihi": "30.10.2025",
@@ -13703,7 +13109,7 @@
         "SözleşmeTarihi": "30.10.2025",
         "SözleşmeBitişTarihi": "",
         "KayıtDurumu": "Aktif",
-        "SonTutar": 12000,
+        "SonTutar": 22000,
         "Okul": "Mefkure Plus"
     },
     {
@@ -13721,7 +13127,7 @@
         "SözleşmeTarihi": "1.11.2025",
         "SözleşmeBitişTarihi": "",
         "KayıtDurumu": "Aktif",
-        "SonTutar": 35000,
+        "SonTutar": 55000,
         "Okul": "Mefkure Plus"
     },
     {

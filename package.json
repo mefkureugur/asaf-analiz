@@ -11,16 +11,19 @@
     "deploy": "npm run build && firebase deploy"
   },
   "dependencies": {
+    "canvas-confetti": "^1.9.4",
     "firebase": "^12.7.0",
     "lucide-react": "^0.400.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.11.0",
     "recharts": "^3.7.0",
+    "sweetalert2": "^11.26.18",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "@types/canvas-confetti": "^1.9.0",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
