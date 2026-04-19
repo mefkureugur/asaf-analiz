@@ -10,12 +10,11 @@ import { estimateSeasonalYearlyExpensePartial } from "./financeCalculator";
 
 /**
  * Finansal verileri işler ve Firestore'da kalıcı bir "snapshot" oluşturur.
- * GÜNCELLEME: Kategori (Maaş, SGK vb.) bazlı bağımsız döküman yapısı.
  */
 export async function saveFinanceSnapshot(
   year: number,
   unit: string, 
-  input: FinanceInput & { category?: string } // Kategori bilgisini ekledik
+  input: FinanceInput & { category?: string } 
 ) {
   // 1. Toplam Yıllık Tahmini Gelir
   const incomeTotal =
@@ -46,11 +45,10 @@ export async function saveFinanceSnapshot(
 
   // 6. Hangi Ayların Verisi Girildi?
   const filledMonths = input.expenses
-    .map((v, i) => (v > 0 ? i : null))
+    .map((v, i) => (Number(v) > 0 ? i : null))
     .filter((v) => v !== null);
 
-  // 🛡️ ZIRH: Deterministik ID Yapısı - Kategoriyi ID'ye ekleyerek çakışmayı bitiriyoruz
-  // Örn: "2026_Mefkure YKS_Maaşlar"
+  // Deterministik ID Yapısı
   const currentCategory = input.category || "Toplam Giderler";
   const snapshotId = `${year}_${unit}_${currentCategory}`;
 
@@ -60,14 +58,18 @@ export async function saveFinanceSnapshot(
       {
         year,
         unit,
-        category: currentCategory, // Ana sayfanın okuması için bu mühür şart
+        category: currentCategory, 
         revenueTotal: incomeTotal,
+
+        // 🔥 KRİTİK DÜZELTME: BURAYI EKLEDİK! 
+        // Artık Ocak, Şubat gibi aylar bağımsız dizi olarak Firebase'e akacak.
+        expenses: input.expenses, 
 
         expenseRunRate,
         expenseEstimated: seasonal.yearlyTotal,
 
         expenseRealSoFar,
-        method: "seasonal_v3", // Versiyonu yükselttik
+        method: "seasonal_v4", // Versiyonu güncelledik
         filledMonths,
         profitEstimate,
         profitMargin,
@@ -75,7 +77,7 @@ export async function saveFinanceSnapshot(
       },
       { merge: true }
     );
-    console.log(`✅ ${unit} - ${currentCategory} özeti Firebase'e mühürlendi.`);
+    console.log(`✅ ${unit} - ${currentCategory} (Dizi Dahil) Firebase'e mühürlendi.`);
   } catch (error) {
     console.error(`❌ Snapshot hatası:`, error);
     throw error;

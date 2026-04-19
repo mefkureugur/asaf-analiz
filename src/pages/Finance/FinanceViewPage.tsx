@@ -15,9 +15,7 @@ interface FinansRecord {
 export default function FinanceViewPage() {
   const navigate = useNavigate();
   
-  // 🚀 BAŞLANGIÇ DEĞERİ: Sayfa açıldığında direkt Mefkure YKS gelir
   const [selectedKurum, setSelectedKurum] = useState<string>("Mefkure YKS");
-  
   const [selectedCategory, setSelectedCategory] = useState<string>("Toplam Giderler");
   const [selectedDonem, setSelectedDonem] = useState<string>("2025-2026");
   const [activePage, setActivePage] = useState<number>(1);
@@ -32,7 +30,6 @@ export default function FinanceViewPage() {
 
   const rawData = asafFinansRaw as FinansRecord[];
   
-  // 🚀 ŞUBE LİSTESİ: Şubeler üstte, "Tüm Kurumlar" en altta mühürlendi
   const BRANCH_LIST = [
     "Mefkure YKS", 
     "Mefkure LGS", 
@@ -46,6 +43,7 @@ export default function FinanceViewPage() {
 
   useEffect(() => {
     const targetYear = parseInt(selectedDonem.split('-')[1]);
+    // 🔥 ZIRH: Ocak sonrası agregasyon için filtreyi genişlettik
     const q = query(collection(db, "financeSnapshots"), where("year", "==", targetYear));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -64,7 +62,7 @@ export default function FinanceViewPage() {
     return `₺${Math.round(num).toLocaleString("tr-TR")}`;
   };
 
-  // 🛡️ KAR ANALİZ MOTORU - TÜM VERİLER VE HESAPLAMALAR KORUNDU
+  // 🛡️ KAR ANALİZ MOTORU - AY BAZLI RADİKAL DÜZELTME
   const { chartData, avgGider, tahminiYilSonu, tahminiKar, karYuzdesi } = useMemo(() => {
     const ayFull = ["Ağustos", "Eylül", "Ekim", "Kasım", "Aralık", "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz"];
     
@@ -74,30 +72,35 @@ export default function FinanceViewPage() {
 
     const processed = ayFull.map((ay, index) => {
       let ayToplam = 0;
-      if (index <= 4) {
+      if (index <= 4) { // Ağustos - Aralık (JSON)
         const jsonEntries = rawData.filter(item => 
           item.Dönem === selectedDonem && item.Alan === selectedCategory && 
           (selectedKurum === "Tüm Kurumlar" ? true : item.Kurum === selectedKurum)
         );
         ayToplam = jsonEntries.reduce((acc, curr) => acc + parseAmount(curr[ay]), 0);
-      } else {
+      } else { // Ocak - Temmuz (Firebase)
         const fbEntries = firebaseData.filter(d => 
           (selectedKurum === "Tüm Kurumlar" ? true : d.unit === selectedKurum) &&
           (d.category === selectedCategory)
         );
+        
         fbEntries.forEach(d => {
-          if (d.filledMonths && d.filledMonths.includes(index)) {
-             ayToplam += (Number(d.expenseRealSoFar || 0) / d.filledMonths.length);
+          // 🔥 KRİTİK NOKTA: Ocak ve Şubat'ı ayırmak için array kontrolü yapıyoruz
+          if (d.expenses && d.expenses[index] !== undefined && d.expenses[index] > 0) {
+              // Eğer yeni sistemle (ay ay) girildiyse direkt o ayın parasını al
+              ayToplam += Number(d.expenses[index]);
+          } else if (d.filledMonths && d.filledMonths.includes(index)) {
+              // Eğer eski sistemle (toplam paket) girildiyse mecburen böl
+              ayToplam += (Number(d.expenseRealSoFar || 0) / d.filledMonths.length);
           }
         });
       }
       return { name: ay, tutar: Math.round(ayToplam), label: ayToplam > 0 ? `₺${(ayToplam / 1000000).toFixed(1)}M` : "" };
     });
 
-    const doluAylar = processed.filter(d => d.tutar > 0);
+    const doluAylar = processed.filter(d => d.tutar > 1000);
     const ortalama = doluAylar.length > 0 ? doluAylar.reduce((a, b) => a + b.tutar, 0) / doluAylar.length : 0;
     const yilSonuGider = ortalama * 12;
-    
     const kar = currentCiro - yilSonuGider;
     const yuzde = currentCiro > 0 ? (kar / currentCiro) * 100 : 0;
 

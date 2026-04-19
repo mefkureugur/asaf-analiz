@@ -15,6 +15,7 @@ export default function StudentList() {
   const [firebaseRecords, setFirebaseRecords] = useState<any[]>([]);
   const [editingStudent, setEditingStudent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState(""); // 🔍 Arama state'i
 
   // 🎯 Hafızadaki Tam Yetki ve Sınıf Yapısı
   const hierarchy: any = {
@@ -55,20 +56,30 @@ export default function StudentList() {
   // 🛡️ SIRALAMA VE FİLTRELEME MOTORU
   const filteredList = useMemo(() => {
     let list = firebaseRecords.filter(r => {
+      // Sadece manuel kayıtlar
       if (r.source !== "manual") return false;
-      if (user?.role?.toLowerCase() === 'admin') return true;
       
-      const rB = normalize(r.Okul || "");
-      return userSettings.branches.some((mb: string) => normalize(mb) === rB);
+      // Yetki Kontrolü
+      const isAuthorized = user?.role?.toLowerCase() === 'admin' || 
+                          userSettings.branches.some((mb: string) => normalize(mb) === normalize(r.Okul || ""));
+      
+      if (!isAuthorized) return false;
+
+      // 🔍 Arama Filtresi
+      if (searchTerm) {
+        return normalize(r.studentName).includes(normalize(searchTerm));
+      }
+
+      return true;
     });
 
-    // 🚀 SIRALAMA: En yeni eklenenden eskiye doğru (Tarih bazlı ters sıralama)
+    // 🚀 SIRALAMA: En yeni eklenenden eskiye doğru
     return list.sort((a, b) => {
       const dateA = new Date(a.SözleşmeTarihi?.split('.').reverse().join('-')).getTime() || 0;
       const dateB = new Date(b.SözleşmeTarihi?.split('.').reverse().join('-')).getTime() || 0;
-      return dateB - dateA; // Büyük olan (yeni) üste gelir
+      return dateB - dateA; 
     });
-  }, [firebaseRecords, user, userSettings]);
+  }, [firebaseRecords, user, userSettings, searchTerm]);
 
   const handleUpdate = async (e: any) => {
     e.preventDefault();
@@ -95,6 +106,17 @@ export default function StudentList() {
       <header style={{ marginBottom: "20px", borderLeft: "4px solid #38bdf8", paddingLeft: "15px" }}>
         <h2 style={{ fontSize: "1.3rem", fontWeight: 800 }}>✍️ Manüel Kayıt Yönetimi</h2>
       </header>
+
+      {/* 🔍 ARAMA INPUTU */}
+      <div style={{ marginBottom: "15px" }}>
+        <input
+          type="text"
+          placeholder="Öğrenci adı ile ara..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={searchInputStyle}
+        />
+      </div>
       
       <div style={{ display: "grid", gap: "10px" }}>
         {filteredList.map((s) => (
@@ -102,7 +124,6 @@ export default function StudentList() {
             <div style={{ flex: 1 }}>
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                 <div style={{ fontWeight: 700 }}>{s.studentName}</div>
-                {/* 🚀 TARİH BADGE: İsmin hemen yanında kayıt tarihi */}
                 <span style={dateBadge}>{s.SözleşmeTarihi}</span>
               </div>
               <div style={{ fontSize: "0.75rem", color: "#94a3b8", marginTop: "4px" }}>
@@ -115,6 +136,9 @@ export default function StudentList() {
             </div>
           </div>
         ))}
+        {filteredList.length === 0 && (
+          <div style={{ textAlign: "center", padding: "20px", color: "#64748b" }}>Kayıt bulunamadı.</div>
+        )}
       </div>
 
       {editingStudent && (
@@ -173,6 +197,7 @@ export default function StudentList() {
 }
 
 // STİLLER
+const searchInputStyle: any = { width: "100%", padding: "12px", background: "#1e293b", border: "1px solid #334155", color: "white", borderRadius: "10px", fontSize: "1rem", outline: "none", boxSizing: "border-box" };
 const cardStyle: any = { background: "#111827", padding: "15px", borderRadius: "12px", border: "1px solid #1f2937", display: "flex", alignItems: "center", gap: "10px" };
 const dateBadge: any = { background: "rgba(56, 189, 248, 0.1)", color: "#38bdf8", padding: "2px 8px", borderRadius: "6px", fontSize: "0.65rem", fontWeight: 700 };
 const btnEdit: any = { background: "#3b82f6", color: "white", border: "none", padding: "8px 14px", borderRadius: "8px", cursor: "pointer", fontWeight: 600 };

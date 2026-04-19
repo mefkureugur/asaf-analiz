@@ -50,7 +50,9 @@ export default function DailyEnrollmentReport() {
 
     const userKey = superNormalize(user?.branchId);
     const allowedKeywords = mapping[userKey] || [userKey];
-    const branchGroups: Record<string, { dailyTotal: number, overallTotal: number, rows: any[] }> = {};
+    
+    // KRİTİK DÜZELTME: Gruplama yapısı normalize edilmiş isim üzerinden kuruldu
+    const branchGroups: Record<string, { displayTitle: string, dailyTotal: number, overallTotal: number, rows: any[] }> = {};
 
     all.forEach((r: any) => {
       const bNameHam = (r.Okul || r.subeAd || "").trim();
@@ -64,10 +66,23 @@ export default function DailyEnrollmentReport() {
       if (!isAllowed) return;
 
       const isToday = cDate.includes(targetDateShort) || cDate.includes(targetDateFull);
-      const groupKey = user?.role === 'admin' ? bNameHam : user?.branchId;
       
-      if (!branchGroups[groupKey]) branchGroups[groupKey] = { dailyTotal: 0, overallTotal: 0, rows: [] };
-      let existingRow = branchGroups[groupKey].rows.find(row => row.sube === bNameHam && row.sinif === cls);
+      // Şubeleri birleştirmek için normalize edilmiş ismi kullanıyoruz
+      const groupKey = user?.role === 'admin' ? bNameNorm : userKey;
+      
+      if (!branchGroups[groupKey]) {
+        branchGroups[groupKey] = { 
+          displayTitle: bNameHam, // İlk rastlanan orijinal ismi başlık yapalım
+          dailyTotal: 0, 
+          overallTotal: 0, 
+          rows: [] 
+        };
+      }
+
+      // Aynı grup içindeki alt şubeleri ve sınıfları bulalım
+      let existingRow = branchGroups[groupKey].rows.find(row => 
+        superNormalize(row.sube) === bNameNorm && row.sinif === cls
+      );
       
       if (existingRow) {
         existingRow.overall++;
@@ -75,6 +90,7 @@ export default function DailyEnrollmentReport() {
       } else {
         branchGroups[groupKey].rows.push({ sube: bNameHam, sinif: cls, daily: isToday ? 1 : 0, overall: 1 });
       }
+      
       branchGroups[groupKey].overallTotal++;
       if (isToday) branchGroups[groupKey].dailyTotal++;
     });
@@ -117,9 +133,9 @@ export default function DailyEnrollmentReport() {
         </div>
       </div>
 
-      {reportData.branches.map(([groupName, bData]) => (
-        <div key={groupName} style={branchContainer}>
-          <div style={branchTitle}><School size={18} /> {groupName}</div>
+      {reportData.branches.map(([groupKey, bData]) => (
+        <div key={groupKey} style={branchContainer}>
+          <div style={branchTitle}><School size={18} /> {bData.displayTitle}</div>
           <div style={{ overflowX: "auto" }}>
             <table style={tableStyle}>
               <thead>
@@ -132,8 +148,7 @@ export default function DailyEnrollmentReport() {
               </thead>
               <tbody>
                 {bData.rows.map((row, idx) => {
-                  // 🚀 KRİTİK SADELEŞTİRME: Aynı şube ismi üst üste gelirse gösterme
-                  const isFirstOfBranch = idx === 0 || bData.rows[idx - 1].sube !== row.sube;
+                  const isFirstOfBranch = idx === 0 || superNormalize(bData.rows[idx - 1].sube) !== superNormalize(row.sube);
                   
                   return (
                     <tr key={`${row.sube}-${row.sinif}`} style={tableRow(row.daily > 0)}>

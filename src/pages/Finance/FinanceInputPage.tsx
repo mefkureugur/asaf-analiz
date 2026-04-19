@@ -1,5 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { collection, query, onSnapshot } from "firebase/firestore"; // 🔥 Senkronizasyon için
+import { db } from "../../firebase"; // 🔥 DB bağlantısı
 import { TrendingUp, Calculator, ChevronDown, Save, ArrowLeft, Database, Edit3 } from "lucide-react";
 import { saveFinanceSnapshot } from "../../services/financeSnapshot.service";
 import { loadFinance, saveFinance } from "../../store/FinanceStore";
@@ -38,6 +40,39 @@ export default function FinanceInputPage() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // ☁️ BULUT SENKRONİZASYON MOTORU
+  // Bu blok sayesinde telefon ve bilgisayar birbirini tanır.
+  useEffect(() => {
+    const q = query(collection(db, "financeSnapshots"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const remoteData: any = {};
+      
+      snapshot.docs.forEach(doc => {
+        const data = doc.data();
+        const { unit, category, expenses, revenueTotal } = data;
+        
+        if (!remoteData[unit]) remoteData[unit] = {};
+        
+        // Firebase'deki veriyi UI'ın beklediği formata mühürle
+        const targetCategory = category === "Ciro" ? "Ciro" : category;
+        remoteData[unit][targetCategory] = {
+          expenses: expenses || Array(12).fill(0),
+          income: { student: revenueTotal || 0, food: 0, other: 0 }
+        };
+      });
+
+      if (Object.keys(remoteData).length > 0) {
+        setFinance(prev => {
+            const newState = { ...prev, ...remoteData };
+            saveFinance(newState); // Yerel hafızayı (LocalStorage) da güncel tutar
+            return newState;
+        });
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   const formatCurrency = (val: number) => {
     return `₺${Math.round(val).toLocaleString("tr-TR")}`;
   };
@@ -53,16 +88,29 @@ export default function FinanceInputPage() {
   const handleAction = async (targetUnit: string, targetData: FinanceInput, category: string, isRevision: boolean = false) => {
     try {
       setSaving(true);
-      saveFinance(finance as any); 
       const targetYear = parseInt(incomeDonem.split('-')[1]); 
       const dbCategory = category === "Ciro Yönetimi" ? "Ciro" : category;
-      await saveFinanceSnapshot(targetYear, targetUnit, {
-          ...targetData,
-          category: dbCategory, 
-          updatedAt: new Date().toISOString()
-      } as any); 
-      alert(`${targetUnit} - ${dbCategory} (${targetYear}) verileri Firebase'e hatasız mühürlendi!`);
-    } catch (err) { console.error(err); } finally { setSaving(false); }
+
+      const payload = {
+        ...targetData,
+        unit: targetUnit,
+        category: dbCategory,
+        year: targetYear,
+        expenses: targetData.expenses, 
+        expenseRealSoFar: targetData.expenses.reduce((a, b) => a + (Number(b) || 0), 0),
+        filledMonths: targetData.expenses.map((val, idx) => (Number(val) > 0 ? idx : -1)).filter(idx => idx !== -1),
+        updatedAt: new Date().toISOString()
+      };
+
+      await saveFinanceSnapshot(targetYear, targetUnit, payload as any); 
+      
+      alert(`Bulut Senkronizasyonu Başarılı! Tüm cihazlar güncellendi.`);
+    } catch (err) { 
+        console.error(err); 
+        alert("Bağlantı hatası!");
+    } finally { 
+        setSaving(false); 
+    }
   };
 
   return (
@@ -73,7 +121,7 @@ export default function FinanceInputPage() {
 
       <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : (window.innerWidth < 1024 ? "1fr" : "400px 1fr"), gap: 20, marginTop: 20 }}>
         
-        {/* 🛡️ SOL PANEL: CİRO YÖNETİMİ - MOBİL DENGELENDİ */}
+        {/* 🛡️ SOL PANEL: CİRO YÖNETİMİ */}
         <div style={{ ...cardStyle, padding: isMobile ? "20px 15px" : "24px" }}>
           <div style={{ ...headerStyle, marginBottom: 20 }}><TrendingUp size={16} color="#3b82f6"/> CİRO YÖNETİMİ</div>
           
@@ -120,7 +168,7 @@ export default function FinanceInputPage() {
           </div>
         </div>
 
-        {/* 🛡️ SAĞ PANEL: GİDERLER - MOBİL DENGELENDİ */}
+        {/* 🛡️ SAĞ PANEL: GİDERLER */}
         <div style={{ ...cardStyle, padding: isMobile ? "20px 15px" : "24px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: isMobile ? "flex-start" : "center", marginBottom: 20, flexDirection: isMobile ? "column" : "row", gap: 15 }}>
             <div style={headerStyle}><Calculator size={16} color="#ef4444"/> GİDER GİRİŞİ</div>
@@ -176,11 +224,10 @@ export default function FinanceInputPage() {
   );
 }
 
-// 🛡️ TASARIM PARAMETRELERİ (Maksimum Uyumluluk İçin Sabitlendi)
 const cardStyle = { background: "#0f172a", border: "1px solid #1e2937", borderRadius: 16, boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.4)" };
 const inputStyle = { background: "#020617", border: "1px solid #334155", borderRadius: 10, padding: "12px", color: "white", outline: "none", fontSize: "0.9rem" };
 const mainSel = { background: "#020617", border: "1px solid #1e2937", color: "white", padding: "10px 35px 10px 15px", borderRadius: 10, outline: 'none', appearance: 'none' as const, WebkitAppearance: 'none' as const, fontWeight: 700, width: '100%', fontSize: "0.8rem", cursor: "pointer" };
-const typeSel = { background: "#1e293b", border: "1px solid #334155", color: "#3b82f6", padding: "10px 35px 10px 15px", borderRadius: 10, outline: 'none', appearance: 'none' as const, WebkitAppearance: 'none' as const, fontWeight: 800, fontSize: "0.75rem", cursor: "pointer", width: '100%' };
+const typeSel = { background: "#1e293b", border: "1px solid #334155", color: "#3b82f6", padding: "10px 40px 10px 15px", borderRadius: 10, outline: 'none', appearance: 'none' as const, WebkitAppearance: 'none' as const, fontWeight: 800, fontSize: "0.75rem", cursor: "pointer", width: '100%' };
 const chevronStyle = { position: "absolute" as const, right: 12, top: "50%", transform: "translateY(-50%)", color: "#64748b", pointerEvents: "none" as const };
 const labelStyle = { fontSize: "0.65rem", fontWeight: 700, color: "#64748b", marginBottom: 6, letterSpacing: "0.05em" };
 const headerStyle = { fontSize: "0.8rem", fontWeight: 800, color: "white", display: "flex", alignItems: "center", gap: 8, letterSpacing: "0.05em" };

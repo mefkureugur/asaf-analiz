@@ -46,8 +46,17 @@ export default function FinanceComparisonPage({ selectedKurum }: { selectedKurum
               const val = rawData.filter(d => (selectedKurum === "Tüm Kurumlar" ? true : d.Kurum === selectedKurum) && d.Dönem === "2025-2026" && d.Alan === alan).reduce((acc, curr) => acc + parseVal(curr[ay]), 0);
               if (val > 0) { total += val; count++; }
             } else {
-              const fb = firebaseData.find(d => fbFilter(d) && d.category === alan);
-              if (fb) { total += (fb.expenseRealSoFar / (fb.filledMonths?.length || 7)); count++; }
+              const dps = firebaseData.filter(d => fbFilter(d) && d.category === alan);
+              let ayBaziDeger = 0;
+              dps.forEach(fb => {
+                // 🔥 ÜST KARTLAR İÇİN DÜZELTME: Bağımsız ay verisi varsa onu al
+                if (fb.expenses && Array.isArray(fb.expenses) && Number(fb.expenses[idx]) > 0) {
+                  ayBaziDeger += Number(fb.expenses[idx]);
+                } else if (fb.filledMonths?.includes(idx)) {
+                  ayBaziDeger += (Number(fb.expenseRealSoFar || 0) / fb.filledMonths.length);
+                }
+              });
+              if (ayBaziDeger > 0) { total += ayBaziDeger; count++; }
             }
           }
         });
@@ -61,14 +70,24 @@ export default function FinanceComparisonPage({ selectedKurum }: { selectedKurum
       const getSum = (is2025: boolean) => {
         if (is2025) return rawData.filter(d => (selectedKurum === "Tüm Kurumlar" ? true : d.Kurum === selectedKurum) && d.Dönem === "2024-2025" && d.Alan === activeCategory).reduce((acc, curr) => acc + parseVal(curr[ay]), 0);
         if (idx <= 4) return rawData.filter(d => (selectedKurum === "Tüm Kurumlar" ? true : d.Kurum === selectedKurum) && d.Dönem === "2025-2026" && d.Alan === activeCategory).reduce((acc, curr) => acc + parseVal(curr[ay]), 0);
-        const fb = firebaseData.find(d => (selectedKurum === "Tüm Kurumlar" ? true : d.unit === selectedKurum) && d.year === 2026 && d.category === activeCategory);
-        return fb?.filledMonths?.includes(idx) ? (fb.expenseRealSoFar / fb.filledMonths.length) : 0;
+        
+        const dps = firebaseData.filter(d => (selectedKurum === "Tüm Kurumlar" ? true : d.unit === selectedKurum) && d.year === 2026 && d.category === activeCategory);
+        let sum = 0;
+        dps.forEach(fb => {
+          // 🔥 GRAFİK ÇUBUKLARI İÇİN DÜZELTME: Ocak ve Şubat'ı birbirinden ayırır
+          if (fb.expenses && Array.isArray(fb.expenses) && Number(fb.expenses[idx]) > 0) {
+            sum += Number(fb.expenses[idx]);
+          } else if (fb.filledMonths?.includes(idx)) {
+            sum += (Number(fb.expenseRealSoFar || 0) / fb.filledMonths.length);
+          }
+        });
+        return sum;
       };
       return { name: ay.substring(0, 3), "2025": Math.round(getSum(true)), "2026": Math.round(getSum(false)) };
     });
 
     return { data2025: getMetrics(2025, true), data2026: getMetrics(2026, false), chart };
-  }, [firebaseData, selectedKurum, activeCategory]);
+  }, [firebaseData, selectedKurum, activeCategory, rawData]);
 
   const activeStats = useMemo(() => {
     const v1 = activeCategory === "Toplam Giderler" ? comparison.data2025.giderAvg : activeCategory === "Maaşlar" ? comparison.data2025.maasAvg : comparison.data2025.sgkAvg;
@@ -81,12 +100,12 @@ export default function FinanceComparisonPage({ selectedKurum }: { selectedKurum
     <div style={{ marginTop: 10, padding: isMobile ? "0 5px" : 0 }}>
       {/* 📊 ÜST ÖZET KARTLARI */}
       <div style={{ ...grid3, gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fit, minmax(350px, 1fr))" }}>
-        <CompCard title="CİRO KIYASLAMA" v1={comparison.data2025.ciro} v2={comparison.data2026.ciro} icon={<TrendingUp size={16}/>} color="#22c55e" format={formatCurrency} isMobile={isMobile} />
+        <CompCard title="CİRO KIYASLAMA" v1={comparison.data2025.ciro} v2={comparison.data2026.ciro} icon={<TrendingUp size={16}/>} color="#22c55e" format={formatCurrency} isMobile={isMobile} isRevenue={true} />
         <CompCard title="TOPLAM GİDER (ORT)" v1={comparison.data2025.giderAvg} v2={comparison.data2026.giderAvg} icon={<Calculator size={16}/>} color="#ef4444" format={formatCurrency} isMobile={isMobile} />
-        <CompCard title="PERSONEL YÜKÜ (ORT)" v1={comparison.data2025.maasAvg + comparison.data2025.sgkAvg} v2={comparison.data2026.maasAvg + comparison.data2026.sgkAvg} icon={<Users size={16}/>} color="#3b82f6" format={formatCurrency} isMobile={isMobile} />
+        <CompCard title="PERSONEL YÜKÜ (ORT)" v1={comparison.data2025.maasAvg + comparison.data2025.sgkAvg} v2={comparison.data2026.maasAvg + comparison.data2026.sgkAvg} icon={<Users size={16}/>} color="#ef4444" format={formatCurrency} isMobile={isMobile} />
       </div>
 
-      {/* 📉 GRAFİK ALANI - MOBİLDE YATAY BAR DÜZENİ */}
+      {/* 📉 GRAFİK ALANI */}
       <div style={{ ...chartWrapper, padding: isMobile ? "15px 5px" : "25px" }}>
         <div style={{ ...headerLayout, flexDirection: isMobile ? "column" : "row", alignItems: isMobile ? "stretch" : "flex-start", gap: isMobile ? 12 : 20 }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -112,44 +131,18 @@ export default function FinanceComparisonPage({ selectedKurum }: { selectedKurum
 
         <div style={{ height: isMobile ? 550 : 400 }}>
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart 
-              data={comparison.chart} 
-              layout={isMobile ? "vertical" : "horizontal"} // 🛡️ Mobilde yatay bar düzenine geçer
-              margin={{ 
-                top: 5, 
-                right: isMobile ? 65 : 10, // Sağdaki rakamlar için pay
-                left: isMobile ? 15 : -25, // Ayların tam okunması için sol pay
-                bottom: 5 
-              }}
-            >
+            <BarChart data={comparison.chart} layout={isMobile ? "vertical" : "horizontal"} margin={{ top: 5, right: isMobile ? 65 : 10, left: isMobile ? 15 : -25, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" horizontal={!isMobile} vertical={isMobile} />
               {isMobile ? (
-                <>
-                  <XAxis type="number" hide />
-                  <YAxis dataKey="name" type="category" stroke="#64748b" fontSize={11} width={50} tickLine={false} axisLine={false} />
-                </>
+                <><XAxis type="number" hide /><YAxis dataKey="name" type="category" stroke="#64748b" fontSize={11} width={50} tickLine={false} axisLine={false} /></>
               ) : (
-                <>
-                  <XAxis dataKey="name" stroke="#64748b" fontSize={11} tickLine={false} />
-                  <YAxis hide />
-                </>
+                <><XAxis dataKey="name" stroke="#64748b" fontSize={11} tickLine={false} /><YAxis hide /></>
               )}
-              
-              <Tooltip 
-                cursor={{fill: '#1e293b', opacity: 0.4}}
-                contentStyle={tooltipStyle} 
-                itemStyle={{ color: '#f8fafc', fontSize: '12px', fontWeight: 600 }} 
-                formatter={(v: any) => [formatCurrency(v), "Tutar"]} 
-              />
+              <Tooltip cursor={{fill: '#1e293b', opacity: 0.4}} contentStyle={tooltipStyle} itemStyle={{ color: '#f8fafc', fontSize: '12px', fontWeight: 600 }} formatter={(v: any) => [formatCurrency(v), "Tutar"]} />
               <Legend verticalAlign="top" align="right" iconType="circle" wrapperStyle={{ paddingBottom: 20, fontSize: isMobile ? '10px' : '11px' }} />
-              
               <Bar name="2025" dataKey="2025" fill="#334155" radius={isMobile ? [0, 4, 4, 0] : [4, 4, 0, 0]} barSize={isMobile ? 12 : 20} />
               <Bar name="2026" dataKey="2026" fill="#3b82f6" radius={isMobile ? [0, 4, 4, 0] : [4, 4, 0, 0]} barSize={isMobile ? 12 : 20}>
-                <LabelList 
-                  dataKey="2026" 
-                  position={isMobile ? "right" : "top"} 
-                  content={(props) => <CustomLabel {...props} isMobile={isMobile} layout={isMobile ? "vertical" : "horizontal"} />} 
-                />
+                <LabelList dataKey="2026" position={isMobile ? "right" : "top"} content={(props) => <CustomLabel {...props} isMobile={isMobile} layout={isMobile ? "vertical" : "horizontal"} />} />
               </Bar>
             </BarChart>
           </ResponsiveContainer>
@@ -163,21 +156,15 @@ function CustomLabel({ x, y, value, width, height, isMobile, layout }: any) {
   if (!value || value === 0) return null;
   const isVertical = layout === "vertical";
   return (
-    <text 
-      x={isVertical ? x + width + 5 : x + width / 2} 
-      y={isVertical ? y + height / 2 + 4 : y - 8} 
-      fill="#94a3b8" 
-      fontSize={isMobile ? 8 : 10} 
-      fontWeight={800} 
-      textAnchor={isVertical ? "start" : "middle"}
-    >
+    <text x={isVertical ? x + width + 5 : x + width / 2} y={isVertical ? y + height / 2 + 4 : y - 8} fill="#94a3b8" fontSize={isMobile ? 8 : 10} fontWeight={800} textAnchor={isVertical ? "start" : "middle"}>
       {`₺${(value / 1000000).toFixed(1)}M`}
     </text>
   );
 }
 
-function CompCard({ title, v1, v2, icon, color, format, isMobile }: any) {
+function CompCard({ title, v1, v2, icon, color, format, isMobile, isRevenue }: any) {
   const diff = v1 === 0 ? 0 : ((v2 - v1) / v1) * 100;
+  const statusColor = isRevenue ? (diff > 0 ? "#22c55e" : "#ef4444") : (diff > 0 ? "#ef4444" : "#22c55e");
   return (
     <div style={{ ...cardStyle, padding: isMobile ? "15px" : "20px" }}>
       <div style={cardHeader}>{icon} {title}</div>
@@ -185,14 +172,13 @@ function CompCard({ title, v1, v2, icon, color, format, isMobile }: any) {
         <div style={{ ...oldVal, fontSize: isMobile ? "0.85rem" : "0.95rem" }}>{format(v1)} <small>2025</small></div>
         <div style={{ ...newVal, fontSize: isMobile ? "1.2rem" : "1.45rem" }}>{format(v2)} <small>2026</small></div>
       </div>
-      <div style={{ ...diffBadge, background: diff > 0 ? `${color}20` : "#22c55e20", color: diff > 0 ? color : "#22c55e" }}>
+      <div style={{ ...diffBadge, background: `${statusColor}20`, color: statusColor }}>
         {diff > 0 ? <ArrowUpRight size={14}/> : <ArrowDownRight size={14}/>} %{Math.abs(diff).toFixed(1)}
       </div>
     </div>
   );
 }
 
-// STİLLERDE HİÇBİR EKSİLTME YAPILMADI
 const headerLayout = { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 25 };
 const headerSummaryBox = { display: 'flex', alignItems: 'center', gap: 15, background: '#1e293b50', padding: '8px 15px', borderRadius: '10px', border: '1px solid #1e2937' };
 const summaryItem = { fontSize: '0.8rem', fontWeight: 800, color: '#94a3b8', display: 'flex', flexDirection: 'column' as const };
