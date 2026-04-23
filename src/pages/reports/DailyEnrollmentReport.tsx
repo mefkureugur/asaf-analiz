@@ -58,11 +58,11 @@ export default function DailyEnrollmentReport() {
       const bNameHam = (r.Okul || r.subeAd || "").trim();
       const bNameNorm = superNormalize(bNameHam);
       const cDate = String(r.SözleşmeTarihi || "");
-      let rawCls = String(r.Sınıf || r.classType || "Belirsiz").replace(".0", "").trim();
-      let cls = /^\d+$/.test(rawCls) ? parseInt(rawCls, 10).toString() : rawCls;
+      const rawCls = String(r.Sınıf || r.classType || "Belirsiz").replace(".0", "").trim();
+      const cls = /^\d+$/.test(rawCls) ? parseInt(rawCls, 10).toString() : rawCls;
 
       if (!cDate.includes(".2026")) return;
-      let isAllowed = user?.role === 'admin' || allowedKeywords.some(key => bNameNorm.includes(key));
+      const isAllowed = user?.role === 'admin' || allowedKeywords.some(key => bNameNorm.includes(key));
       if (!isAllowed) return;
 
       const isToday = cDate.includes(targetDateShort) || cDate.includes(targetDateFull);
@@ -80,7 +80,7 @@ export default function DailyEnrollmentReport() {
       }
 
       // Aynı grup içindeki alt şubeleri ve sınıfları bulalım
-      let existingRow = branchGroups[groupKey].rows.find(row => 
+      const existingRow = branchGroups[groupKey].rows.find(row => 
         superNormalize(row.sube) === bNameNorm && row.sinif === cls
       );
       

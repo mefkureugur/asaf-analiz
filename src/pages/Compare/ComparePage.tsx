@@ -20,6 +20,15 @@ const normalize = (s: any): string => {
     .replace(/ anaokulu$/, " anaokul");
 };
 
+// 🛡️ KURUM VE ŞUBE HARİTASI (Bileşen dışına taşındı)
+const institutionGroups: Record<string, string[]> = {
+  "Altınküre İlköğretim": ["Altınküre İlkokul", "Altınküre Ortaokul", "Altınküre Anaokulu"],
+  "Altınküre Lise": ["Altınküre Fen Lisesi", "Altınküre Anadolu Lisesi", "Altınküre Akademi"],
+  "Altınküre Teknokent": ["Altınküre Teknokent"],
+  "Mefkure LGS": ["Mefkure LGS"],
+  "Mefkure YKS": ["Mefkure Plus", "Mefkure VIP"]
+};
+
 export default function ComparePage() {
   const { user } = useAuth();
   const [firebaseRecords, setFirebaseRecords] = useState<any[]>([]);
@@ -27,23 +36,15 @@ export default function ComparePage() {
   // 🕒 27 Ocak kilidini kaldırıp, sayfanın her zaman o günün tarihinde açılmasını sağladık
   const [cutoff, setCutoff] = useState(new Date().toISOString().split('T')[0]);
 
-  // 🛡️ KURUM VE ŞUBE HARİTASI (Normalize Edilmiş Liste İçin)
-  const institutionGroups: Record<string, string[]> = {
-    "Altınküre İlköğretim": ["Altınküre İlkokul", "Altınküre Ortaokul", "Altınküre Anaokulu"],
-    "Altınküre Lise": ["Altınküre Fen Lisesi", "Altınküre Anadolu Lisesi", "Altınküre Akademi"],
-    "Altınküre Teknokent": ["Altınküre Teknokent"],
-    "Mefkure LGS": ["Mefkure LGS"],
-    "Mefkure YKS": ["Mefkure Plus", "Mefkure VIP"] // ✅ VIP'yi burada tek isme indirdik
-  };
-
   const [selectedInstitution, setSelectedInstitution] = useState("GENEL");
   const [selectedSubBranch, setSelectedSubBranch] = useState("HEPSİ");
 
-  useEffect(() => {
-    if (user && user.role !== 'admin') {
-      setSelectedInstitution(user.branchId || "");
-    }
-  }, [user]);
+  // 🛡️ Yetki bazlı kurum kilitlenmesi (Efekt yerine türetilmiş değer)
+  const effectiveInstitution = useMemo(() => {
+    if (user && user.role !== 'admin') return user.branchId || "";
+    return selectedInstitution;
+  }, [user, selectedInstitution]);
+
 
   useEffect(() => {
     const q = query(collection(db, "records"));
@@ -70,8 +71,8 @@ export default function ComparePage() {
     let activeList: string[] | null = null;
     if (selectedSubBranch !== "HEPSİ") {
       activeList = [selectedSubBranch];
-    } else if (selectedInstitution !== "GENEL") {
-      activeList = institutionGroups[selectedInstitution] || [selectedInstitution];
+    } else if (effectiveInstitution !== "GENEL") {
+      activeList = institutionGroups[effectiveInstitution] || [effectiveInstitution];
     }
 
     const getStats = (targetYear: number) => {
@@ -97,7 +98,7 @@ export default function ComparePage() {
     };
 
     return { curr: getStats(selY), prev: getStats(selY - 1) };
-  }, [allRecords, cutoff, selectedInstitution, selectedSubBranch]);
+  }, [allRecords, cutoff, effectiveInstitution, selectedSubBranch]);
 
   const formatTL = (n: number) => `₺${n.toLocaleString("tr-TR")}`;
 
@@ -106,27 +107,27 @@ export default function ComparePage() {
       <header style={{ marginBottom: 30, display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 20 }}>
         <div>
            <h2 style={{ fontSize: "1.8rem", fontWeight: 800, marginBottom: 10 }}>⚖️ Yıl Karşılaştırması</h2>
-           <p style={{ color: "#38bdf8" }}>{selectedSubBranch !== "HEPSİ" ? selectedSubBranch : selectedInstitution} Analizi</p>
+           <p style={{ color: "#38bdf8" }}>{selectedSubBranch !== "HEPSİ" ? selectedSubBranch : effectiveInstitution} Analizi</p>
         </div>
 
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           {user?.role === 'admin' && (
             <div style={filterBox}>
               <label style={labelStyle}>Kurum Seçin:</label>
-              <select value={selectedInstitution} onChange={(e) => { setSelectedInstitution(e.target.value); setSelectedSubBranch("HEPSİ"); }} style={selectStyle}>
+              <select value={effectiveInstitution} onChange={(e) => { setSelectedInstitution(e.target.value); setSelectedSubBranch("HEPSİ"); }} style={selectStyle}>
                 <option value="GENEL" style={optStyle}>Tüm Kurumlar (GENEL)</option>
                 {Object.keys(institutionGroups).map(name => <option key={name} value={name} style={optStyle}>{name}</option>)}
               </select>
             </div>
           )}
 
-          {selectedInstitution !== "GENEL" && institutionGroups[selectedInstitution]?.length > 1 && (
+          {effectiveInstitution !== "GENEL" && institutionGroups[effectiveInstitution]?.length > 1 && (
             <div style={filterBox}>
               <label style={labelStyle}>Şube Seçin:</label>
               <select value={selectedSubBranch} onChange={(e) => setSelectedSubBranch(e.target.value)} style={selectStyle}>
                 <option value="HEPSİ" style={optStyle}>Tüm Şubeler</option>
                 {/* ✅ VIP isminin çiftlenmesini buradaki map ile engelliyoruz */}
-                {institutionGroups[selectedInstitution].map(sub => <option key={sub} value={sub} style={optStyle}>{sub}</option>)}
+                {institutionGroups[effectiveInstitution].map(sub => <option key={sub} value={sub} style={optStyle}>{sub}</option>)}
               </select>
             </div>
           )}

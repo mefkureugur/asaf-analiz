@@ -10,39 +10,42 @@ const normalize = (s: any): string => {
     .replace(/[^a-z0-9]/g, ""); 
 };
 
+// 🎯 Hafızadaki Tam Yetki ve Sınıf Yapısı (Bileşen dışına taşındı)
+const hierarchy: any = {
+  "mefkureyks": {
+    branches: ["Mefkure PLUS", "Mefkure VIP"],
+    grades: ["11", "12", "Mezun", "Mood"]
+  },
+  "mefkurelgs": {
+    branches: ["Mefkure LGS"],
+    grades: ["5", "6", "7", "8"]
+  },
+  "altinkureilkogretim": {
+    branches: ["Altınküre Anaokulu", "Altınküre İlkokul", "Altınküre Ortaokul"],
+    grades: ["Ana Sınıfı", "1", "2", "3", "4", "5", "6", "7", "8"]
+  },
+  "altinkurelise": {
+    branches: ["Altınküre Fen Lisesi", "Altınküre Anadolu Lisesi", "Altınküre Akademi"],
+    grades: ["9", "10", "11", "12", "Mezun", "Akademi"]
+  },
+  "altinkureteknokent": {
+    branches: ["Altınküre Teknokent"],
+    grades: ["9", "10", "11", "12"]
+  }
+};
+
 export default function StudentList() {
   const { user } = useAuth();
   const [firebaseRecords, setFirebaseRecords] = useState<any[]>([]);
   const [editingStudent, setEditingStudent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState(""); // 🔍 Arama state'i
+  
 
-  // 🎯 Hafızadaki Tam Yetki ve Sınıf Yapısı
-  const hierarchy: any = {
-    "mefkureyks": {
-      branches: ["Mefkure PLUS", "Mefkure VIP"],
-      grades: ["11", "12", "Mezun", "Mood"]
-    },
-    "mefkurelgs": {
-      branches: ["Mefkure LGS"],
-      grades: ["5", "6", "7", "8"]
-    },
-    "altinkureilkogretim": {
-      branches: ["Altınküre Anaokulu", "Altınküre İlkokul", "Altınküre Ortaokul"],
-      grades: ["Ana Sınıfı", "1", "2", "3", "4", "5", "6", "7", "8"]
-    },
-    "altinkurelise": {
-      branches: ["Altınküre Fen Lisesi", "Altınküre Anadolu Lisesi", "Altınküre Akademi"],
-      grades: ["9", "10", "11", "12", "Mezun", "Akademi"]
-    },
-    "altinkureteknokent": {
-      branches: ["Altınküre Teknokent"],
-      grades: ["9", "10", "11", "12"]
-    }
-  };
-
-  const userBranchKey = user?.branchId ? normalize(user.branchId) : "";
-  const userSettings = hierarchy[userBranchKey] || { branches: [], grades: [] };
+  const userSettings = useMemo(() => {
+    const userBranchKey = user?.branchId ? normalize(user.branchId) : "";
+    return hierarchy[userBranchKey] || { branches: [], grades: [] };
+  }, [user]);
 
   useEffect(() => {
     const q = query(collection(db, "records"));
@@ -55,7 +58,7 @@ export default function StudentList() {
 
   // 🛡️ SIRALAMA VE FİLTRELEME MOTORU
   const filteredList = useMemo(() => {
-    let list = firebaseRecords.filter(r => {
+    const list = firebaseRecords.filter(r => {
       // Sadece manuel kayıtlar
       if (r.source !== "manual") return false;
       

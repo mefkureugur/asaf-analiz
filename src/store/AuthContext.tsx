@@ -9,22 +9,8 @@ import {
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 
-interface UserProfile {
-  uid: string;
-  email: string;
-  role: 'admin' | 'manager' | 'unauthorized';
-  branchId: string;
-  displayName: string;
-}
+import type { UserProfile, AuthContextType } from './types';
 
-interface AuthContextType {
-  user: UserProfile | null;
-  loading: boolean;
-  login: (email: string, pass: string) => Promise<any>;
-  logout: () => Promise<void>;
-  updateMyPassword: (newPass: string) => Promise<void>;
-  updateMyEmail: (newEmail: string) => Promise<void>;
-}
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
@@ -94,8 +80,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-export const useAuth = () => {
+export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) throw new Error("useAuth must be used within AuthProvider");
   return context;
-};
+}

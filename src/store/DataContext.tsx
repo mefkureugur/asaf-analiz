@@ -3,6 +3,8 @@ import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { db } from "../firebase";
 import { useAuth } from "./AuthContext"; 
 import type { ImportedRecord } from "../services/excelImport.service";
+import type { DataContextType } from "./types";
+
 
 function sanitizeRecord(data: any): ImportedRecord {
   const branchRaw = String(data.branch || "").trim();
@@ -26,7 +28,7 @@ function sanitizeRecord(data: any): ImportedRecord {
   };
 }
 
-const DataContext = createContext<any>(null);
+const DataContext = createContext<DataContextType | null>(null);
 
 export const DataProvider = ({ children }: { children: React.ReactNode }) => {
   const [rawRecords, setRawRecords] = useState<ImportedRecord[]>([]);
@@ -67,8 +69,8 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-export const useData = () => {
+export function useData() {
   const ctx = useContext(DataContext);
   if (!ctx) throw new Error("useData hatası!");
   return ctx;
-};
+}

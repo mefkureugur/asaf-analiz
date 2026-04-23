@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { collection, onSnapshot, query } from "firebase/firestore";
 import { db } from "../../firebase"; 
 import { useAuth } from "../../store/AuthContext";
@@ -101,7 +101,7 @@ export default function DashboardPage() {
     return { cC, cT, countDiff: lC > 0 ? ((cC - lC) / lC) * 100 : 0, totalDiff: lT > 0 ? ((cT - lT) / lT) * 100 : 0, lC, lT };
   }, [allRecords, year, viewMode, branch, classTypes, myAllowedNames, targetDay, targetMonth]);
 
-  const getYearlyData = (tY: number) => {
+  const getYearlyData = useCallback((tY: number) => {
     const allowedNorm = myAllowedNames?.map((n: string) => normalize(n));
     const counts = Array(12).fill(0);
     allRecords.forEach((r: any) => {
@@ -116,10 +116,10 @@ export default function DashboardPage() {
       }
     });
     return counts;
-  };
+  }, [allRecords, branch, myAllowedNames]);
 
-  const data2025 = useMemo(() => getYearlyData(2025), [allRecords, branch, myAllowedNames]);
-  const data2026 = useMemo(() => getYearlyData(2026), [allRecords, branch, myAllowedNames]);
+  const data2025 = useMemo(() => getYearlyData(2025), [getYearlyData]);
+  const data2026 = useMemo(() => getYearlyData(2026), [getYearlyData]);
 
   return (
     <div style={{ padding: "10px 15px", color: "white", maxWidth: 1200, margin: "0 auto", fontFamily: "sans-serif" }}>
