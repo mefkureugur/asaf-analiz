@@ -113,6 +113,10 @@ export default function TopNav({ isAdmin }: TopNavProps) {
         {showAdminMenu && (
           <Link to="/finance/view" style={linkStyle("/finance")}>💰 Finans</Link>
         )}
+
+        {showAdminMenu && (
+          <Link to="/scenarios" style={linkStyle("/scenarios")}>📊 Senaryo Hesap</Link>
+        )}
         
         {showAdminMenu && (
           <Link to="/user-management" style={{ 

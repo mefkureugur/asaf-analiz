@@ -112,6 +112,12 @@ export default function TopNavMobile({ isAdmin }: MobileProps) {
           )}
 
           {showAdminMenu && (
+            <NavLink to="/scenarios" onClick={closeMenu} style={({ isActive }) => isActive ? activeNavLinkStyle : navLinkStyle}>
+              📊 Senaryo Hesap
+            </NavLink>
+          )}
+
+          {showAdminMenu && (
             <>
               <div style={{ height: "1px", background: "#1e293b", margin: "8px 12px" }} />
               <NavLink to="/user-management" onClick={closeMenu} style={({ isActive }) => isActive ? { ...activeNavLinkStyle, color: "#38bdf8" } : { ...navLinkStyle, color: "#38bdf8" }}>

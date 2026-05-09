@@ -16,9 +16,10 @@ import StudentList from "./pages/Students/StudentList";
 import FinanceInputPage from "./pages/Finance/FinanceInputPage";
 import FinanceViewPage from "./pages/Finance/FinanceViewPage";
 // 🚀 YENİ RAPOR SAYFASI EKLENDİ
-import DailyEnrollmentReport from "./pages/reports/DailyEnrollmentReport"; 
-import LoginPage from "./pages/Login/LoginPage"; 
-import UserManagement from "./pages/admin/UserManagement"; 
+import DailyEnrollmentReport from "./pages/reports/DailyEnrollmentReport";
+import LoginPage from "./pages/Login/LoginPage";
+import UserManagement from "./pages/admin/UserManagement";
+import ScenariosPage from "./pages/ScenariosPage";
 
 // COMPONENTS
 import TopNav from "./components/TopNav";
@@ -81,6 +82,7 @@ function AppContent() {
               <Route path="/finance" element={<Navigate to="/finance/view" replace />} />
               <Route path="/finance/input" element={isUgur ? <FinanceInputPage /> : <Navigate to="/finance/view" replace />} />
               <Route path="/finance/view" element={<FinanceViewPage />} />
+              <Route path="/scenarios" element={<ScenariosPage />} />
             </>
           ) : (
             <>
