@@ -27,8 +27,13 @@ export function listenToActiveScenarios(cb: (scenarios: Scenario[]) => void): ()
   });
 }
 
+// Firestore undefined değer kabul etmez — tüm undefined alanları temizler
+function stripUndefined<T>(obj: T): T {
+  return JSON.parse(JSON.stringify(obj)) as T;
+}
+
 export async function saveScenario(draft: ScenarioDraft, user: UserProfile): Promise<string> {
-  const payload = {
+  const payload = stripUndefined({
     kurumId: draft.kurumId,
     name: draft.name,
     ogrenciSayisi: draft.ogrenciSayisi,
@@ -36,7 +41,7 @@ export async function saveScenario(draft: ScenarioDraft, user: UserProfile): Pro
     people: draft.people,
     digerGiderOrani: draft.digerGiderOrani,
     kidemKarsiligiOn: draft.kidemKarsiligiOn,
-  };
+  });
 
   if (draft.id) {
     await updateDoc(doc(db, COL, draft.id), { ...payload, updatedAt: serverTimestamp() });
