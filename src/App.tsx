@@ -52,6 +52,7 @@ function AppContent() {
 
   // 🛡️ Admin ve Uğur Bey yetkisi (Sistemdeki tek yetkili giriş kapısı)
   const isAdmin = user.role?.trim().toLowerCase() === 'admin' || user.email === 'ugur@asaf.com';
+  const isUgur = user.email === 'ugur@asaf.com'; // 🔐 Veri girişi sadece Uğur Bey'e
 
   return (
     <DataProvider>
@@ -76,9 +77,9 @@ function AppContent() {
               <Route path="/targets" element={<TargetsPage />} />
               <Route path="/performans" element={<Navigate to="/dashboard" replace />} /> 
               <Route path="/user-management" element={<UserManagement />} />
-              {/* 💰 FİNANS: Sadece Admin ve Uğur Bey girebilir */}
+              {/* 💰 FİNANS: Görüntüleme Admin'e, Giriş SADECE Uğur Bey'e */}
               <Route path="/finance" element={<Navigate to="/finance/view" replace />} />
-              <Route path="/finance/input" element={<FinanceInputPage />} />
+              <Route path="/finance/input" element={isUgur ? <FinanceInputPage /> : <Navigate to="/finance/view" replace />} />
               <Route path="/finance/view" element={<FinanceViewPage />} />
             </>
           ) : (

@@ -1,8 +1,8 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { collection, query, onSnapshot } from "firebase/firestore"; // 🔥 Senkronizasyon için
+import { collection, query, onSnapshot, doc, setDoc } from "firebase/firestore"; // 🔥 Senkronizasyon için
 import { db } from "../../firebase"; // 🔥 DB bağlantısı
-import { TrendingUp, Calculator, ChevronDown, Save, ArrowLeft, Database, Edit3 } from "lucide-react";
+import { TrendingUp, Calculator, ChevronDown, Save, ArrowLeft, Database, Edit3, Users } from "lucide-react";
 import { saveFinanceSnapshot } from "../../services/financeSnapshot.service";
 import { loadFinance, saveFinance } from "../../store/FinanceStore";
 
@@ -31,6 +31,10 @@ export default function FinanceInputPage() {
   const [expenseType, setExpenseType] = useState("Toplam Giderler");
   const [finance, setFinance] = useState<FinanceState>(() => loadFinance() as any);
   const [saving, setSaving] = useState(false);
+
+  // 🧑‍🤝‍🧑 Operasyonel Veriler
+  const [opStats, setOpStats] = useState<Record<string, { idareci: number, ogretmen: number, personel: number, sinif: number, ogrenci: number, calisan: number }>>({});
+  const [opBranch, setOpBranch] = useState("Mefkure YKS");
 
   // 📱 MOBİL GÖZLEMCİ
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -73,6 +77,19 @@ export default function FinanceInputPage() {
     return () => unsubscribe();
   }, []);
 
+  // 🧑‍🤝‍🧑 OPERASYONEL VERİLERİ GETİR
+  useEffect(() => {
+    const q = query(collection(db, "operationalStats"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data: any = {};
+      snapshot.docs.forEach(doc => {
+        data[doc.id] = doc.data();
+      });
+      setOpStats(data);
+    });
+    return () => unsubscribe();
+  }, []);
+
   const formatCurrency = (val: number) => {
     return `₺${Math.round(val).toLocaleString("tr-TR")}`;
   };
@@ -110,6 +127,20 @@ export default function FinanceInputPage() {
         alert("Bağlantı hatası!");
     } finally { 
         setSaving(false); 
+    }
+  };
+
+  const handleOpSave = async () => {
+    try {
+      setSaving(true);
+      const currentStats = opStats[opBranch] || { idareci: 0, ogretmen: 0, personel: 0, sinif: 0, ogrenci: 0, calisan: 0 };
+      await setDoc(doc(db, "operationalStats", opBranch), currentStats, { merge: true });
+      alert("Operasyonel veriler kaydedildi!");
+    } catch (err) {
+      console.error(err);
+      alert("Bağlantı hatası!");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -219,6 +250,52 @@ export default function FinanceInputPage() {
             </button>
           </div>
         </div>
+      </div>
+
+      {/* 🛡️ ALT PANEL: OPERASYONEL KAPASİTELER */}
+      <div style={{ ...cardStyle, padding: isMobile ? "20px 15px" : "24px", marginTop: 20 }}>
+        <div style={{ ...headerStyle, marginBottom: 20 }}><Users size={16} color="#eab308"/> OPERASYONEL KAPASİTELER</div>
+        
+        <div style={{ marginBottom: 20, width: isMobile ? "100%" : "300px" }}>
+          <div style={labelStyle}>KURUM SEÇİN</div>
+          <div style={{ position: "relative" }}>
+            <select value={opBranch} onChange={(e) => setOpBranch(e.target.value)} style={mainSel}>
+              {BRANCH_LIST.map(b => <option key={b} value={b}>{b}</option>)}
+            </select>
+            <ChevronDown style={chevronStyle} size={14} />
+          </div>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(auto-fill, minmax(180px, 1fr))", gap: 15, marginBottom: 25 }}>
+          {["ogrenci", "sinif", "idareci", "ogretmen", "personel", "calisan"].map((field) => {
+            const val = opStats[opBranch]?.[field as keyof typeof opStats[string]] || 0;
+            const labels: any = { 
+              ogrenci: "TOPLAM ÖĞRENCİ", 
+              sinif: "SINIF SAYISI", 
+              idareci: "İDARECİ SAYISI", 
+              ogretmen: "ÖĞRETMEN SAYISI", 
+              personel: "PERSONEL SAYISI", 
+              calisan: "TÜM ÇALIŞAN SAYISI" 
+            };
+            return (
+              <div key={field} style={monthBoxStyle}>
+                <div style={labelStyle}>{labels[field]}</div>
+                <input 
+                  type="number" 
+                  value={val || ""} 
+                  onChange={e => setOpStats(prev => ({
+                    ...prev, [opBranch]: { ...(prev[opBranch] || { idareci: 0, ogretmen: 0, personel: 0, sinif: 0, ogrenci: 0, calisan: 0 }), [field]: +e.target.value }
+                  }))} 
+                  style={{ ...inputStyle, width: "100%", boxSizing: "border-box" }} 
+                />
+              </div>
+            );
+          })}
+        </div>
+        
+        <button onClick={handleOpSave} disabled={saving} style={{ ...saveBtnStyle, background: "#eab308", color: "#020617", width: isMobile ? "100%" : "300px" }}>
+          <Save size={16}/> OPERASYONEL VERİYİ KAYDET
+        </button>
       </div>
     </div>
   );

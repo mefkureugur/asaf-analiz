@@ -45,7 +45,7 @@ export default function DashboardPage() {
     const jsonRecords = Array.isArray(asafRecordsRaw) ? asafRecordsRaw : [];
     return [...jsonRecords, ...firebaseRecords].map((r: any) => ({
       ...r,
-      Okul: r.Okul || r.subeAd || "Bilinmeyen",
+      Okul: r.Okul || r.branch || r.subeAd || "Bilinmeyen",
       SonTutar: Number(r.SonTutar || r.amount || 0),
       Sınıf: String(r.Sınıf || r.classType || "").replace(".0", "").trim(),
       SözleşmeTarihi: String(r.SözleşmeTarihi || "")
@@ -98,7 +98,11 @@ export default function DashboardPage() {
     const lC = lastYearData.length;
     const lT = lastYearData.reduce((acc, curr) => acc + curr.SonTutar, 0);
 
-    return { cC, cT, countDiff: lC > 0 ? ((cC - lC) / lC) * 100 : 0, totalDiff: lT > 0 ? ((cT - lT) / lT) * 100 : 0, lC, lT };
+    const cAvg = cC > 0 ? cT / cC : 0;
+    const lAvg = lC > 0 ? lT / lC : 0;
+    const avgDiff = lAvg > 0 ? ((cAvg - lAvg) / lAvg) * 100 : 0;
+
+    return { cC, cT, countDiff: lC > 0 ? ((cC - lC) / lC) * 100 : 0, totalDiff: lT > 0 ? ((cT - lT) / lT) * 100 : 0, avgDiff, lC, lT };
   }, [allRecords, year, viewMode, branch, classTypes, myAllowedNames, targetDay, targetMonth]);
 
   const getYearlyData = useCallback((tY: number) => {
@@ -156,7 +160,7 @@ export default function DashboardPage() {
       }}>
         <SmartCard title="ÖĞRENCİ SAYISI" value={stats.cC} compareValue={stats.lC} diff={stats.countDiff} showCompare={year === 2026} />
         <SmartCard title="TOPLAM CİRO" value={`₺${stats.cT.toLocaleString("tr-TR")}`} compareValue={`₺${stats.lT.toLocaleString("tr-TR")}`} diff={stats.totalDiff} showCompare={year === 2026} />
-        <SmartCard title="ORTALAMA KAYIT" value={`₺${Math.round(stats.cC > 0 ? stats.cT / stats.cC : 0).toLocaleString("tr-TR")}`} compareValue={`₺${Math.round(stats.lC > 0 ? stats.lT / stats.lC : 0).toLocaleString("tr-TR")}`} diff={stats.totalDiff - stats.countDiff} showCompare={year === 2026} />
+        <SmartCard title="ORTALAMA KAYIT" value={`₺${Math.round(stats.cC > 0 ? stats.cT / stats.cC : 0).toLocaleString("tr-TR")}`} compareValue={`₺${Math.round(stats.lC > 0 ? stats.lT / stats.lC : 0).toLocaleString("tr-TR")}`} diff={stats.avgDiff} showCompare={year === 2026} />
       </div>
 
       <div style={{ marginTop: 25 }}>

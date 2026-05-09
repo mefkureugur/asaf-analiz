@@ -3,9 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "../../firebase";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, LabelList } from "recharts";
-import { Landmark, TrendingUp, Calculator, ChevronDown, BarChart3, Database, ListFilter, LayoutGrid } from "lucide-react";
+import { Landmark, TrendingUp, Calculator, ChevronDown, BarChart3, Database, ListFilter, LayoutGrid, Award } from "lucide-react";
 import asafFinansRaw from "../../data/finans.json"; 
 import FinanceAnalysisPage from "./FinanceComparisonPage"; 
+import FinanceEfficiencyPage from "./FinanceEfficiencyPage";
+import { useAuth } from "../../store/AuthContext";
 
 interface FinansRecord {
   Kurum: string; Alan: string; Dönem: string;
@@ -14,6 +16,9 @@ interface FinansRecord {
 
 export default function FinanceViewPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isUgur = user?.email === 'ugur@asaf.com';
+  const isKurucu = isUgur || (user as any)?.role === 'kurucu' || user?.role === 'admin';
   
   const [selectedKurum, setSelectedKurum] = useState<string>("Mefkure YKS");
   const [selectedCategory, setSelectedCategory] = useState<string>("Toplam Giderler");
@@ -118,24 +123,43 @@ export default function FinanceViewPage() {
           <div style={chevronPos}><ChevronDown size={14} color="#64748b" /></div>
         </div>
 
+        {/* DÖNEM SEÇİCİ KALDIRILDI (Arka planda 2025-2026 olarak çalışmaya devam ediyor) 
         <div style={{ position: "relative", minWidth: isMobile ? "100%" : 140, flex: isMobile ? "none" : 0 }}>
           <select value={selectedDonem} onChange={(e) => setSelectedDonem(e.target.value)} style={mainSel}>
             {["2024-2025", "2025-2026"].map(d => <option key={d} value={d}>{d}</option>)}
           </select>
           <div style={chevronPos}><ChevronDown size={14} color="#64748b" /></div>
         </div>
+        */}
 
-        <div style={{ display: "flex", gap: 6, width: isMobile ? "100%" : "auto" }}>
+        <div style={{ display: "flex", gap: 6, width: isMobile ? "100%" : "auto", overflowX: "auto", scrollbarWidth: "none" }}>
           <NavButton id={1} active={activePage} onClick={setActivePage} icon={<BarChart3 size={14} />} label="Analiz" isMobile={isMobile} />
           <NavButton id={3} active={activePage} onClick={setActivePage} icon={<LayoutGrid size={14} />} label="Stratejik Analiz" isMobile={isMobile} />
-          <button onClick={() => navigate("/finance/input")} style={{ ...veriGirisStyle, flex: isMobile ? 1 : "none", justifyContent: "center" }}>
-            <Database size={14} /> <span>{isMobile ? "Giriş" : "Veri Girişi"}</span>
-          </button>
+          {isKurucu && (
+            <NavButton 
+              id={4} 
+              active={activePage} 
+              onClick={(id: number) => { 
+                if (activePage !== 4) setSelectedKurum("Tüm Kurumlar"); 
+                setActivePage(id); 
+              }} 
+              icon={<Award size={14} color="#eab308" />} 
+              label="Kurucu Paneli" 
+              isMobile={isMobile} 
+            />
+          )}
+          {isUgur && (
+            <button onClick={() => navigate("/finance/input")} style={{ ...veriGirisStyle, flex: isMobile ? 1 : "none", justifyContent: "center" }}>
+              <Database size={14} /> <span>{isMobile ? "Giriş" : "Veri Girişi"}</span>
+            </button>
+          )}
         </div>
       </div>
 
       {activePage === 3 ? (
         <FinanceAnalysisPage selectedKurum={selectedKurum} selectedDonem={selectedDonem} />
+      ) : activePage === 4 && isKurucu ? (
+        <FinanceEfficiencyPage selectedKurum={selectedKurum} selectedDonem={selectedDonem} />
       ) : (
         <>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: isMobile ? 10 : 15, marginBottom: 25 }}>

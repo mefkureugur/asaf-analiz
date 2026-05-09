@@ -58,7 +58,7 @@ export default function ComparePage() {
     const jsonRecords = Array.isArray(asafRecordsRaw) ? asafRecordsRaw : [];
     return [...jsonRecords, ...firebaseRecords].map((r: any) => ({
       ...r,
-      Okul: r.Okul || r.subeAd || "Bilinmeyen",
+      Okul: r.Okul || r.branch || r.subeAd || "Bilinmeyen",
       SonTutar: Number(r.SonTutar || r.amount || 0),
       SözleşmeTarihi: String(r.SözleşmeTarihi || "")
     }));
@@ -100,7 +100,7 @@ export default function ComparePage() {
     return { curr: getStats(selY), prev: getStats(selY - 1) };
   }, [allRecords, cutoff, effectiveInstitution, selectedSubBranch]);
 
-  const formatTL = (n: number) => `₺${n.toLocaleString("tr-TR")}`;
+  const formatTL = (n: number) => `₺${Math.round(n).toLocaleString("tr-TR")}`;
 
   return (
     <div style={{ padding: 25, color: "white", maxWidth: 1200, margin: "0 auto", fontFamily: "sans-serif" }}>

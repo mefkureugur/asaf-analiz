@@ -58,6 +58,17 @@ export default function StudentList() {
 
   // 🛡️ SIRALAMA VE FİLTRELEME MOTORU
   const filteredList = useMemo(() => {
+    const parseDate = (dateStr: string) => {
+      if (!dateStr) return 0;
+      if (dateStr.includes('.')) {
+        // Assume DD.MM.YYYY
+        const [d, m, y] = dateStr.split('.');
+        return new Date(`${y}-${m}-${d}`).getTime() || 0;
+      }
+      // Assume YYYY-MM-DD
+      return new Date(dateStr).getTime() || 0;
+    };
+
     const list = firebaseRecords.filter(r => {
       // Sadece manuel kayıtlar
       if (r.source !== "manual") return false;
@@ -78,11 +89,21 @@ export default function StudentList() {
 
     // 🚀 SIRALAMA: En yeni eklenenden eskiye doğru
     return list.sort((a, b) => {
-      const dateA = new Date(a.SözleşmeTarihi?.split('.').reverse().join('-')).getTime() || 0;
-      const dateB = new Date(b.SözleşmeTarihi?.split('.').reverse().join('-')).getTime() || 0;
+      const dateA = parseDate(a.SözleşmeTarihi);
+      const dateB = parseDate(b.SözleşmeTarihi);
       return dateB - dateA; 
     });
   }, [firebaseRecords, user, userSettings, searchTerm]);
+
+  // Yardımcı: Tarihi kullanıcıya güzel formatta göster (DD.MM.YYYY)
+  const formatDateDisplay = (dateStr: string) => {
+    if (!dateStr) return "-";
+    if (dateStr.includes('-')) {
+      const [y, m, d] = dateStr.split('-');
+      return `${d}.${m}.${y}`;
+    }
+    return dateStr;
+  };
 
   const handleUpdate = async (e: any) => {
     e.preventDefault();
@@ -127,7 +148,7 @@ export default function StudentList() {
             <div style={{ flex: 1 }}>
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                 <div style={{ fontWeight: 700 }}>{s.studentName}</div>
-                <span style={dateBadge}>{s.SözleşmeTarihi}</span>
+                <span style={dateBadge}>{formatDateDisplay(s.SözleşmeTarihi)}</span>
               </div>
               <div style={{ fontSize: "0.75rem", color: "#94a3b8", marginTop: "4px" }}>
                 📍 {s.Okul} | 🎓 Sınıf: {s.Sınıf} | 💰 {s.SonTutar?.toLocaleString("tr-TR")} TL

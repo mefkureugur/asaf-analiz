@@ -99,10 +99,6 @@ export default function TopNavMobile({ isAdmin }: MobileProps) {
             </NavLink>
           )}
 
-          <NavLink to="/students" onClick={closeMenu} style={({ isActive }) => isActive ? activeNavLinkStyle : navLinkStyle}>
-            🧑‍🎓 Kayıt Analizi
-          </NavLink>
-
           {!showAdminMenu && (
             <NavLink to="/ogrenci-listesi" onClick={closeMenu} style={({ isActive }) => isActive ? activeNavLinkStyle : navLinkStyle}>
               ✍️ Kayıt Listesi (Yönetim)

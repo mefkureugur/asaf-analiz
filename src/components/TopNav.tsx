@@ -106,8 +106,6 @@ export default function TopNav({ isAdmin }: TopNavProps) {
           <Link to="/performans" style={linkStyle("/performans")}>🚀 Performans İzleme</Link>
         )}
 
-        <Link to="/students" style={linkStyle("/students")}>🧑‍🎓 Kayıt Analizi</Link>
-        
         {!showAdminMenu && (
           <Link to="/ogrenci-listesi" style={linkStyle("/ogrenci-listesi")}>✍️ Kayıt Listesi</Link>
         )}
