@@ -1,32 +1,26 @@
 interface Props {
-  digerGiderOrani: number;
+  digerGider: number;
   kidemKarsiligiOn: boolean;
-  onChange: (updates: { digerGiderOrani?: number; kidemKarsiligiOn?: boolean }) => void;
+  onChange: (updates: { digerGider?: number; kidemKarsiligiOn?: boolean }) => void;
 }
 
-export default function OtherSettingsCard({ digerGiderOrani, kidemKarsiligiOn, onChange }: Props) {
+export default function OtherSettingsCard({ digerGider, kidemKarsiligiOn, onChange }: Props) {
   return (
     <div style={card}>
       <div style={cardTitle}>DİĞER AYARLAR</div>
 
       <div style={row}>
-        <div style={{ flex: 1 }}>
-          <label style={lbl}>Diğer Gider Oranı (Ciro'nun %{digerGiderOrani}'i)</label>
-          <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginTop: 8 }}>
-            <input
-              type="range" min={0} max={50} step={1}
-              value={digerGiderOrani}
-              onChange={e => onChange({ digerGiderOrani: Number(e.target.value) })}
-              style={{ flex: 1, accentColor: '#38bdf8' }}
-            />
-            <input
-              type="number" min={0} max={100}
-              value={digerGiderOrani}
-              onChange={e => onChange({ digerGiderOrani: Math.min(100, Math.max(0, Number(e.target.value))) })}
-              style={{ ...numInp, width: 60 }}
-            />
-            <span style={{ color: '#64748b', fontSize: '0.85rem' }}>%</span>
-          </div>
+        <label style={lbl}>Diğer Giderler (Yıllık Tutar)</label>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 8 }}>
+          <span style={{ color: '#64748b', fontSize: '0.9rem', flexShrink: 0 }}>₺</span>
+          <input
+            type="number"
+            min={0}
+            step={5000}
+            value={digerGider}
+            onChange={e => onChange({ digerGider: Math.max(0, Number(e.target.value)) })}
+            style={{ ...numInp, flex: 1 }}
+          />
         </div>
       </div>
 
@@ -54,7 +48,7 @@ const lbl: React.CSSProperties = { color: '#64748b', fontSize: '0.65rem', fontWe
 const row: React.CSSProperties = { marginBottom: 16 };
 const numInp: React.CSSProperties = {
   background: '#1e293b', border: '1px solid #334155', color: 'white',
-  padding: '6px 8px', borderRadius: 6, fontSize: '0.85rem', outline: 'none', boxSizing: 'border-box'
+  padding: '10px 12px', borderRadius: 6, fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box'
 };
 const toggleRow: React.CSSProperties = {
   display: 'flex', alignItems: 'center', justifyContent: 'space-between',

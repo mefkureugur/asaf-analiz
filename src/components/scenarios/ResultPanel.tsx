@@ -2,13 +2,12 @@ import type { ScenarioResult } from '../../types/scenario';
 
 interface Props {
   result: ScenarioResult;
-  digerGiderOrani: number;
   kidemOn: boolean;
 }
 
 const fmt = (n: number) => `₺${Math.round(Math.abs(n)).toLocaleString('tr-TR')}`;
 
-export default function ResultPanel({ result, digerGiderOrani, kidemOn }: Props) {
+export default function ResultPanel({ result, kidemOn }: Props) {
   const isProfit = result.netKar >= 0;
 
   return (
@@ -23,14 +22,14 @@ export default function ResultPanel({ result, digerGiderOrani, kidemOn }: Props)
         {kidemOn && result.totalKidem > 0 && (
           <Row label="Kıdem Karşılığı" value={`-${fmt(result.totalKidem)}`} color="#8b5cf6" />
         )}
-        <Row label={`Diğer Giderler (%${digerGiderOrani})`} value={`-${fmt(result.digerGiderler)}`} color="#64748b" />
+        <Row label="Diğer Giderler" value={`-${fmt(result.digerGiderler)}`} color="#64748b" />
         <Divider />
         <Row
           label="Vergi Matrahı"
           value={result.vergiMatrahi >= 0 ? fmt(result.vergiMatrahi) : `-${fmt(result.vergiMatrahi)}`}
           color={result.vergiMatrahi >= 0 ? '#94a3b8' : '#ef4444'}
         />
-        <Row label="Kurumlar Vergisi (%25)" value={`-${fmt(result.kurumlarVergisi)}`} color="#ef4444" />
+        <Row label="Kurumlar Vergisi (%20)" value={`-${fmt(result.kurumlarVergisi)}`} color="#ef4444" />
         <Divider />
         <Row
           label="NET KAR"
@@ -38,6 +37,7 @@ export default function ResultPanel({ result, digerGiderOrani, kidemOn }: Props)
           color={isProfit ? '#22c55e' : '#ef4444'}
           bold
           large
+          printClass={isProfit ? 'val-green' : 'val-red'}
         />
         <Row label="Kâr Marjı" value={`%${result.karMarji.toFixed(1)}`} color={isProfit ? '#22c55e' : '#ef4444'} bold />
         <Row label="Toplam Çalışan" value={`${result.toplamKisi} kişi`} color="#94a3b8" />
@@ -46,11 +46,13 @@ export default function ResultPanel({ result, digerGiderOrani, kidemOn }: Props)
   );
 }
 
-function Row({ label, value, color, bold, large }: { label: string; value: string; color: string; bold?: boolean; large?: boolean }) {
+function Row({ label, value, color, bold, large, printClass }: {
+  label: string; value: string; color: string; bold?: boolean; large?: boolean; printClass?: string;
+}) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0' }}>
       <span style={{ color: '#94a3b8', fontSize: '0.75rem' }}>{label}</span>
-      <span style={{ color, fontWeight: bold ? 800 : 500, fontSize: large ? '1.1rem' : '0.85rem' }}>{value}</span>
+      <span className={printClass} style={{ color, fontWeight: bold ? 800 : 500, fontSize: large ? '1.1rem' : '0.85rem' }}>{value}</span>
     </div>
   );
 }

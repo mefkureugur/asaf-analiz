@@ -1,6 +1,6 @@
 import type { Person, Scenario, PersonCost, ScenarioResult, ScenarioDraft } from '../types/scenario';
 
-const KURUMLAR_VERGISI = 0.25;
+const KURUMLAR_VERGISI = 0.20;
 const KIDEM_RATE = 1 / 12;
 const SAAT_HAFTA_AY = 4;
 
@@ -53,7 +53,7 @@ export function calculateScenario(s: Scenario | ScenarioDraft): ScenarioResult {
   const totalKidem   = peopleCosts.reduce((sum, c) => sum + c.kidem, 0);
   const totalPersonel = totalKayitli + totalElden + totalKidem;
 
-  const digerGiderler = yillikCiro * ((s.digerGiderOrani ?? 0) / 100);
+  const digerGiderler = s.digerGider ?? 0;
 
   const vergiMatrahi = yillikCiro - totalKayitli - totalKidem - digerGiderler;
   const kurumlarVergisi = vergiMatrahi > 0 ? vergiMatrahi * KURUMLAR_VERGISI : 0;

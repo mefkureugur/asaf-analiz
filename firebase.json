@@ -15,6 +15,15 @@
     ],
     "headers": [
       {
+        "source": "**/index.html",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      },
+      {
         "source": "**/*.@(eot|otf|ttf|ttc|woff|woff2|font.css)",
         "headers": [
           {

@@ -20,11 +20,12 @@ export interface Scenario {
   id: string;
   kurumId: string;
   name: string;
+  note?: string;
   isActive: boolean;
   ogrenciSayisi: number;
   yillikOgrenciUcreti: number;
   people: Person[];
-  digerGiderOrani: number;
+  digerGider: number;
   kidemKarsiligiOn: boolean;
   createdBy: string;
   createdByEmail: string;
@@ -36,11 +37,12 @@ export interface ScenarioDraft {
   id?: string;
   kurumId: string;
   name: string;
+  note?: string;
   isActive: boolean;
   ogrenciSayisi: number;
   yillikOgrenciUcreti: number;
   people: Person[];
-  digerGiderOrani: number;
+  digerGider: number;
   kidemKarsiligiOn: boolean;
 }
 

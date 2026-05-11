@@ -36,10 +36,11 @@ export async function saveScenario(draft: ScenarioDraft, user: UserProfile): Pro
   const payload = stripUndefined({
     kurumId: draft.kurumId,
     name: draft.name,
+    note: draft.note ?? '',
     ogrenciSayisi: draft.ogrenciSayisi,
     yillikOgrenciUcreti: draft.yillikOgrenciUcreti,
     people: draft.people,
-    digerGiderOrani: draft.digerGiderOrani,
+    digerGider: draft.digerGider,
     kidemKarsiligiOn: draft.kidemKarsiligiOn,
   });
 
