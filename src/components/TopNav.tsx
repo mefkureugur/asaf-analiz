@@ -60,6 +60,7 @@ export default function TopNav({ isAdmin }: TopNavProps) {
   };
 
   const showAdminMenu = isAdmin || user?.role === 'admin' || user?.email === 'ugur@asaf.com';
+  const isMefkureManager = (user?.branchId || "").toLocaleLowerCase('tr-TR').includes("mefkure");
 
   return (
     <nav
@@ -108,6 +109,10 @@ export default function TopNav({ isAdmin }: TopNavProps) {
 
         {!showAdminMenu && (
           <Link to="/ogrenci-listesi" style={linkStyle("/ogrenci-listesi")}>✍️ Kayıt Listesi</Link>
+        )}
+
+        {(showAdminMenu || isMefkureManager) && (
+          <Link to="/reports/okul-sayilari" style={linkStyle("/reports/okul-sayilari")}>🏫 Okul Sayıları</Link>
         )}
         
         {showAdminMenu && (

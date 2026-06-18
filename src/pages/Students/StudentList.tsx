@@ -34,16 +34,26 @@ const hierarchy: any = {
   }
 };
 
+// 🤝 ORTAK MEFKURE GRUBU: LGS + PLUS + VİP tek listede toplanır
+const MEFKURE_KEYS = ["mefkureyks", "mefkurelgs"];
+const MEFKURE_GROUP = {
+  branches: ["Mefkure LGS", "Mefkure PLUS", "Mefkure VİP"],
+  grades: ["5", "6", "7", "8", "9", "10", "11", "12", "Mezun", "Mood"]
+};
+
 export default function StudentList() {
   const { user } = useAuth();
   const [firebaseRecords, setFirebaseRecords] = useState<any[]>([]);
   const [editingStudent, setEditingStudent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState(""); // 🔍 Arama state'i
-  
+  const [branchFilter, setBranchFilter] = useState("all"); // 🗂️ Grup başlığı süzgeci
+
 
   const userSettings = useMemo(() => {
     const userBranchKey = user?.branchId ? normalize(user.branchId) : "";
+    // Mefkure kullanıcıları (LGS/YKS) ortak Mefkure listesini görür
+    if (MEFKURE_KEYS.includes(userBranchKey)) return MEFKURE_GROUP;
     return hierarchy[userBranchKey] || { branches: [], grades: [] };
   }, [user]);
 
@@ -79,9 +89,13 @@ export default function StudentList() {
       
       if (!isAuthorized) return false;
 
-      // 🔍 Arama Filtresi
+      // 🗂️ Grup başlığı süzgeci (örn. sadece Mefkure PLUS)
+      if (branchFilter !== "all" && normalize(r.Okul || "") !== normalize(branchFilter)) return false;
+
+      // 🔍 Arama Filtresi (öğrenci adı VEYA gittiği okul)
       if (searchTerm) {
-        return normalize(r.studentName).includes(normalize(searchTerm));
+        const q = normalize(searchTerm);
+        return normalize(r.studentName).includes(q) || normalize(r.GittigiOkul || "").includes(q);
       }
 
       return true;
@@ -91,9 +105,9 @@ export default function StudentList() {
     return list.sort((a, b) => {
       const dateA = parseDate(a.SözleşmeTarihi);
       const dateB = parseDate(b.SözleşmeTarihi);
-      return dateB - dateA; 
+      return dateB - dateA;
     });
-  }, [firebaseRecords, user, userSettings, searchTerm]);
+  }, [firebaseRecords, user, userSettings, searchTerm, branchFilter]);
 
   // Yardımcı: Tarihi kullanıcıya güzel formatta göster (DD.MM.YYYY)
   const formatDateDisplay = (dateStr: string) => {
@@ -109,12 +123,15 @@ export default function StudentList() {
     e.preventDefault();
     try {
       const ref = doc(db, "records", editingStudent.id);
-      await updateDoc(ref, { 
+      const isMefkure = (editingStudent.Okul || "").toLocaleLowerCase('tr-TR').includes("mefkure");
+      await updateDoc(ref, {
         studentName: editingStudent.studentName,
         SözleşmeTarihi: editingStudent.SözleşmeTarihi,
         Okul: editingStudent.Okul,
         Sınıf: editingStudent.Sınıf,
-        SonTutar: Number(editingStudent.SonTutar)
+        SonTutar: Number(editingStudent.SonTutar),
+        // 🏫 Sadece Mefkure kayıtlarında gittiği okulu güncelle (boş string Firestore'da geçerli)
+        ...(isMefkure ? { GittigiOkul: editingStudent.GittigiOkul || "" } : {})
       });
       setEditingStudent(null);
       alert("Kayıt başarıyla güncellendi!");
@@ -131,15 +148,25 @@ export default function StudentList() {
         <h2 style={{ fontSize: "1.3rem", fontWeight: 800 }}>✍️ Manüel Kayıt Yönetimi</h2>
       </header>
 
-      {/* 🔍 ARAMA INPUTU */}
-      <div style={{ marginBottom: "15px" }}>
+      {/* 🔍 ARAMA + 🗂️ GRUP SÜZGECİ */}
+      <div style={{ display: "flex", gap: "10px", marginBottom: "15px", flexWrap: "wrap" }}>
         <input
           type="text"
-          placeholder="Öğrenci adı ile ara..."
+          placeholder="Öğrenci adı veya okul ile ara..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          style={searchInputStyle}
+          style={{ ...searchInputStyle, flex: 1, minWidth: "180px" }}
         />
+        {userSettings.branches.length > 1 && (
+          <select
+            value={branchFilter}
+            onChange={(e) => setBranchFilter(e.target.value)}
+            style={{ ...searchInputStyle, width: "auto", minWidth: "150px", cursor: "pointer" }}
+          >
+            <option value="all">🗂️ Tüm Gruplar</option>
+            {userSettings.branches.map((b: string) => <option key={b} value={b}>{b}</option>)}
+          </select>
+        )}
       </div>
       
       <div style={{ display: "grid", gap: "10px" }}>
@@ -153,6 +180,11 @@ export default function StudentList() {
               <div style={{ fontSize: "0.75rem", color: "#94a3b8", marginTop: "4px" }}>
                 📍 {s.Okul} | 🎓 Sınıf: {s.Sınıf} | 💰 {s.SonTutar?.toLocaleString("tr-TR")} TL
               </div>
+              {s.GittigiOkul && (
+                <div style={{ fontSize: "0.75rem", color: "#38bdf8", marginTop: "2px" }}>
+                  🏫 Gittiği Okul: {s.GittigiOkul}
+                </div>
+              )}
             </div>
             <div style={{ display: "flex", gap: "8px" }}>
               <button onClick={() => setEditingStudent(s)} style={btnEdit}>Düzenle</button>
@@ -197,6 +229,18 @@ export default function StudentList() {
                 </select>
               </div>
             </div>
+
+            {(editingStudent.Okul || "").toLocaleLowerCase('tr-TR').includes("mefkure") && (
+              <>
+                <label style={labelStyle}>Gittiği Okul (opsiyonel)</label>
+                <input
+                  style={inputStyle}
+                  value={editingStudent.GittigiOkul || ""}
+                  placeholder="Öğrencinin gittiği okul"
+                  onChange={e => setEditingStudent({ ...editingStudent, GittigiOkul: e.target.value })}
+                />
+              </>
+            )}
 
             <div style={{ display: "flex", gap: "10px" }}>
               <div style={{ flex: 1 }}>

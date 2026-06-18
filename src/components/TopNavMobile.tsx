@@ -50,6 +50,7 @@ export default function TopNavMobile({ isAdmin }: MobileProps) {
   };
 
   const showAdminMenu = isAdmin || user?.role === 'admin' || user?.email === 'ugur@asaf.com';
+  const isMefkureManager = (user?.branchId || "").toLocaleLowerCase('tr-TR').includes("mefkure");
 
   return (
     <div className="mobileNavWrapper" style={wrapperStyle}>
@@ -102,6 +103,12 @@ export default function TopNavMobile({ isAdmin }: MobileProps) {
           {!showAdminMenu && (
             <NavLink to="/ogrenci-listesi" onClick={closeMenu} style={({ isActive }) => isActive ? activeNavLinkStyle : navLinkStyle}>
               ✍️ Kayıt Listesi (Yönetim)
+            </NavLink>
+          )}
+
+          {(showAdminMenu || isMefkureManager) && (
+            <NavLink to="/reports/okul-sayilari" onClick={closeMenu} style={({ isActive }) => isActive ? activeNavLinkStyle : navLinkStyle}>
+              🏫 Okul Sayıları
             </NavLink>
           )}
 

@@ -38,6 +38,7 @@ export default function DailyEntryPage() {
   const [classType, setClassType] = useState("");
   const [branch, setBranch] = useState("");
   const [amount, setAmount] = useState("");
+  const [studentSchool, setStudentSchool] = useState(""); // 🏫 Sadece Mefkure: gittiği okul
   const [saving, setSaving] = useState(false);
 
   const isAdmin = user?.role === 'admin' || user?.email === 'ugur@asaf.com';
@@ -51,6 +52,9 @@ export default function DailyEntryPage() {
     const groupKey = BRANCH_TO_GROUP[branch];
     return CLASS_OPTIONS[groupKey] || [];
   }, [branch]);
+
+  // 🏫 Sadece Mefkure şubelerinde "Gittiği Okul" alanı gösterilir
+  const isMefkure = useMemo(() => branch.toLocaleLowerCase('tr-TR').includes("mefkure"), [branch]);
 
   useEffect(() => {
     if (!isAdmin && availableBranches.length === 1) {
@@ -86,7 +90,9 @@ export default function DailyEntryPage() {
         source: "manual",
         createdAt: serverTimestamp(),
         addedBy: user?.email || "unknown",
-        addedByName: user?.displayName || "Bilinmeyen"
+        addedByName: user?.displayName || "Bilinmeyen",
+        // 🏫 Sadece Mefkure ve doluysa ekle (Firestore undefined hatası olmasın diye koşullu)
+        ...(isMefkure && studentSchool.trim() ? { GittigiOkul: studentSchool.trim() } : {})
       };
 
       await addDoc(collection(db, "records"), payload);
@@ -120,6 +126,7 @@ export default function DailyEntryPage() {
       setStudentName("");
       setAmount("");
       setClassType("");
+      setStudentSchool("");
       if (isAdmin || availableBranches.length > 1) setBranch("");
       
     } catch (err: any) {
@@ -154,7 +161,7 @@ export default function DailyEntryPage() {
         </label>
 
         <label style={labelStyle}>Kurum / Şube
-          <select value={branch} onChange={(e) => { setBranch(e.target.value); setClassType(""); }} style={inputStyle}>
+          <select value={branch} onChange={(e) => { setBranch(e.target.value); setClassType(""); setStudentSchool(""); }} style={inputStyle}>
             <option value="">{availableBranches.length > 1 ? "Şube Seçiniz" : "Şube Atandı"}</option>
             {availableBranches.map((b) => <option key={b} value={b}>{b}</option>)}
           </select>
@@ -166,6 +173,12 @@ export default function DailyEntryPage() {
             {availableClasses.map((c) => <option key={c} value={c}>{c === "Ana Sınıfı" || isNaN(Number(c)) ? c : `${c}. Sınıf`}</option>)}
           </select>
         </label>
+
+        {isMefkure && (
+          <label style={labelStyle}>Gittiği Okul <span style={{ color: "#64748b", fontWeight: 400 }}>(opsiyonel)</span>
+            <input value={studentSchool} onChange={(e) => setStudentSchool(e.target.value)} placeholder="Öğrencinin gittiği okul" style={inputStyle} />
+          </label>
+        )}
 
         <label style={labelStyle}>Tutar (₺)
           <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Tutar girin" style={inputStyle} />

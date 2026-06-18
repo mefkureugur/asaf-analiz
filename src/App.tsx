@@ -17,6 +17,7 @@ import FinanceInputPage from "./pages/Finance/FinanceInputPage";
 import FinanceViewPage from "./pages/Finance/FinanceViewPage";
 // 🚀 YENİ RAPOR SAYFASI EKLENDİ
 import DailyEnrollmentReport from "./pages/reports/DailyEnrollmentReport";
+import SchoolCounts from "./pages/reports/SchoolCounts";
 import LoginPage from "./pages/Login/LoginPage";
 import UserManagement from "./pages/admin/UserManagement";
 import ScenariosPage from "./pages/ScenariosPage";
@@ -71,6 +72,9 @@ function AppContent() {
           
           {/* 🚀 GÜNLÜK KAYIT RAPORU: Hem Admin Hem Müdür Görebilir */}
           <Route path="/reports/daily" element={<DailyEnrollmentReport />} />
+
+          {/* 🏫 OKUL BAZLI ÖĞRENCİ SAYILARI (Mefkure) */}
+          <Route path="/reports/okul-sayilari" element={<SchoolCounts />} />
 
           {/* 🎯 HEDEF, YÖNETİM & FİNANS AYRIMI */}
           {isAdmin ? (
