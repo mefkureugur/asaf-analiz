@@ -15,6 +15,9 @@ build
 .firebase
 .vercel
 
+# TypeScript artımlı derleme önbelleği (her build'de yeniden oluşur)
+*.tsbuildinfo
+
 # Yerel Ortam Değişkenleri (Şifrelerin ve Firebase anahtarlarının olduğu yer 🔒)
 .env
 .env.local
