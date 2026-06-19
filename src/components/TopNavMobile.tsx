@@ -106,7 +106,8 @@ export default function TopNavMobile({ isAdmin }: MobileProps) {
             </NavLink>
           )}
 
-          {(showAdminMenu || isMefkureManager) && (
+          {/* 🏫 Okul Sayıları SADECE Mefkure (LGS/VİP/PLUS) şubelerinde görünür; admin/kurucu menüsünde yok */}
+          {isMefkureManager && (
             <NavLink to="/reports/okul-sayilari" onClick={closeMenu} style={({ isActive }) => isActive ? activeNavLinkStyle : navLinkStyle}>
               🏫 Okul Sayıları
             </NavLink>

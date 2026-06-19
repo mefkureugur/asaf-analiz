@@ -111,7 +111,8 @@ export default function TopNav({ isAdmin }: TopNavProps) {
           <Link to="/ogrenci-listesi" style={linkStyle("/ogrenci-listesi")}>✍️ Kayıt Listesi</Link>
         )}
 
-        {(showAdminMenu || isMefkureManager) && (
+        {/* 🏫 Okul Sayıları SADECE Mefkure (LGS/VİP/PLUS) şubelerinde görünür; admin/kurucu menüsünde yok */}
+        {isMefkureManager && (
           <Link to="/reports/okul-sayilari" style={linkStyle("/reports/okul-sayilari")}>🏫 Okul Sayıları</Link>
         )}
         

@@ -7,7 +7,21 @@ const normalize = (s: any): string => {
   if (!s) return "";
   return String(s).toLocaleLowerCase('tr-TR').trim()
     .replace(/ı/g, "i").replace(/ğ/g, "g").replace(/ü/g, "u").replace(/ş/g, "s").replace(/ö/g, "o").replace(/ç/g, "c")
-    .replace(/[^a-z0-9]/g, ""); 
+    .replace(/[^a-z0-9]/g, "");
+};
+
+// 📅 Tarih formatı dönüşümleri.
+// DEPOLAMA standardı: GG.AA.YYYY (örn. 09.06.2026) — tüm raporlar bunu bekler (".2026" filtresi vb.)
+// <input type="date"> ise YYYY-AA-GG (ISO) ister. Bu ikisini güvenle çeviriyoruz.
+const toInputDate = (s: string): string => {
+  if (!s) return "";
+  if (s.includes(".")) { const [d, m, y] = s.split("."); return `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`; }
+  return s; // zaten ISO
+};
+const toStoredDate = (s: string): string => {
+  if (!s) return "";
+  if (s.includes("-")) { const [y, m, d] = s.split("-"); return `${d.padStart(2, "0")}.${m.padStart(2, "0")}.${y}`; }
+  return s; // zaten GG.AA.YYYY
 };
 
 // 🎯 Hafızadaki Tam Yetki ve Sınıf Yapısı (Bileşen dışına taşındı)
@@ -126,7 +140,8 @@ export default function StudentList() {
       const isMefkure = (editingStudent.Okul || "").toLocaleLowerCase('tr-TR').includes("mefkure");
       await updateDoc(ref, {
         studentName: editingStudent.studentName,
-        SözleşmeTarihi: editingStudent.SözleşmeTarihi,
+        // 🛡️ Tarihi DAİMA GG.AA.YYYY olarak yaz — aksi halde raporların ".2026" sayımından düşer
+        SözleşmeTarihi: toStoredDate(editingStudent.SözleşmeTarihi),
         Okul: editingStudent.Okul,
         Sınıf: editingStudent.Sınıf,
         SonTutar: Number(editingStudent.SonTutar),
@@ -187,7 +202,7 @@ export default function StudentList() {
               )}
             </div>
             <div style={{ display: "flex", gap: "8px" }}>
-              <button onClick={() => setEditingStudent(s)} style={btnEdit}>Düzenle</button>
+              <button onClick={() => setEditingStudent({ ...s, SözleşmeTarihi: toInputDate(s.SözleşmeTarihi) })} style={btnEdit}>Düzenle</button>
               <button onClick={() => { if(window.confirm("Siliyorum?")) deleteDoc(doc(db, "records", s.id))}} style={btnDel}>Sil</button>
             </div>
           </div>
