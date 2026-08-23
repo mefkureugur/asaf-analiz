@@ -35,7 +35,10 @@ function belgeKimligi(anahtar: string, tekrarNo: number): string {
 
 export default function DataMigration() {
   const { user } = useAuth();
-  const { sayim, aktarimYapildi, loading, tumKayitlar } = useRecords();
+  const { sayim, aktarimYapildi, loading, tumKayitlar, aktarilanAnahtarlar } = useRecords();
+  // Geçmiş dönem kayıtları kapanmış sayılır; yalnızca yürürlükteki dönem
+  // aktarılır. 2025 dosyadan okunmaya devam eder (karşılaştırma için).
+  const [donem, setDonem] = useState<"2026" | "2025" | "hepsi">("2026");
 
   const [durum, setDurum] = useState<"hazir" | "calisiyor" | "bitti" | "hata">("hazir");
   const [ilerleme, setIlerleme] = useState(0);
@@ -46,15 +49,20 @@ export default function DataMigration() {
 
   /** JSON kayıtlarını kararlı kimlikleriyle hazırla. */
   const hazirlanan = useMemo(() => {
-    const ham = Array.isArray(asafRecordsRaw) ? asafRecordsRaw : [];
+    const tumu = Array.isArray(asafRecordsRaw) ? asafRecordsRaw : [];
+    const yil = (t: any) => String(t || "").split(".").pop() || "";
+    const ham = donem === "hepsi" ? tumu : tumu.filter((r: any) => yil(r.SözleşmeTarihi) === donem);
+
     const tekrarSayaci = new Map<string, number>();
     const mukerrerler: string[] = [];
+    let zatenAktarilan = 0;
 
     const kayitlar = ham.map((r: any) => {
       const anahtar = kayitAnahtari(r);
       const n = tekrarSayaci.get(anahtar) ?? 0;
       tekrarSayaci.set(anahtar, n + 1);
       if (n > 0) mukerrerler.push(`${r.ÖğrenciAdSoyad} — ${r.SözleşmeTarihi} — ${r.Okul}`);
+      if (aktarilanAnahtarlar.has(anahtar)) zatenAktarilan++;
 
       return {
         id: belgeKimligi(anahtar, n),
@@ -67,14 +75,17 @@ export default function DataMigration() {
           SözleşmeBitişTarihi: String(r.SözleşmeBitişTarihi || ""),
           KayıtDurumu: String(r.KayıtDurumu || "Aktif").trim(),
           source: "excel",
+          // Hangi dosya kaydından geldiği. Kayıt sonradan düzenlense bile
+          // bu değişmez; dosyadaki eşi bu sayede geri gelmez.
+          kaynakAnahtar: anahtar,
           aktarimTarihi: new Date().toISOString(),
           aktaran: user?.email || "bilinmiyor",
         },
       };
     });
 
-    return { kayitlar, mukerrerler };
-  }, [user]);
+    return { kayitlar, mukerrerler, zatenAktarilan };
+  }, [user, donem, aktarilanAnahtarlar]);
 
   /**
    * ÇAKIŞMA KONTROLÜ
@@ -89,13 +100,16 @@ export default function DataMigration() {
       .forEach((r) => manuelAnahtarlar.set(kayitAnahtari(r), r));
 
     const bulunan: { ad: string; tarih: string; okul: string }[] = [];
-    (Array.isArray(asafRecordsRaw) ? asafRecordsRaw : []).forEach((r: any) => {
+    const yil = (t: any) => String(t || "").split(".").pop() || "";
+    (Array.isArray(asafRecordsRaw) ? asafRecordsRaw : [])
+      .filter((r: any) => donem === "hepsi" || yil(r.SözleşmeTarihi) === donem)
+      .forEach((r: any) => {
       if (manuelAnahtarlar.has(kayitAnahtari(r))) {
         bulunan.push({ ad: r.ÖğrenciAdSoyad, tarih: r.SözleşmeTarihi, okul: r.Okul });
       }
     });
     return bulunan;
-  }, [tumKayitlar]);
+  }, [tumKayitlar, donem]);
 
   /**
    * Aynı isim, farklı tarih: aynı öğrenci farklı dönemde tekrar kayıt olmuş
@@ -104,6 +118,7 @@ export default function DataMigration() {
    * doğmasın.
    */
   const ayniIsimFarkliTarih = useMemo(() => {
+    const yil = (t: any) => String(t || "").split(".").pop() || "";
     const manuelIsimler = new Map<string, Set<string>>();
     tumKayitlar
       .filter((r) => r.kaynak === "manual")
@@ -115,13 +130,15 @@ export default function DataMigration() {
       });
 
     let sayi = 0;
-    (Array.isArray(asafRecordsRaw) ? asafRecordsRaw : []).forEach((r: any) => {
+    (Array.isArray(asafRecordsRaw) ? asafRecordsRaw : [])
+      .filter((r: any) => donem === "hepsi" || yil(r.SözleşmeTarihi) === donem)
+      .forEach((r: any) => {
       const ad = String(r.ÖğrenciAdSoyad || "").trim().toLocaleUpperCase("tr-TR");
       const tarihler = manuelIsimler.get(ad);
       if (tarihler && !tarihler.has(String(r.SözleşmeTarihi || ""))) sayi++;
     });
     return sayi;
-  }, [tumKayitlar]);
+  }, [tumKayitlar, donem]);
 
   const toplamTutar = useMemo(
     () => hazirlanan.kayitlar.reduce((t, k) => t + k.veri.SonTutar, 0),
@@ -197,6 +214,31 @@ export default function DataMigration() {
       {/* Aktarılacak içerik */}
       <div className="card" style={{ marginBottom: "var(--sp-5)" }}>
         <div className="label" style={{ marginBottom: "var(--sp-3)" }}>AKTARILACAK</div>
+
+        <div style={{ display: "inline-flex", background: "var(--bg)", border: "1px solid var(--line)", borderRadius: "var(--r-md)", padding: 2, marginBottom: "var(--sp-4)" }}>
+          {([["2026", "2026 Dönemi"], ["2025", "2025 Dönemi"], ["hepsi", "Hepsi"]] as const).map(([d, etiket]) => (
+            <button
+              key={d}
+              onClick={() => setDonem(d)}
+              disabled={durum === "calisiyor"}
+              style={{
+                border: "none", borderRadius: "var(--r-sm)", padding: "var(--sp-2) var(--sp-4)",
+                fontSize: "0.82rem", fontWeight: 600, whiteSpace: "nowrap",
+                background: donem === d ? "var(--surface-raised)" : "transparent",
+                color: donem === d ? "var(--text)" : "var(--text-3)",
+                boxShadow: donem === d ? "inset 0 1px 0 var(--material-edge)" : "none",
+              }}
+            >
+              {etiket}
+            </button>
+          ))}
+        </div>
+
+        <div className="caption" style={{ marginBottom: "var(--sp-4)" }}>
+          Geçmiş dönem kayıtları kapanmış sayılır. Aktarılmayan dönemler gömülü
+          dosyadan <strong>okunmaya devam eder</strong> — geçen yıl / bu yıl
+          karşılaştırması etkilenmez, yalnızca o kayıtlar düzenlenemez.
+        </div>
         <div style={{ display: "grid", gap: "var(--sp-2)" }}>
           <Satir etiket="Kayıt sayısı" deger={hazirlanan.kayitlar.length} />
           <Satir etiket="Toplam tutar" deger={`₺${toplamTutar.toLocaleString("tr-TR")}`} />
@@ -204,6 +246,8 @@ export default function DataMigration() {
           <Satir etiket="Elle girilmişle çakışan" deger={cakisanlar.length}
                  vurgu={cakisanlar.length ? "var(--danger)" : "var(--success)"} />
           <Satir etiket="Aynı isim, farklı tarih" deger={ayniIsimFarkliTarih} />
+          <Satir etiket="Zaten aktarılmış (atlanacak değil, üzerine yazılır)"
+                 deger={hazirlanan.zatenAktarilan} />
         </div>
         <div className="caption" style={{ marginTop: "var(--sp-3)" }}>
           Kayıtlar ad + <strong>tarih</strong> + okul + tutar birlikte karşılaştırılır. Aynı
@@ -251,12 +295,18 @@ export default function DataMigration() {
           İŞLEM ÖNCESİ
         </div>
         <ul style={{ color: "var(--text-2)", fontSize: "0.9rem", lineHeight: 1.7, paddingLeft: "1.1rem", margin: 0 }}>
-          <li>Bu işlem {hazirlanan.kayitlar.length} kaydı veritabanına yazar.</li>
+          <li>
+            Bu işlem <strong style={{ color: "var(--text)" }}>{hazirlanan.kayitlar.length}</strong> kaydı
+            veritabanına yazar ({donem === "hepsi" ? "tüm dönemler" : donem + " dönemi"}).
+          </li>
           <li>
             Her kaydın kimliği içeriğinden üretilir; işlem ikinci kez çalıştırılsa bile
             <strong> mükerrer oluşmaz</strong>, aynı kayıtların üzerine yazılır.
           </li>
-          <li>Aktarım biter bitmez tüm sayfalar otomatik olarak veritabanını kullanmaya geçer.</li>
+          <li>
+            Aktarılan kayıtlar için gömülü dosya devre dışı kalır; aktarılmayanlar
+            dosyadan okunmaya devam eder. Toplam sayılar değişmez.
+          </li>
           <li>Elle girilmiş kayıtlara dokunulmaz.</li>
         </ul>
 
@@ -287,7 +337,9 @@ export default function DataMigration() {
             fontSize: "1rem",
           }}
         >
-          {durum === "calisiyor" ? `Aktarılıyor… ${ilerleme}/${hazirlanan.kayitlar.length}` : "Aktarımı Başlat"}
+          {durum === "calisiyor"
+            ? `Aktarılıyor… ${ilerleme}/${hazirlanan.kayitlar.length}`
+            : `${hazirlanan.kayitlar.length} Kaydı Aktar`}
         </button>
 
         {mesaj && (

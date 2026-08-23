@@ -14,11 +14,19 @@ import asafRecordsRaw from "../data/excel2json-1769487741734.json";
    Burada tek yerde toplanıyor. Ayrıca JSON'dan Firestore'a geçişi
    KESİNTİSİZ yapan mantık burada:
 
-     • Firestore'da hiç "excel" kaynaklı kayıt yoksa  -> JSON + Firestore
-     • En az bir tane varsa (aktarım yapılmış demektir) -> yalnız Firestore
+     Aktarılan her kayıt, Firestore'da `kaynakAnahtar` alanıyla hangi JSON
+     kaydından geldiğini taşır. JSON tarafında yalnızca O kayıt devre dışı
+     kalır; geri kalanı okunmaya devam eder.
 
-   Böylece aktarım öncesi ve sonrası sayılar hiç bozulmaz; aktarım
-   tamamlandığı anda kaynak kendiliğinden değişir. Çift sayma olmaz.
+   Neden kayıt bazında:
+     • Kısmi aktarım mümkün olsun diye. Örneğin yalnız 2026 aktarılırsa
+       2025 kayıtları dosyadan okunmaya devam eder — geçen yıl / bu yıl
+       karşılaştırması bozulmaz.
+     • Aktarılan kayıt sonradan DÜZENLENSE bile (ad, tutar, tarih değişse)
+       eşleşme `kaynakAnahtar` üzerinden kurulduğu için JSON'daki eski hâli
+       geri gelmez.
+     • İPTAL edilen kayıt da dosyadaki eşini bastırmaya devam eder; yoksa
+       iptal ettiğin öğrenci dosyadan yeniden ortaya çıkardı.
    ===================================================================== */
 
 export interface Kayit {
@@ -35,6 +43,8 @@ export interface Kayit {
   iptalTarihi?: string;
   iptalEden?: string;
   iptalNotu?: string;
+  /** Aktarılan kayıtlarda: geldiği JSON kaydının kimliği. */
+  kaynakAnahtar?: string;
   [k: string]: any;
 }
 
@@ -62,10 +72,12 @@ export interface UseRecordsSonuc {
   /** İptaller dahil hepsi — liste ekranları burayı kullanır. */
   tumKayitlar: Kayit[];
   loading: boolean;
-  /** Aktarım yapılmış mı (Firestore'da excel kaynaklı kayıt var mı). */
+  /** En az bir kayıt aktarılmış mı. */
   aktarimYapildi: boolean;
   /** Kaynak dağılımı — doğrulama ve aktarım ekranı için. */
   sayim: { json: number; excel: number; manual: number; iptal: number };
+  /** Aktarılmış kayıtların kaynak anahtarları — aktarım ekranı kullanır. */
+  aktarilanAnahtarlar: Set<string>;
 }
 
 export function useRecords(): UseRecordsSonuc {
@@ -94,14 +106,22 @@ export function useRecords(): UseRecordsSonuc {
   }, []);
 
   return useMemo(() => {
-    const aktarimYapildi = firestoreKayitlari.some((r) => r.kaynak === "excel");
+    // Aktarılmış kayıtların kaynak anahtarları. İPTAL edilenler de dahil —
+    // aksi hâlde iptal edilen kayıt dosyadan geri gelirdi.
+    const aktarilanAnahtarlar = new Set<string>();
+    firestoreKayitlari.forEach((r) => {
+      if (r.kaynak === "excel" && r.kaynakAnahtar) aktarilanAnahtarlar.add(r.kaynakAnahtar);
+    });
 
-    // Aktarım yapıldıysa JSON devre dışı kalır — çift sayma olmaz.
-    const jsonKayitlari: Kayit[] = aktarimYapildi
-      ? []
-      : (Array.isArray(asafRecordsRaw) ? asafRecordsRaw : []).map((r: any, i: number) =>
-          normalize(r, `json:${i}`, "json")
-        );
+    const hamJson = Array.isArray(asafRecordsRaw) ? asafRecordsRaw : [];
+
+    // Dosyadan yalnızca HENÜZ AKTARILMAMIŞ kayıtlar okunur.
+    const jsonKayitlari: Kayit[] = hamJson
+      .map((r: any, i: number) => ({ r, i, anahtar: kayitAnahtari(r) }))
+      .filter(({ anahtar }) => !aktarilanAnahtarlar.has(anahtar))
+      .map(({ r, i }) => normalize(r, `json:${i}`, "json"));
+
+    const aktarimYapildi = aktarilanAnahtarlar.size > 0;
 
     const tumKayitlar = [...jsonKayitlari, ...firestoreKayitlari];
     const records = tumKayitlar.filter((r) => r.KayıtDurumu !== "İptal");
@@ -111,6 +131,7 @@ export function useRecords(): UseRecordsSonuc {
       tumKayitlar,
       loading,
       aktarimYapildi,
+      aktarilanAnahtarlar,
       sayim: {
         json: jsonKayitlari.length,
         excel: firestoreKayitlari.filter((r) => r.kaynak === "excel").length,

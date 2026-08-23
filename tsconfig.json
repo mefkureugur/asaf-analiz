@@ -9,6 +9,9 @@
     "declaration": true,
     "declarationMap": true,
     "moduleResolution": "bundler",
+    /* Alt yapilandirmalarla ayni olacak sekilde burada da acikca belirtildi */
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
     /* JSON dosyalarını import edebilmek için eklenen kısımlar */
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true
