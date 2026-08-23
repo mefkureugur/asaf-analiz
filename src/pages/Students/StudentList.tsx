@@ -48,7 +48,7 @@ type KaynakSuzgeci = "hepsi" | "manual" | "excel";
 
 export default function StudentList() {
   const { user } = useAuth();
-  const { tumKayitlar, loading, aktarimYapildi, sayim } = useRecords();
+  const { tumKayitlar, loading, sayim } = useRecords();
 
   const [editingStudent, setEditingStudent] = useState<any>(null);
   const [iptalEdilen, setIptalEdilen] = useState<Kayit | null>(null);
@@ -113,6 +113,11 @@ export default function StudentList() {
 
   /** Gösterimde her zaman GG.AA.YYYY — kaynak dosyada "1.1.2026" gibi
       sıfırsız tarihler var, listede karışık görünmesin. */
+  const saltOkunurSayisi = useMemo(
+    () => filteredList.filter((r) => r.kaynak === "json").length,
+    [filteredList]
+  );
+
   const formatDateDisplay = (dateStr: string) => {
     if (!dateStr) return "-";
     const pad = (x: string) => x.padStart(2, "0");
@@ -237,14 +242,16 @@ export default function StudentList() {
         </button>
       </div>
 
-      {/* Aktarım yapılmadıysa sabit kayıtlar salt okunur — nedeni açıkça yazılıyor */}
-      {!aktarimYapildi && (
+      {/* Aktarılmamış kayıtlar salt okunur — nedeni açıkça yazılıyor */}
+      {saltOkunurSayisi > 0 && (
         <div style={uyariKutusu}>
-          Sabit kayıtlar şu an uygulamanın içine gömülü dosyadan geliyor; bu yüzden
-          <strong> düzenlenemez ve iptal edilemez</strong>.
-          {isAdmin
-            ? " Veri Aktarımı sayfasından bir kez aktarım yapıldığında hepsi düzenlenebilir hale gelir."
-            : " Yöneticinin veri aktarımı yapması gerekiyor."}
+          Bu görünümdeki <strong>{saltOkunurSayisi} kayıt salt okunur</strong>. Uygulamanın içine
+          gömülü dosyadan geliyorlar; veritabanında olmadıkları için düzenlenemez ve iptal edilemezler.
+          {donem === "2025"
+            ? " Geçmiş dönem kayıtları kapanmış sayıldığı için bilerek aktarılmadı."
+            : isAdmin
+              ? " Veri Aktarımı sayfasından aktarılabilirler."
+              : " Aktarımı yöneticinin yapması gerekiyor."}
         </div>
       )}
 
@@ -338,7 +345,11 @@ export default function StudentList() {
 
                 <div style={{ display: "flex", gap: "var(--sp-2)" }}>
                   {!duzenlenebilir ? (
-                    <span className="caption" style={{ alignSelf: "center" }}>aktarım bekliyor</span>
+                    // Gömülü dosyadan okunan kayıt: veritabanında olmadığı için
+                    // değiştirilemez. Geçmiş dönemler bilerek aktarılmıyor.
+                    <span className="caption" style={{ alignSelf: "center", whiteSpace: "nowrap" }}>
+                      salt okunur
+                    </span>
                   ) : iptalli ? (
                     <button onClick={() => geriAl(s)} disabled={mesgul} style={btnGeriAl}>
                       {mesgul ? "…" : "Geri Al"}
