@@ -167,7 +167,7 @@ function TargetSection({ title, selectedInst, setSelectedInst, availableList, da
       <div style={inputGroup}>
         <div style={row}><span>Öğrenci Hedefi</span><input disabled={isReadOnly} value={target.student} onChange={(e)=>update('student', e.target.value)} style={inp}/></div>
         <div style={row}><span>Ciro Hedefi</span><input disabled={isReadOnly} value={target.revenue} onChange={(e)=>update('revenue', e.target.value)} style={inp}/></div>
-        <div style={row}><span style={{color:"#4b5563"}}>Ortalama Hedef</span><span style={autoVal}>₺{avgTar.toLocaleString("tr-TR")}</span></div>
+        <div style={row}><span style={{color:"var(--text-3)"}}>Ortalama Hedef</span><span style={autoVal}>₺{avgTar.toLocaleString("tr-TR")}</span></div>
       </div>
       <div style={resBox}>
         <ResultLine label="Gerçekleşen Öğrenci" val={realized.count} tar={target.student} />
@@ -192,13 +192,13 @@ function ResultLine({ label, val, tar }: any) {
 const cardStyle = { background: "var(--surface)", borderRadius: "var(--r-xl)", padding: 30, border: "1px solid var(--line)" };
 const filterBox = { background: "var(--surface)", padding: "8px 15px", borderRadius: "var(--r-md)", border: "1px solid var(--line)", minWidth: "120px" };
 const labSmall = { fontSize: "0.6rem", color: "var(--text-3)", display: "block", fontWeight: 800, textTransform: "uppercase" as const, marginBottom: 4 };
-const selStyle = { background: "transparent", border: "none", color: "white", outline: "none", cursor: "pointer", fontSize: "0.85rem", width: "100%", colorScheme: "dark" };
-const cardSelStyle = { background: "var(--line)", color: "white", border: "1px solid #374151", padding: "8px 12px", borderRadius: "var(--r-md)", fontSize: "0.8rem", outline: "none", colorScheme: "dark" };
-const optStyle = { background: "var(--surface)", color: "white" };
-const secTitle = { fontSize: "0.8rem", fontWeight: 800, color: "#4b5563", letterSpacing: 1 };
+const selStyle = { background: "transparent", border: "none", color: "var(--text)", outline: "none", cursor: "pointer", fontSize: "0.85rem", width: "100%", colorScheme: "dark" };
+const cardSelStyle = { background: "var(--line)", color: "var(--text)", border: "1px solid var(--line-strong)", padding: "8px 12px", borderRadius: "var(--r-md)", fontSize: "0.8rem", outline: "none", colorScheme: "dark" };
+const optStyle = { background: "var(--surface)", color: "var(--text)" };
+const secTitle = { fontSize: "0.8rem", fontWeight: 800, color: "var(--text-3)", letterSpacing: 1 };
 const inputGroup = { display: "flex", flexDirection: "column" as const, gap: 15, marginBottom: 25 };
 const row = { display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "0.95rem" };
-const inp = { background: "var(--line)", border: "1px solid #374151", color: "white", padding: "10px", borderRadius: "var(--r-md)", width: "120px", textAlign: "right" as const, outline: "none" };
+const inp = { background: "var(--line)", border: "1px solid var(--line-strong)", color: "var(--text)", padding: "10px", borderRadius: "var(--r-md)", width: "120px", textAlign: "right" as const, outline: "none" };
 const autoVal = { fontWeight: 700, color: "var(--accent)" };
-const resBox = { background: "rgba(0,0,0,0.3)", padding: 20, borderRadius: "var(--r-xl)", borderLeft: "4px solid var(--success)" };
+const resBox = { background: "var(--bg)", padding: 20, borderRadius: "var(--r-xl)", borderLeft: "4px solid var(--success)" };
 const saveButtonStyle = { background: "var(--accent)", color: "var(--surface)", border: "none", padding: "10px 20px", borderRadius: "var(--r-md)", fontWeight: 700, cursor: "pointer" };

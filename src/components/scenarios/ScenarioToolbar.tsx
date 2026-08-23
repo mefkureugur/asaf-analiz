@@ -78,7 +78,7 @@ function Btn({ onClick, label, color, disabled, title }: { onClick: () => void; 
       disabled={disabled}
       title={title}
       // Saydam kenar icin hex'e alfa eklemek yerine color-mix kullaniliyor:
-      // `${color}60` yalnizca hex ile calisirdi, var(--token) ile bozulurdu.
+      // `color-mix(in srgb, ${color} 38%, transparent)` yalnizca hex ile calisirdi, var(--token) ile bozulurdu.
       style={{
         background: 'transparent',
         border: `1px solid ${disabled ? 'var(--line)' : `color-mix(in srgb, ${color} 38%, transparent)`}`,
@@ -99,6 +99,6 @@ const toolbar: React.CSSProperties = {
 const dropdowns: React.CSSProperties = { display: 'flex', gap: 10, flex: 1, flexWrap: 'wrap' };
 const buttons: React.CSSProperties = { display: 'flex', gap: 8, flexWrap: 'wrap' };
 const sel: React.CSSProperties = {
-  background: 'var(--bg)', border: '1px solid var(--line-strong)', color: 'white',
+  background: 'var(--bg)', border: '1px solid var(--line-strong)', color: 'var(--text)',
   padding: '8px 12px', borderRadius: "var(--r-sm)", fontSize: '0.85rem', outline: 'none', cursor: 'pointer', minWidth: 160
 };

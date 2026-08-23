@@ -22,18 +22,40 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 
+    <script>
+      // TEMA — ilk boyamadan ÖNCE çalışmalı.
+      // Aksi halde sayfa önce koyu açılır, sonra aydınlığa atlar (göz alır).
+      // Bu yüzden burada, <head> içinde ve senkron duruyor.
+      (function () {
+        try {
+          var t = localStorage.getItem('asaf-tema');
+          if (t !== 'light' && t !== 'dark') {
+            t = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+          }
+          document.documentElement.setAttribute('data-theme', t);
+          var m = document.querySelector('meta[name="theme-color"]');
+          if (m) m.setAttribute('content', t === 'light' ? '#f1f5f9' : '#020617');
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      })();
+    </script>
+
     <style>
+      /* Yükleme ekranı da temaya uyar; uygulama açılana kadar geçerli */
+      :root { --acilis-zemin: #020617; --acilis-metin: #94a3b8; }
+      :root[data-theme="light"] { --acilis-zemin: #f1f5f9; --acilis-metin: #475569; }
       body {
         margin: 0;
-        background-color: #020617;
+        background-color: var(--acilis-zemin);
         font-family: 'Inter', system-ui, -apple-system, sans-serif;
       }
       #loader {
         position: fixed;
         inset: 0;
         display: flex; flex-direction: column; justify-content: center; align-items: center;
-        background-color: #020617;
-        color: #94a3b8;
+        background-color: var(--acilis-zemin);
+        color: var(--acilis-metin);
         font-weight: 600; font-size: 0.85rem;
         letter-spacing: 0.045em; text-transform: uppercase;
         z-index: 9999;

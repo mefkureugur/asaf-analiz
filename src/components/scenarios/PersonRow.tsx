@@ -111,9 +111,9 @@ export default function PersonRow({ person, kidemOn, onChange, onRemove }: Props
 
       {/* Maliyet özeti */}
       <div style={costRow}>
-        {cost.kayitli > 0 && <span style={tag('#3b82f6')}>Kayıtlı: ₺{fmt(cost.kayitli)}</span>}
-        {cost.elden > 0 && <span style={tag('#f59e0b')}>Elden: ₺{fmt(cost.elden)}</span>}
-        {cost.kidem > 0 && <span style={tag('#8b5cf6')}>Kıdem: ₺{fmt(cost.kidem)}</span>}
+        {cost.kayitli > 0 && <span style={tag('var(--accent)')}>Kayıtlı: ₺{fmt(cost.kayitli)}</span>}
+        {cost.elden > 0 && <span style={tag('var(--warning)')}>Elden: ₺{fmt(cost.elden)}</span>}
+        {cost.kidem > 0 && <span style={tag('var(--sube-plus)')}>Kıdem: ₺{fmt(cost.kidem)}</span>}
         <span style={totalTag}>Yıllık toplam: ₺{fmt(cost.toplam)}</span>
       </div>
     </div>
@@ -129,11 +129,11 @@ const inputGrid: React.CSSProperties = { display: 'flex', gap: 8, flexWrap: 'wra
 const fieldWrap: React.CSSProperties = { display: 'flex', flexDirection: 'column', gap: 4, minWidth: 110, flex: 1 };
 const fieldLabel: React.CSSProperties = { color: 'var(--text-3)', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.04em' };
 const inp: React.CSSProperties = {
-  background: 'var(--line)', border: '1px solid var(--line-strong)', color: 'white',
+  background: 'var(--line)', border: '1px solid var(--line-strong)', color: 'var(--text)',
   padding: '7px 10px', borderRadius: "var(--r-sm)", fontSize: '0.85rem', outline: 'none', width: '100%', boxSizing: 'border-box'
 };
 const sel: React.CSSProperties = {
-  background: 'var(--line)', border: '1px solid var(--line-strong)', color: 'white',
+  background: 'var(--line)', border: '1px solid var(--line-strong)', color: 'var(--text)',
   padding: '7px 8px', borderRadius: "var(--r-sm)", fontSize: '0.8rem', outline: 'none', cursor: 'pointer'
 };
 const delBtn: React.CSSProperties = {
@@ -143,7 +143,7 @@ const delBtn: React.CSSProperties = {
 };
 const costRow: React.CSSProperties = { display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' };
 const tag = (color: string): React.CSSProperties => ({
-  background: color + '15', border: `1px solid ${color}30`, color,
+  background: color + '15', border: `1px solid color-mix(in srgb, ${color} 19%, transparent)`, color,
   padding: '2px 8px', borderRadius: 4, fontSize: '0.7rem', fontWeight: 600
 });
 const totalTag: React.CSSProperties = {

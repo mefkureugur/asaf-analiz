@@ -5,6 +5,7 @@ import { updatePassword } from "firebase/auth";
 import { auth } from "../firebase";
 import Sheet from "./ui/Sheet";
 import Modal from "./ui/Modal";
+import { TemaSatiri } from "./ui/TemaSecici";
 
 interface MobileProps {
   isAdmin?: boolean;
@@ -135,6 +136,9 @@ export default function TopNavMobile({ isAdmin }: MobileProps) {
         <Divider />
         <SheetLink to="/daily" onClick={closeMenu}>✍️ Günlük Giriş</SheetLink>
         <SheetLink to="/reports/daily" onClick={closeMenu}>📋 Günlük Rapor</SheetLink>
+
+        <Divider />
+        <TemaSatiri />
 
         <Divider />
         <div style={{ padding: "var(--sp-3) var(--sp-5)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>

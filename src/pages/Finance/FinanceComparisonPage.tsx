@@ -113,7 +113,7 @@ export default function FinanceComparisonPage({ selectedKurum }: { selectedKurum
             <div style={{ ...headerSummaryBox, flexWrap: "wrap", justifyContent: isMobile ? "space-between" : "center" }}>
               <span style={summaryItem}>{formatCurrency(activeStats.v1)} <small>2025 Ort.</small></span>
               {!isMobile && <div style={summaryDivider} />}
-              <span style={{ ...summaryItem, color: '#f8fafc' }}>{formatCurrency(activeStats.v2)} <small>2026 Ort.</small></span>
+              <span style={{ ...summaryItem, color: 'var(--text)' }}>{formatCurrency(activeStats.v2)} <small>2026 Ort.</small></span>
               <div style={{ ...miniBadge, background: activeStats.diff > 0 ? "#ef444420" : "#22c55e20", color: activeStats.diff > 0 ? "var(--danger)" : "var(--success)" }}>
                 {activeStats.diff > 0 ? <ArrowUpRight size={12}/> : <ArrowDownRight size={12}/>} %{Math.abs(activeStats.diff).toFixed(1)}
               </div>
@@ -164,7 +164,7 @@ function CustomLabel({ x, y, value, width, height, isMobile, layout }: any) {
 
 function CompCard({ title, v1, v2, icon, color, format, isMobile, isRevenue }: any) {
   const diff = v1 === 0 ? 0 : ((v2 - v1) / v1) * 100;
-  const statusColor = isRevenue ? (diff > 0 ? "#22c55e" : "#ef4444") : (diff > 0 ? "#ef4444" : "#22c55e");
+  const statusColor = isRevenue ? (diff > 0 ? "var(--success)" : "var(--danger)") : (diff > 0 ? "var(--danger)" : "var(--success)");
   return (
     <div style={{ ...cardStyle, padding: isMobile ? "15px" : "20px" }}>
       <div style={cardHeader}>{icon} {title}</div>
@@ -172,7 +172,7 @@ function CompCard({ title, v1, v2, icon, color, format, isMobile, isRevenue }: a
         <div style={{ ...oldVal, fontSize: isMobile ? "0.85rem" : "0.95rem" }}>{format(v1)} <small>2025</small></div>
         <div style={{ ...newVal, fontSize: isMobile ? "1.2rem" : "1.45rem" }}>{format(v2)} <small>2026</small></div>
       </div>
-      <div style={{ ...diffBadge, background: `${statusColor}20`, color: statusColor }}>
+      <div style={{ ...diffBadge, background: `color-mix(in srgb, ${statusColor} 12%, transparent)`, color: statusColor }}>
         {diff > 0 ? <ArrowUpRight size={14}/> : <ArrowDownRight size={14}/>} %{Math.abs(diff).toFixed(1)}
       </div>
     </div>
@@ -193,6 +193,6 @@ const grid3 = { display: "grid", gap: 20, marginBottom: 25 };
 const cardStyle = { background: "var(--surface)", border: "1px solid var(--line)", borderRadius: "var(--r-lg)", display: "flex", flexDirection: "column" as const, gap: 12 };
 const cardHeader = { fontSize: "0.65rem", fontWeight: 800, color: "var(--text-3)", display: "flex", alignItems: "center", gap: 8 };
 const valRow = { display: "flex", justifyContent: "space-between", alignItems: "center" };
-const oldVal = { fontSize: "0.95rem", color: "#475569", fontWeight: 600, display: "flex", flexDirection: "column" as const };
+const oldVal = { fontSize: "0.95rem", color: "var(--text-3)", fontWeight: 600, display: "flex", flexDirection: "column" as const };
 const newVal = { fontSize: "1.45rem", color: "var(--text)", fontWeight: 900, display: "flex", flexDirection: "column" as const, textAlign: "right" as const };
 const diffBadge = { alignSelf: "flex-start", padding: "4px 10px", borderRadius: "var(--r-sm)", fontSize: "0.8rem", fontWeight: 800, display: "flex", alignItems: "center", gap: 4 };

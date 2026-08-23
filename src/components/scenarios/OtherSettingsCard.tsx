@@ -47,7 +47,7 @@ const cardTitle: React.CSSProperties = { color: 'var(--text-2)', fontSize: '0.7r
 const lbl: React.CSSProperties = { color: 'var(--text-3)', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.04em' };
 const row: React.CSSProperties = { marginBottom: 16 };
 const numInp: React.CSSProperties = {
-  background: 'var(--line)', border: '1px solid var(--line-strong)', color: 'white',
+  background: 'var(--line)', border: '1px solid var(--line-strong)', color: 'var(--text)',
   padding: '10px 12px', borderRadius: "var(--r-sm)", fontSize: '0.9rem', outline: 'none', boxSizing: 'border-box'
 };
 const toggleRow: React.CSSProperties = {
@@ -60,6 +60,9 @@ const toggleTrack = (on: boolean): React.CSSProperties => ({
   background: on ? 'var(--accent)' : 'var(--line-strong)', position: 'relative', transition: 'background 0.2s'
 });
 const toggleThumb = (on: boolean): React.CSSProperties => ({
-  width: 16, height: 16, borderRadius: '50%', background: 'white',
+  // Topuz her iki temada da zeminden ayrilmali: aydinlikta beyaz
+    // topuz acik rayda kaybolurdu, bu yuzden yuzey rengi kullaniliyor.
+    width: 16, height: 16, borderRadius: '50%', background: 'var(--surface)',
+    boxShadow: '0 1px 2px rgba(0,0,0,.25)',
   position: 'absolute', top: 3, left: on ? 21 : 3, transition: 'left 0.2s'
 });

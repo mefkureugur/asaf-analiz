@@ -155,11 +155,11 @@ export default function FinanceEfficiencyPage({ selectedKurum, selectedDonem }: 
   }, [firebaseData, opStats, selectedKurum, selectedDonem, rawData, activeMetric]);
 
   const metricsConfig: any = {
-    ogrenciMaliyet: { title: "ÖĞRENCİ BAŞI MALİYET", color: "#ef4444", formatter: formatCurrency, isCurrency: true, isHigherBetter: false },
-    sinifMaliyet: { title: "SINIF BAŞI MALİYET", color: "#ec4899", formatter: formatCurrency, isCurrency: true, isHigherBetter: false },
-    sinifDoluluk: { title: "SINIF BAŞINA ÖĞRENCİ", color: "#22c55e", formatter: (v:any) => v.toFixed(1), isCurrency: false, isHigherBetter: true },
-    personelBasinaOgrenci: { title: "PERSONEL BAŞINA ÖĞRENCİ", color: "#3b82f6", formatter: (v:any) => v.toFixed(1), isCurrency: false, isHigherBetter: true },
-    idareciBasinaOgrenci: { title: "İDARECİ BAŞINA ÖĞRENCİ", color: "#f59e0b", formatter: (v:any) => v.toFixed(1), isCurrency: false, isHigherBetter: true }
+    ogrenciMaliyet: { title: "ÖĞRENCİ BAŞI MALİYET", color: "var(--danger)", formatter: formatCurrency, isCurrency: true, isHigherBetter: false },
+    sinifMaliyet: { title: "SINIF BAŞI MALİYET", color: "var(--sube-plus)", formatter: formatCurrency, isCurrency: true, isHigherBetter: false },
+    sinifDoluluk: { title: "SINIF BAŞINA ÖĞRENCİ", color: "var(--success)", formatter: (v:any) => v.toFixed(1), isCurrency: false, isHigherBetter: true },
+    personelBasinaOgrenci: { title: "PERSONEL BAŞINA ÖĞRENCİ", color: "var(--accent)", formatter: (v:any) => v.toFixed(1), isCurrency: false, isHigherBetter: true },
+    idareciBasinaOgrenci: { title: "İDARECİ BAŞINA ÖĞRENCİ", color: "var(--warning)", formatter: (v:any) => v.toFixed(1), isCurrency: false, isHigherBetter: true }
   };
 
   const activeConf = metricsConfig[activeMetric];
@@ -267,11 +267,11 @@ function StatCard({ title, value, icon, color, isMobile, active, onClick }: any)
         padding: isMobile ? "12px" : "18px",
         cursor: "pointer",
         transition: "all 0.2s ease-in-out",
-        boxShadow: active ? `0 4px 12px ${color}20` : "none",
+        boxShadow: active ? `0 4px 12px color-mix(in srgb, ${color} 12%, transparent)` : "none",
         transform: active ? "translateY(-2px)" : "none"
       }}
     >
-      <div style={{ color: active ? "#cbd5e1" : "var(--text-3)", fontSize: isMobile ? "0.6rem" : "0.65rem", fontWeight: 800, marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>{icon} {title}</div>
+      <div style={{ color: active ? "var(--text-2)" : "var(--text-3)", fontSize: isMobile ? "0.6rem" : "0.65rem", fontWeight: 800, marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>{icon} {title}</div>
       <div style={{ fontSize: isMobile ? "1.2rem" : "1.6rem", fontWeight: 900, color: "var(--text)" }}>{value}</div>
     </div>
   );

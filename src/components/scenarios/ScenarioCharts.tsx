@@ -23,7 +23,7 @@ export default function ScenarioCharts({ result, people, kidemOn }: Props) {
     { name: 'Personel Kayıtlı', value: result.totalKayitli, color: '#3b82f6' },
     { name: 'Personel Elden', value: result.totalElden, color: '#f59e0b' },
     { name: 'Kıdem Karşılığı', value: result.totalKidem, color: '#8b5cf6' },
-    { name: 'Diğer Giderler', value: result.digerGiderler, color: '#64748b' },
+    { name: 'Diğer Giderler', value: result.digerGiderler, color: 'var(--text-3)' },
     { name: 'Kurumlar Vergisi', value: result.kurumlarVergisi, color: '#ef4444' },
     { name: 'Net Kâr', value: Math.max(0, result.netKar), color: '#22c55e' },
   ].filter(d => d.value > 0), [result]);
@@ -59,7 +59,7 @@ export default function ScenarioCharts({ result, people, kidemOn }: Props) {
               <Legend
                 iconType="circle"
                 iconSize={8}
-                wrapperStyle={{ fontSize: '0.65rem', color: '#94a3b8' }}
+                wrapperStyle={{ fontSize: '0.65rem', color: 'var(--text-2)' }}
               />
             </PieChart>
           </ResponsiveContainer>

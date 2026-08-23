@@ -184,7 +184,7 @@ export default function DailyEntryPage() {
           <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Tutar girin" style={inputStyle} />
         </label>
 
-        <button type="submit" disabled={saving} style={{ ...buttonStyle, background: saving ? "#1e40af" : "var(--success)" }}>
+        <button type="submit" disabled={saving} style={{ ...buttonStyle, background: saving ? "var(--text-3)" : "var(--success)" }}>
           {saving ? "Kaydediliyor..." : "Kaydı Onayla"}
         </button>
       </form>
@@ -196,5 +196,6 @@ export default function DailyEntryPage() {
 const infoBoxStyle: React.CSSProperties = { background: "rgba(30, 41, 59, 0.5)", padding: "10px 15px", borderRadius: "var(--r-sm)", marginBottom: "15px", fontSize: "0.85rem", border: "1px solid var(--line)" };
 const formContainerStyle: React.CSSProperties = { display: "grid", gap: 16, background: "var(--surface)", padding: 20, borderRadius: "var(--r-md)", border: "1px solid var(--line)", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" };
 const labelStyle: React.CSSProperties = { display: "flex", flexDirection: "column", gap: 4, fontSize: "0.9rem", color: "var(--text-2)" };
-const inputStyle: React.CSSProperties = { width: "100%", padding: "10px 12px", background: "var(--bg)", border: "1px solid var(--line-strong)", borderRadius: "var(--r-sm)", color: "white", fontSize: "1rem", outline: "none" };
-const buttonStyle: React.CSSProperties = { marginTop: 10, padding: "12px", color: "white", border: "none", borderRadius: "var(--r-sm)", cursor: "pointer", fontWeight: 600 };
+const inputStyle: React.CSSProperties = { width: "100%", padding: "10px 12px", background: "var(--bg)", border: "1px solid var(--line-strong)", borderRadius: "var(--r-sm)", color: "var(--text)", fontSize: "1rem", outline: "none" };
+// Renkli zemin uzerinde: metin iki temada da beyaz
+const buttonStyle: React.CSSProperties = { marginTop: 10, padding: "12px", color: "#ffffff", border: "none", borderRadius: "var(--r-sm)", cursor: "pointer", fontWeight: 600 };

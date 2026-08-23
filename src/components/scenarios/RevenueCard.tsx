@@ -44,10 +44,10 @@ const grid: React.CSSProperties = { display: 'grid', gridTemplateColumns: '1fr 1
 const fieldWrap: React.CSSProperties = { display: 'flex', flexDirection: 'column', gap: 6 };
 const lbl: React.CSSProperties = { color: 'var(--text-3)', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.04em' };
 const inp: React.CSSProperties = {
-  background: 'var(--line)', border: '1px solid var(--line-strong)', color: 'white',
+  background: 'var(--line)', border: '1px solid var(--line-strong)', color: 'var(--text)',
   padding: '10px 12px', borderRadius: "var(--r-sm)", fontSize: '0.9rem', outline: 'none', width: '100%', boxSizing: 'border-box'
 };
 const ciroBadge: React.CSSProperties = {
-  marginTop: 14, background: '#022c1a', border: '1px solid #166534', borderRadius: "var(--r-sm)",
+  marginTop: 14, background: 'color-mix(in srgb, var(--success) 12%, transparent)', border: '1px solid color-mix(in srgb, var(--success) 35%, transparent)', borderRadius: "var(--r-sm)",
   padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center'
 };

@@ -227,11 +227,11 @@ function SmartCard({ title, value, icon, color, isMobile, extra }: any) {
   );
 }
 
-const mainSel = { background: "var(--bg)", border: "1px solid var(--line)", color: "white", padding: "10px 35px 10px 15px", borderRadius: "var(--r-md)", width: "100%", outline: 'none', appearance: 'none' as const, WebkitAppearance: 'none' as const, fontWeight: 700, fontSize: "0.85rem" };
+const mainSel = { background: "var(--bg)", border: "1px solid var(--line)", color: "var(--text)", padding: "10px 35px 10px 15px", borderRadius: "var(--r-md)", width: "100%", outline: 'none', appearance: 'none' as const, WebkitAppearance: 'none' as const, fontWeight: 700, fontSize: "0.85rem" };
 const categorySel = { background: "var(--surface)", border: "1px solid var(--line-strong)", color: "var(--accent)", padding: "8px 30px 8px 12px", borderRadius: "var(--r-sm)", width: "100%", outline: 'none', appearance: 'none' as const, fontSize: "0.75rem", fontWeight: 700, cursor: "pointer" };
 const chevronPos = { position: "absolute" as const, right: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" as const, display: "flex", alignItems: "center" };
 const veriGirisStyle = { background: "var(--surface)", border: "1px solid var(--line)", color: "var(--text-2)", padding: "8px 15px", borderRadius: "var(--r-sm)", fontSize: "0.75rem", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 };
-const headerStyle = { fontSize: "0.75rem", fontWeight: 800, color: "white", display: "flex", alignItems: "center", gap: 8 };
+const headerStyle = { fontSize: "0.75rem", fontWeight: 800, color: "var(--text)", display: "flex", alignItems: "center", gap: 8 };
 const containerStyle = { background: "var(--surface)", border: "1px solid var(--line)", borderRadius: "var(--r-md)", padding: "20px" };
 
 function NavButton({ id, active, onClick, icon, label, isMobile }: any) {

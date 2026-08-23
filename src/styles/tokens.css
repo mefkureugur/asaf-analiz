@@ -21,6 +21,13 @@
   --danger:        #ef4444;
   --warning:       #f59e0b;
 
+  /* ---------- ŞUBE / SERİ RENKLERİ ----------
+     Rozetlerde ve etiketlerde kullanılır. Koyu zeminde açık tonlar okunur,
+     aydınlık zeminde okunmaz — bu yüzden temaya göre değişirler. */
+  --sube-lgs:   #22c55e;
+  --sube-plus:  #8b5cf6;
+  --sube-vip:   #eab308;
+
   /* ---------- METİN ----------
      Üç kademe: birincil (başlık/değer), ikincil (etiket), üçüncül (dipnot) */
   --text:          #f8fafc;
@@ -137,5 +144,75 @@
     --line-strong:    #64748b;
     --text-2:         #cbd5e1;
     --text-3:         #94a3b8;
+  }
+}
+
+/* =====================================================================
+   AYDINLIK TEMA
+
+   Koyu tema yukarida :root'ta tanimli ve VARSAYILAN. Aydinlik tema yalnizca
+   kok ogeye data-theme="light" yazildiginda devreye girer. Bu tercih
+   index.html'deki kucuk betikle ILK BOYAMADAN ONCE uygulanir; boylece
+   sayfa acilirken koyudan aydinliga atlama olmaz.
+
+   Renkler bire bir cevrilmedi; aydinlik zeminde kontrast farkli calisir:
+   • Vurgu mavisi koyulastirildi (acik mavi beyaz uzerinde okunmuyor)
+   • Durum renkleri bir ton koyu (yesil/kirmizi beyazda soluk kaliyor)
+   • Golgeler cok daha hafif (koyu temanin agir golgesi beyazda kir gibi durur)
+   • Materyal beyaz cama dondu
+   ===================================================================== */
+:root[data-theme="light"] {
+  --bg:            #f1f5f9;
+  --surface:       #ffffff;
+  --surface-raised:#f8fafc;
+  --line:          #e2e8f0;
+  --line-strong:   #cbd5e1;
+
+  /* Vurgu: koyu temadaki gok mavisi beyazda okunmuyor, bir tur koyulastirildi */
+  --accent:        #0284c7;
+  --accent-ink:    #ffffff;
+  --gold:          #b45309;
+  --success:       #15803d;
+  --danger:        #dc2626;
+  --warning:       #b45309;
+
+  --text:          #0f172a;
+  --text-2:        #475569;
+  --text-3:        #64748b;
+
+  /* Aydınlıkta bir tur koyulaştırıldı: yeşil/mor/sarı beyaz üzerinde soluk kalır */
+  --sube-lgs:   #15803d;
+  --sube-plus:  #6d28d9;
+  --sube-vip:   #a16207;
+
+  /* Beyaz cam: icerik altindan gecer, uzerinde metin okunur kalir */
+  --material-nav:   rgba(255, 255, 255, 0.75);
+  --material-sheet: rgba(255, 255, 255, 0.88);
+  /* Isigi yakalayan kenar aydinlikta ters calisir: beyaz uzerine beyaz
+     gorunmez. Bunun yerine cok hafif bir ayirici kullaniliyor. */
+  --material-edge:  rgba(15, 23, 42, 0.06);
+  --scrim:          rgba(15, 23, 42, 0.35);
+
+  /* Golgeler: koyu temadakinin dortte biri kadar */
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, .06);
+  --shadow-md: 0 6px 16px -6px rgba(15, 23, 42, .12);
+  --shadow-lg: 0 20px 40px -12px rgba(15, 23, 42, .18);
+}
+
+/* Aydinlik temada saydamlik azaltma / yuksek kontrast tercihleri */
+@media (prefers-reduced-transparency: reduce) {
+  :root[data-theme="light"] {
+    --material-nav:   #ffffff;
+    --material-sheet: #ffffff;
+  }
+}
+@media (prefers-contrast: more) {
+  :root[data-theme="light"] {
+    --material-nav:   #ffffff;
+    --material-sheet: #ffffff;
+    --line:           #94a3b8;
+    --line-strong:    #64748b;
+    --text-2:         #334155;
+    --text-3:         #475569;
   }
 }

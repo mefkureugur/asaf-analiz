@@ -48,11 +48,11 @@ export default function LoginPage() {
               width: isMobile ? '70px' : '85px', 
               borderRadius: '14px',
               marginBottom: '15px',
-              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.5)'
+              boxShadow: 'var(--shadow-md)'
             }} 
           />
           <h1 style={logoStyle}>
-            ASAF <span style={{ color: "white" }}>ANALİZ</span>
+            ASAF <span style={{ color: "var(--text)" }}>ANALİZ</span>
           </h1>
           <p style={subtitleStyle}>Kurumsal Yönetim Paneli</p>
         </div>
@@ -111,5 +111,5 @@ const inputGroupStyle: React.CSSProperties = { textAlign: 'left' };
 const labelStyle: React.CSSProperties = { display: 'block', color: 'var(--text-2)', fontSize: '0.8rem', marginBottom: 'var(--sp-2)', fontWeight: 600 };
 const inputStyle: React.CSSProperties = { padding: 'var(--sp-4)', borderRadius: 'var(--r-md)', fontSize: '1rem' };
 const buttonStyle: React.CSSProperties = { width: '100%', padding: 'var(--sp-4)', backgroundColor: 'var(--accent)', color: 'var(--accent-ink)', border: 'none', borderRadius: 'var(--r-md)', fontWeight: 700, fontSize: '1rem', cursor: 'pointer', marginTop: 'var(--sp-2)' };
-const errorBoxStyle: React.CSSProperties = { backgroundColor: 'rgba(239, 68, 68, 0.12)', color: '#fca5a5', padding: 'var(--sp-3)', borderRadius: 'var(--r-sm)', marginBottom: 'var(--sp-4)', fontSize: '0.875rem', border: '1px solid rgba(239, 68, 68, 0.35)', textAlign: 'left' };
+const errorBoxStyle: React.CSSProperties = { backgroundColor: 'color-mix(in srgb, var(--danger) 12%, transparent)', color: 'var(--danger)', padding: 'var(--sp-3)', borderRadius: 'var(--r-sm)', marginBottom: 'var(--sp-4)', fontSize: '0.875rem', border: '1px solid color-mix(in srgb, var(--danger) 35%, transparent)', textAlign: 'left' };
 const footerStyle: React.CSSProperties = { marginTop: 'var(--sp-6)', color: 'var(--text-3)', fontSize: 'var(--t-caption-size)', fontWeight: 500 };

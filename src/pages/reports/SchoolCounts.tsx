@@ -18,9 +18,11 @@ const MEFKURE_YETKI: Record<string, string[]> = {
   "mefkureplus": ["Mefkure PLUS"],
 };
 const BRANCH_ORDER = ["LGS", "PLUS", "VİP"];
-// DİKKAT: bu değerler aşağıda `${color}40` gibi alfa eki alıyor.
-// Alfa eki yalnızca hex ile çalışır — buraya var(--token) YAZILMAMALI.
-const BRANCH_COLORS: Record<string, string> = { "LGS": "#22c55e", "PLUS": "#8b5cf6", "VİP": "#eab308" };
+// Saydamlık artık color-mix ile üretiliyor, bu yüzden token kullanılabiliyor.
+// Tokenlar temaya göre değişir: aydınlık zeminde bir tur koyu tonlar devreye girer.
+const BRANCH_COLORS: Record<string, string> = {
+  "LGS": "var(--sube-lgs)", "PLUS": "var(--sube-plus)", "VİP": "var(--sube-vip)"
+};
 
 export default function SchoolCounts() {
   const { user } = useAuth();
@@ -83,11 +85,11 @@ export default function SchoolCounts() {
 
       {/* Özet kartları */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 18 }}>
-        <div style={statCard("#38bdf8")}>
+        <div style={statCard("var(--accent)")}>
           <div style={statLabel}>OKUL SAYISI</div>
           <div style={statValue}>{rows.length}</div>
         </div>
-        <div style={statCard("#22c55e")}>
+        <div style={statCard("var(--success)")}>
           <div style={statLabel}>TOPLAM ÖĞRENCİ</div>
           <div style={statValue}>{totalStudents}</div>
         </div>
@@ -141,21 +143,25 @@ export default function SchoolCounts() {
 }
 
 // STİLLER
-// `color` burada hex OLMALI: aşağıda `${color}40` şeklinde alfa eki alıyor.
-const statCard = (color: string): React.CSSProperties => ({ background: "var(--surface)", padding: "16px", borderRadius: "var(--r-md)", border: `1px solid ${color}40`, borderLeft: `5px solid ${color}`, textAlign: "center" });
+const statCard = (color: string): React.CSSProperties => ({ background: "var(--surface)", padding: "16px", borderRadius: "var(--r-md)", border: `1px solid color-mix(in srgb, ${color} 30%, transparent)`, borderLeft: `5px solid ${color}`, textAlign: "center" });
 const statLabel: React.CSSProperties = { fontSize: "0.7rem", fontWeight: 700, color: "var(--text-2)", marginBottom: 5 };
 const statValue: React.CSSProperties = { fontSize: "1.8rem", fontWeight: 900 };
-const searchInputStyle: React.CSSProperties = { width: "100%", padding: "12px", background: "var(--line)", border: "1px solid var(--line-strong)", color: "white", borderRadius: "var(--r-md)", fontSize: "1rem", outline: "none", boxSizing: "border-box" };
+const searchInputStyle: React.CSSProperties = { width: "100%", padding: "12px", background: "var(--line)", border: "1px solid var(--line-strong)", color: "var(--text)", borderRadius: "var(--r-md)", fontSize: "1rem", outline: "none", boxSizing: "border-box" };
 const rowStyle: React.CSSProperties = { background: "var(--surface)", padding: "12px 15px", borderRadius: "var(--r-md)", border: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 };
+const madalya = (idx: number) =>
+  idx === 0 ? "var(--gold)" : idx === 1 ? "var(--text-2)" : idx === 2 ? "var(--warning)" : "var(--text-3)";
+
 const rankBadge = (idx: number): React.CSSProperties => ({
   width: 28, height: 28, borderRadius: "var(--r-sm)", display: "flex", alignItems: "center", justifyContent: "center",
   fontWeight: 800, fontSize: "0.8rem",
-  background: idx === 0 ? "#eab30820" : idx === 1 ? "#94a3b820" : idx === 2 ? "#b4530920" : "var(--line)",
-  color: idx === 0 ? "#eab308" : idx === 1 ? "#cbd5e1" : idx === 2 ? "#f97316" : "var(--text-3)",
+  // İlk üç sıra madalya renginde. Renkler temaya duyarlı tokenlardan geliyor;
+  // sabit altın/bronz tonları aydınlık zeminde okunmuyordu.
+  background: `color-mix(in srgb, ${madalya(idx)} 14%, transparent)`,
+  color: madalya(idx),
   border: `1px solid ${idx < 3 ? "transparent" : "var(--line-strong)"}`,
 });
-const countBadge: React.CSSProperties = { display: "flex", alignItems: "center", gap: 6, background: "rgba(56, 189, 248, 0.1)", color: "var(--accent)", padding: "6px 12px", borderRadius: "var(--r-sm)", fontSize: "0.8rem", fontWeight: 700, whiteSpace: "nowrap" };
+const countBadge: React.CSSProperties = { display: "flex", alignItems: "center", gap: 6, background: "color-mix(in srgb, var(--accent) 12%, transparent)", color: "var(--accent)", padding: "6px 12px", borderRadius: "var(--r-sm)", fontSize: "0.8rem", fontWeight: 700, whiteSpace: "nowrap" };
 const branchChip = (label: string): React.CSSProperties => {
-  const color = BRANCH_COLORS[label] || "#64748b";
-  return { background: `${color}1a`, color, border: `1px solid ${color}40`, padding: "2px 8px", borderRadius: "var(--r-sm)", fontSize: "0.7rem", fontWeight: 700, whiteSpace: "nowrap" };
+  const color = BRANCH_COLORS[label] || "var(--text-3)";
+  return { background: `color-mix(in srgb, ${color} 12%, transparent)`, color, border: `1px solid color-mix(in srgb, ${color} 30%, transparent)`, padding: "2px 8px", borderRadius: "var(--r-sm)", fontSize: "0.7rem", fontWeight: 700, whiteSpace: "nowrap" };
 };

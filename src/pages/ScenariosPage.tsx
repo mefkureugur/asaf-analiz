@@ -166,16 +166,17 @@ export default function ScenariosPage() {
 
         {/* Sadece baskıda görünen başlık */}
         <div className="print-header">
-          <div style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--surface)', marginBottom: 4 }}>
+          {/* Baski basligi: kagit her zaman beyaz, bu yuzden tema tokeni DEGIL sabit koyu renk */}
+            <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', marginBottom: 4 }}>
             ASAF ANALİZ — Senaryo Raporu
           </div>
-          <div style={{ color: '#475569', fontSize: '0.85rem' }}>
+          <div style={{ color: 'var(--text-3)', fontSize: '0.85rem' }}>
             {selectedKurumName} · {draft.name}
           </div>
           <div style={{ color: 'var(--text-2)', fontSize: '0.75rem', marginTop: 2 }}>
             {new Date().toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric' })}
           </div>
-          <hr style={{ margin: '10px 0 0 0', borderColor: '#cbd5e1' }} />
+          <hr style={{ margin: '10px 0 0 0', borderColor: 'var(--text-2)' }} />
         </div>
 
         <div className="no-print" style={{ marginBottom: 16, color: 'var(--text-2)', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.05em' }}>
@@ -268,7 +269,7 @@ export default function ScenariosPage() {
 const nameCard: React.CSSProperties = { background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: "var(--r-md)", padding: '20px' };
 const nameLbl: React.CSSProperties = { color: 'var(--text-2)', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em', marginBottom: 10, display: 'block' };
 const nameInp: React.CSSProperties = {
-  background: 'var(--line)', border: '1px solid var(--line-strong)', color: 'white',
+  background: 'var(--line)', border: '1px solid var(--line-strong)', color: 'var(--text)',
   padding: '10px 14px', borderRadius: "var(--r-sm)", fontSize: '1rem', outline: 'none', width: '100%', boxSizing: 'border-box'
 };
 const noteArea: React.CSSProperties = {

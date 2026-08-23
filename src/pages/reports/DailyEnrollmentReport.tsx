@@ -109,11 +109,11 @@ export default function DailyEnrollmentReport() {
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 15, marginBottom: 20 }}>
-        <div style={statCard("#0ea5e9")}>
+        <div style={statCard("var(--accent)")}>
           <div style={statLabel}>BUGÜNKÜ</div>
           <div style={statValue}>{reportData.grandDaily}</div>
         </div>
-        <div style={statCard("#8b5cf6")}>
+        <div style={statCard("var(--sube-plus)")}>
           <div style={statLabel}>2026 TOPLAM</div>
           <div style={statValue}>{reportData.grandOverall}</div>
         </div>
@@ -163,9 +163,9 @@ export default function DailyEnrollmentReport() {
 
 // STİLLER (Korundu)
 const headerCard = { background: "var(--surface)", padding: "20px", borderRadius: "var(--r-lg)", border: "1px solid var(--line)", marginBottom: 20 };
-const dateInputStyle = { background: "var(--line)", border: "1px solid var(--line-strong)", color: "white", padding: "10px", borderRadius: "var(--r-md)", outline: "none" };
-// `color` burada hex OLMALI: aşağıda `${color}40` şeklinde alfa eki alıyor.
-const statCard = (color: string) => ({ background: "var(--surface)", padding: "20px", borderRadius: "var(--r-lg)", border: `1px solid ${color}40`, borderLeft: `5px solid ${color}`, textAlign: "center" as const });
+const dateInputStyle = { background: "var(--line)", border: "1px solid var(--line-strong)", color: "var(--text)", padding: "10px", borderRadius: "var(--r-md)", outline: "none" };
+// `color` burada hex OLMALI: aşağıda `color-mix(in srgb, ${color} 25%, transparent)` şeklinde alfa eki alıyor.
+const statCard = (color: string) => ({ background: "var(--surface)", padding: "20px", borderRadius: "var(--r-lg)", border: `1px solid color-mix(in srgb, ${color} 25%, transparent)`, borderLeft: `5px solid ${color}`, textAlign: "center" as const });
 const statLabel = { fontSize: "0.7rem", fontWeight: 700, color: "var(--text-2)", marginBottom: 5 };
 const statValue = { fontSize: "2rem", fontWeight: 900 };
 const branchContainer = { background: "var(--surface)", borderRadius: "var(--r-lg)", border: "1px solid var(--line)", marginBottom: 25, overflow: "hidden" };

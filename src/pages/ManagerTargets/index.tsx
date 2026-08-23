@@ -141,7 +141,7 @@ function StandardCard({ data, isMonth, isBranch }: any) {
 
 function MetricLine({ label, current, target, pct, isPrice, color }: any) {
   const isDone = pct >= 100;
-  const textColor = isDone ? "var(--success)" : "#f1f5f9"; 
+  const textColor = isDone ? "var(--success)" : "var(--text)"; 
   
   return (
     <div style={metricRow}>
@@ -164,16 +164,16 @@ function MetricLine({ label, current, target, pct, isPrice, color }: any) {
 const headerWrapper = { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, gap: 10 };
 const cardBase = { background: "var(--surface)", borderRadius: "var(--r-xl)", padding: "15px 20px", border: "1px solid var(--line)", position: "relative" as const, overflow: "hidden" };
 const cardHeader = { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, borderBottom: "1px solid var(--line)", paddingBottom: 8 };
-const cardTitle = { fontWeight: 800, color: "#f1f5f9", textTransform: "uppercase" as const };
+const cardTitle = { fontWeight: 800, color: "var(--text)", textTransform: "uppercase" as const };
 const statusBadge = (done: boolean) => ({ fontSize: "0.9rem" });
 const metricsList = { display: "flex", flexDirection: "column" as const, gap: 12 };
 const metricRow = { display: "flex", flexDirection: "column" as const, gap: 2 };
 const mTop = { display: "flex", justifyContent: "space-between", alignItems: "center" };
 const mLabel = { fontSize: "0.6rem", fontWeight: 800, color: "var(--text-3)", letterSpacing: "0.5px" };
 const mValue = { fontSize: "0.95rem", fontWeight: 800 };
-const mTarget = { fontSize: "0.7rem", color: "#475569", fontWeight: 400 };
+const mTarget = { fontSize: "0.7rem", color: "var(--text-3)", fontWeight: 400 };
 const barContainer = { display: "flex", alignItems: "center", gap: 8 };
 const barBase = { flex: 1, height: 5, background: "var(--line)", borderRadius: "var(--r-md)", overflow: "hidden" };
 const barFill = { height: "100%", transition: "width 1s ease-in-out" };
 const pctText = { fontSize: "0.7rem", fontWeight: 800, minWidth: "28px", textAlign: "right" as const };
-const selStyle = { background: "var(--surface)", border: "1px solid var(--line)", color: "white", padding: "6px 12px", borderRadius: "var(--r-md)", fontSize: "0.8rem", fontWeight: 700 };
+const selStyle = { background: "var(--surface)", border: "1px solid var(--line)", color: "var(--text)", padding: "6px 12px", borderRadius: "var(--r-md)", fontSize: "0.8rem", fontWeight: 700 };

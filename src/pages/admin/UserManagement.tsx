@@ -79,7 +79,7 @@ export default function UserManagement() {
       </h2>
 
       <div style={formCardStyle}>
-        <h4 style={{ marginTop: 0, color: '#94a3b8' }}>Yeni Müdür Tanımla</h4>
+        <h4 style={{ marginTop: 0, color: 'var(--text-2)' }}>Yeni Müdür Tanımla</h4>
         <form onSubmit={handleAddUser} style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
           <input type="email" placeholder="E-posta" value={newEmail} onChange={e => setNewEmail(e.target.value)} style={inputStyle} required />
           <input type="password" placeholder="Şifre" value={newPass} onChange={e => setNewPass(e.target.value)} style={inputStyle} required />
@@ -92,7 +92,7 @@ export default function UserManagement() {
       <div style={tableWrapperStyle}>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
-            <tr style={{ textAlign: 'left', backgroundColor: '#1e293b', color: '#94a3b8' }}>
+            <tr style={{ textAlign: 'left', backgroundColor: 'var(--line)', color: 'var(--text-2)' }}>
               <th style={paddingStyle}>E-posta</th>
               <th style={paddingStyle}>Rol</th>
               <th style={paddingStyle}>Yetkili Şube</th>
@@ -147,9 +147,10 @@ export default function UserManagement() {
 }
 
 const formCardStyle = { backgroundColor: 'var(--surface)', padding: '25px', borderRadius: '12px', border: '1px solid var(--line)', marginBottom: '30px' };
-const inputStyle = { backgroundColor: 'var(--line)', border: '1px solid var(--line-strong)', color: 'white', padding: '12px', borderRadius: '8px', flex: 1 };
-const addBtnStyle = { backgroundColor: '#10b981', color: 'white', border: 'none', padding: '12px 25px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' as const };
+const inputStyle = { backgroundColor: 'var(--line)', border: '1px solid var(--line-strong)', color: 'var(--text)', padding: '12px', borderRadius: '8px', flex: 1 };
+// Renkli zemin uzerinde metin: iki temada da beyaz kalmali
+const addBtnStyle = { backgroundColor: 'var(--success)', color: '#ffffff', border: 'none', padding: '12px 25px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' as const };
 const tableWrapperStyle = { backgroundColor: 'var(--surface)', borderRadius: '12px', border: '1px solid var(--line)', overflow: 'hidden' };
-const selectStyle = { backgroundColor: 'var(--line)', color: 'white', border: '1px solid var(--line-strong)', padding: '10px', borderRadius: '8px', width: '100%' };
+const selectStyle = { backgroundColor: 'var(--line)', color: 'var(--text)', border: '1px solid var(--line-strong)', padding: '10px', borderRadius: '8px', width: '100%' };
 const saveBtnStyle = { backgroundColor: 'var(--accent)', color: 'var(--bg)', border: 'none', padding: '10px 12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' as const };
 const paddingStyle = { padding: '15px' };

@@ -126,6 +126,6 @@ const loaderStyle: React.CSSProperties = {
   display: 'flex', 
   alignItems: 'center', 
   justifyContent: 'center', 
-  color: 'white', 
+  color: 'var(--text)', 
   backgroundColor: 'var(--bg)'
 };

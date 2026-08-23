@@ -302,12 +302,12 @@ export default function FinanceInputPage() {
 }
 
 const cardStyle = { background: "var(--surface)", border: "1px solid var(--line)", borderRadius: "var(--r-lg)", boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.4)" };
-const inputStyle = { background: "var(--bg)", border: "1px solid var(--line-strong)", borderRadius: "var(--r-md)", padding: "12px", color: "white", outline: "none", fontSize: "0.9rem" };
-const mainSel = { background: "var(--bg)", border: "1px solid var(--line)", color: "white", padding: "10px 35px 10px 15px", borderRadius: "var(--r-md)", outline: 'none', appearance: 'none' as const, WebkitAppearance: 'none' as const, fontWeight: 700, width: '100%', fontSize: "0.8rem", cursor: "pointer" };
+const inputStyle = { background: "var(--bg)", border: "1px solid var(--line-strong)", borderRadius: "var(--r-md)", padding: "12px", color: "var(--text)", outline: "none", fontSize: "0.9rem" };
+const mainSel = { background: "var(--bg)", border: "1px solid var(--line)", color: "var(--text)", padding: "10px 35px 10px 15px", borderRadius: "var(--r-md)", outline: 'none', appearance: 'none' as const, WebkitAppearance: 'none' as const, fontWeight: 700, width: '100%', fontSize: "0.8rem", cursor: "pointer" };
 const typeSel = { background: "var(--surface)", border: "1px solid var(--line-strong)", color: "var(--accent)", padding: "10px 40px 10px 15px", borderRadius: "var(--r-md)", outline: 'none', appearance: 'none' as const, WebkitAppearance: 'none' as const, fontWeight: 800, fontSize: "0.75rem", cursor: "pointer", width: '100%' };
 const chevronStyle = { position: "absolute" as const, right: 12, top: "50%", transform: "translateY(-50%)", color: "var(--text-3)", pointerEvents: "none" as const };
 const labelStyle = { fontSize: "0.65rem", fontWeight: 700, color: "var(--text-3)", marginBottom: 6, letterSpacing: "0.05em" };
-const headerStyle = { fontSize: "0.8rem", fontWeight: 800, color: "white", display: "flex", alignItems: "center", gap: 8, letterSpacing: "0.05em" };
+const headerStyle = { fontSize: "0.8rem", fontWeight: 800, color: "var(--text)", display: "flex", alignItems: "center", gap: 8, letterSpacing: "0.05em" };
 const saveBtnStyle = { background: "var(--accent)", color: "var(--accent-ink)", border: "none", width: "100%", padding: "14px", borderRadius: "var(--r-md)", fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 };
 const revizeBtnStyle = { background: "transparent", border: "1px solid var(--line-strong)", color: "var(--text-2)", flex: 1, padding: "12px", borderRadius: "var(--r-md)", fontWeight: 700, cursor: "pointer", fontSize: "0.7rem", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 };
 const backBtn = { background: "transparent", border: "1px solid var(--line-strong)", color: "var(--text-2)", padding: "10px 18px", borderRadius: "var(--r-md)", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, fontSize: "0.75rem", fontWeight: 600 };

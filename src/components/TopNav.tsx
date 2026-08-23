@@ -4,6 +4,7 @@ import { useAuth } from "../store/AuthContext";
 import { updatePassword } from "firebase/auth";
 import { auth } from "../firebase";
 import Modal from "./ui/Modal";
+import { TemaIkonu } from "./ui/TemaSecici";
 
 interface TopNavProps {
   isAdmin?: boolean;
@@ -143,7 +144,8 @@ export default function TopNav({ isAdmin }: TopNavProps) {
       </div>
 
       {/* Kullanıcı */}
-      <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-4)", flexShrink: 0 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-3)", flexShrink: 0 }}>
+        <TemaIkonu />
         <div style={{ textAlign: "right" }}>
           <div style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--text)" }}>{user?.displayName}</div>
           <div className="caption">{user?.branchId}</div>

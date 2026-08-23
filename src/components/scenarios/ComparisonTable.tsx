@@ -74,7 +74,7 @@ export default function ComparisonTable({ activeScenarios }: Props) {
 
             {totals && (
               <tr style={{ ...tr, borderTop: '2px solid var(--line-strong)' }}>
-                <td style={{ ...td, fontWeight: 800, color: '#f8fafc' }}>TOPLAM</td>
+                <td style={{ ...td, fontWeight: 800, color: 'var(--text)' }}>TOPLAM</td>
                 <td style={{ ...td, fontWeight: 700 }}>{totals.kisi}</td>
                 <td style={{ ...td, fontWeight: 700 }}>{fmt(totals.ciro)}</td>
                 <td style={{ ...td, fontWeight: 700 }}>{fmt(totals.personel)}</td>

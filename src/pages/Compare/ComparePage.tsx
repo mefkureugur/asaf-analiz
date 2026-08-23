@@ -160,5 +160,5 @@ function ResultCard({ title, curr, prev, format }: any) {
 
 const filterBox = { background: "var(--surface)", padding: "10px 15px", borderRadius: "var(--r-md)", border: "1px solid var(--line)", minWidth: "160px" };
 const labelStyle = { fontSize: "0.7rem", color: "var(--text-2)", display: "block", marginBottom: 5, fontWeight: 700 };
-const selectStyle = { background: "transparent", border: "none", color: "white", outline: "none", cursor: "pointer", fontSize: "0.9rem", width: "100%", colorScheme: "dark" };
-const optStyle = { background: "var(--surface)", color: "white" };
+const selectStyle = { background: "transparent", border: "none", color: "var(--text)", outline: "none", cursor: "pointer", fontSize: "0.9rem", width: "100%", colorScheme: "dark" };
+const optStyle = { background: "var(--surface)", color: "var(--text)" };
