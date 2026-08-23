@@ -26,7 +26,10 @@ const toStoredDate = (s: string): string => {
 };
 
 const hierarchy: any = {
-  "mefkureyks": { branches: ["Mefkure PLUS", "Mefkure VIP"], grades: ["11", "12", "Mezun", "Mood"] },
+  // Mefkure YKS: PLUS + VİP birlikte yönetiliyor
+  "mefkureyks": { branches: ["Mefkure PLUS", "Mefkure VIP"], grades: ["9", "10", "11", "12", "Mezun", "Mood"] },
+  // Yalnızca PLUS yetkisi verilmiş müdür (Yetki Yönetimi'nde ayrı bir seçenek)
+  "mefkureplus": { branches: ["Mefkure PLUS"], grades: ["9", "10", "11", "12", "Mezun", "Mood"] },
   "mefkurelgs": { branches: ["Mefkure LGS"], grades: ["5", "6", "7", "8"] },
   "altinkureilkogretim": { branches: ["Altınküre Anaokulu", "Altınküre İlkokul", "Altınküre Ortaokul"], grades: ["Ana Sınıfı", "1", "2", "3", "4", "5", "6", "7", "8"] },
   "altinkurelise": { branches: ["Altınküre Fen Lisesi", "Altınküre Anadolu Lisesi", "Altınküre Akademi"], grades: ["9", "10", "11", "12", "Mezun", "Akademi"] },
@@ -59,11 +62,13 @@ export default function StudentList() {
   const [kaynakSuzgeci, setKaynakSuzgeci] = useState<KaynakSuzgeci>("hepsi");
   const [islemde, setIslemde] = useState<string | null>(null);
 
-  const isAdmin = user?.role?.toLowerCase() === "admin" || user?.email === "ugur@asaf.com";
+  const isAdmin = user?.role?.trim().toLowerCase() === "admin" || user?.email === "ugur@asaf.com";
 
   const userSettings = useMemo(() => {
     const userBranchKey = user?.branchId ? normalize(user.branchId) : "";
-    if (MEFKURE_KEYS.includes(userBranchKey)) return MEFKURE_GROUP;
+    // Her müdür YALNIZCA kendi şubesini görür. (Önceden LGS ve YKS müdürleri
+    // ortak bir Mefkure havuzunu görüyordu; Ana Sayfa'daki yetki mantığıyla
+    // çeliştiği için kaldırıldı.)
     return hierarchy[userBranchKey] || { branches: [], grades: [] };
   }, [user]);
 
@@ -106,9 +111,13 @@ export default function StudentList() {
     return list.sort((a, b) => parseDate(b.SözleşmeTarihi) - parseDate(a.SözleşmeTarihi));
   }, [tumKayitlar, isAdmin, userSettings, searchTerm, branchFilter, durumSuzgeci, kaynakSuzgeci, donem]);
 
+  /** Gösterimde her zaman GG.AA.YYYY — kaynak dosyada "1.1.2026" gibi
+      sıfırsız tarihler var, listede karışık görünmesin. */
   const formatDateDisplay = (dateStr: string) => {
     if (!dateStr) return "-";
-    if (dateStr.includes('-')) { const [y, m, d] = dateStr.split('-'); return `${d}.${m}.${y}`; }
+    const pad = (x: string) => x.padStart(2, "0");
+    if (dateStr.includes('-')) { const [y, m, d] = dateStr.split('-'); return `${pad(d)}.${pad(m)}.${y}`; }
+    if (dateStr.includes('.')) { const [d, m, y] = dateStr.split('.'); return `${pad(d)}.${pad(m)}.${y}`; }
     return dateStr;
   };
 
@@ -170,13 +179,63 @@ export default function StudentList() {
     }
   };
 
+  const [excelHazirlaniyor, setExcelHazirlaniyor] = useState(false);
+
+  /**
+   * Ekranda görünen listeyi (uygulanan tüm süzgeçlerle) Excel'e aktarır.
+   * xlsx kütüphanesi ~290 KB; herkesin her açılışta indirmemesi için
+   * statik değil, butona basıldığı anda yükleniyor.
+   */
+  const excelIndir = async () => {
+    setExcelHazirlaniyor(true);
+    try {
+      const XLSX = await import("xlsx");
+      const satirlar = filteredList.map((r) => ({
+      "Öğrenci Adı": r.studentName,
+      "Sözleşme Tarihi": formatDateDisplay(r.SözleşmeTarihi),
+      "Okul / Şube": r.Okul,
+      "Sınıf": r.Sınıf,
+      "Tutar (TL)": r.SonTutar,
+      "Gittiği Okul": r.GittigiOkul || "",
+      "Kaynak": r.kaynak === "manual" ? "Manuel" : "Sabit",
+      "Durum": r.KayıtDurumu,
+      "İptal Eden": r.iptalEden || "",
+      "İptal Tarihi": r.iptalTarihi ? new Date(r.iptalTarihi).toLocaleDateString("tr-TR") : "",
+      "İptal Sebebi": r.iptalNotu || "",
+    }));
+
+      const sayfa = XLSX.utils.json_to_sheet(satirlar);
+      // Sütun genişlikleri — açılınca elle genişletmek gerekmesin
+      sayfa["!cols"] = [
+      { wch: 28 }, { wch: 15 }, { wch: 22 }, { wch: 8 }, { wch: 14 },
+      { wch: 24 }, { wch: 9 }, { wch: 9 }, { wch: 18 }, { wch: 13 }, { wch: 30 },
+    ];
+
+      const kitap = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(kitap, sayfa, "Kayıtlar");
+
+      const bugun = new Date().toLocaleDateString("tr-TR").replace(/\./g, "-");
+      const donemEtiketi = donem === "hepsi" ? "tum-donemler" : donem;
+      XLSX.writeFile(kitap, `ASAF-kayit-listesi-${donemEtiketi}-${bugun}.xlsx`);
+    } catch {
+      alert("Excel dosyası oluşturulamadı.");
+    } finally {
+      setExcelHazirlaniyor(false);
+    }
+  };
+
   if (loading) {
     return <div className="page" style={{ textAlign: "center", paddingTop: "var(--sp-7)", color: "var(--text-2)" }}>Yükleniyor…</div>;
   }
 
   return (
     <div className="page rise" style={{ maxWidth: 800 }}>
-      <h1>Kayıt Listesi</h1>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "var(--sp-4)", flexWrap: "wrap" }}>
+        <h1 style={{ margin: 0 }}>Kayıt Listesi</h1>
+        <button onClick={excelIndir} disabled={filteredList.length === 0 || excelHazirlaniyor} style={btnExcel}>
+          {excelHazirlaniyor ? "Hazırlanıyor…" : "Excel'e Aktar"}
+        </button>
+      </div>
 
       {/* Aktarım yapılmadıysa sabit kayıtlar salt okunur — nedeni açıkça yazılıyor */}
       {!aktarimYapildi && (
@@ -450,6 +509,7 @@ const uyariKutusu: React.CSSProperties = {
   borderRadius: "var(--r-md)", fontSize: "0.85rem", lineHeight: 1.6,
   marginBottom: "var(--sp-5)",
 };
+const btnExcel: React.CSSProperties = { background: "transparent", color: "var(--success)", border: "1px solid color-mix(in srgb, var(--success) 45%, transparent)", padding: "var(--sp-2) var(--sp-4)", borderRadius: "var(--r-sm)", fontWeight: 600, fontSize: "0.85rem", whiteSpace: "nowrap" };
 const btnEdit: React.CSSProperties = { background: "var(--accent)", color: "var(--accent-ink)", border: "none", padding: "var(--sp-2) var(--sp-3)", borderRadius: "var(--r-sm)", fontWeight: 600, fontSize: "0.82rem" };
 const btnIptal: React.CSSProperties = { background: "transparent", color: "var(--danger)", border: "1px solid color-mix(in srgb, var(--danger) 45%, transparent)", padding: "var(--sp-2) var(--sp-3)", borderRadius: "var(--r-sm)", fontWeight: 600, fontSize: "0.82rem" };
 const btnGeriAl: React.CSSProperties = { background: "transparent", color: "var(--success)", border: "1px solid color-mix(in srgb, var(--success) 45%, transparent)", padding: "var(--sp-2) var(--sp-3)", borderRadius: "var(--r-sm)", fontWeight: 600, fontSize: "0.82rem" };

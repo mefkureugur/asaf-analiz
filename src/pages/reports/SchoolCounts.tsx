@@ -10,9 +10,13 @@ const normalize = (s: any): string => {
     .replace(/[^a-z0-9]/g, "");
 };
 
-// Mefkure kullanıcıları üç şubenin de okul sayılarını görür
-const MEFKURE_KEYS = ["mefkureyks", "mefkurelgs"];
-const MEFKURE_BRANCHES = ["Mefkure LGS", "Mefkure PLUS", "Mefkure VİP"];
+// Her Mefkure müdürü YALNIZCA kendi şubesinin okul sayılarını görür.
+// (Ana Sayfa'daki yetki mantığıyla aynı olacak şekilde daraltıldı.)
+const MEFKURE_YETKI: Record<string, string[]> = {
+  "mefkurelgs":  ["Mefkure LGS"],
+  "mefkureyks":  ["Mefkure PLUS", "Mefkure VİP"],
+  "mefkureplus": ["Mefkure PLUS"],
+};
 const BRANCH_ORDER = ["LGS", "PLUS", "VİP"];
 // DİKKAT: bu değerler aşağıda `${color}40` gibi alfa eki alıyor.
 // Alfa eki yalnızca hex ile çalışır — buraya var(--token) YAZILMAMALI.
@@ -28,8 +32,9 @@ export default function SchoolCounts() {
 
   const { rows, totalStudents } = useMemo(() => {
     const userKey = normalize(user?.branchId);
-    const isMefkureUser = MEFKURE_KEYS.includes(userKey);
-    const allowedBranches = MEFKURE_BRANCHES.map(normalize);
+    const kendiSubeleri = MEFKURE_YETKI[userKey] || [];
+    const isMefkureUser = kendiSubeleri.length > 0;
+    const allowedBranches = kendiSubeleri.map(normalize);
 
     const groups: Record<string, { name: string; count: number; branches: Record<string, number> }> = {};
 
