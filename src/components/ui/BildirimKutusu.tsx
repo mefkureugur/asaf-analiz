@@ -21,6 +21,16 @@ export default function BildirimKutusu() {
 
   if (!kurucu) return null;
 
+  // Sorun giderme için: hangi koşulun sağlanmadığı tek bakışta görünsün
+  const teshis = [
+    typeof Notification !== "undefined" ? "bildirim API var" : "bildirim API yok",
+    "serviceWorker" in navigator ? "sw var" : "sw yok",
+    window.matchMedia("(display-mode: standalone)").matches ||
+      (window.navigator as any).standalone === true
+      ? "ana ekrandan açık"
+      : "tarayıcı sekmesi",
+  ].join(" · ");
+
   return (
     <>
       {/* Uygulama açıkken gelen bildirim — üstte kısa bir şerit */}
@@ -33,7 +43,7 @@ export default function BildirimKutusu() {
       {/* İzin daveti.
           NOT: sarmalayıcıda .page sınıfı KULLANILMAZ — o sınıf min-height:100dvh
           taşıyor ve altındaki sayfayı ekran dışına iterdi. */}
-      {!ertelendi && (durum === "sorulmadi" || durum === "ana-ekran-gerekli") && (
+      {!ertelendi && (durum === "sorulmadi" || durum === "ana-ekran-gerekli" || durum === "desteklenmiyor") && (
         <div style={sarmalayici}>
           <div style={kutuStil}>
             <div style={{ flex: 1, minWidth: 220 }}>
@@ -41,10 +51,20 @@ export default function BildirimKutusu() {
                 Yeni kayıtlardan haberdar ol
               </div>
               <div className="caption" style={{ lineHeight: 1.6 }}>
-                {durum === "ana-ekran-gerekli"
-                  ? "Bildirim alabilmek için uygulamayı ana ekrana ekleyip oradan açman gerekiyor. Safari sekmesinde iPhone bildirim göndermiyor."
-                  : "Bir şubeye yeni kayıt girildiğinde telefonuna anında bildirim gelsin."}
+                {durum === "ana-ekran-gerekli" &&
+                  "Bildirim alabilmek için uygulamayı ana ekrana ekleyip oradan açman gerekiyor. Safari sekmesinde iPhone bildirim göndermiyor."}
+                {durum === "desteklenmiyor" &&
+                  "Bu cihaz bildirim desteklemiyor. iPhone'da iOS 16.4 ve üzeri gerekiyor; ayrıca uygulamanın ana ekrandan açılması şart."}
+                {durum === "sorulmadi" &&
+                  "Bir şubeye yeni kayıt girildiğinde telefonuna anında bildirim gelsin."}
               </div>
+
+              {/* Sorun yaşanırsa nedeni görünsün — sessizce kaybolmasın */}
+              {durum !== "sorulmadi" && (
+                <div className="caption" style={{ marginTop: "var(--sp-2)", color: "var(--text-3)" }}>
+                  Durum: {durum} · {teshis}
+                </div>
+              )}
             </div>
 
             <div style={{ display: "flex", gap: "var(--sp-2)", flexShrink: 0 }}>
