@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useAuth } from '../store/AuthContext';
 import { KURUMLAR } from '../constants/kurumlar';
+import { branchIdToKurumId } from '../constants/kurumYetki';
 import type { Scenario, ScenarioDraft, Person } from '../types/scenario';
 import {
   listenToScenarios, listenToActiveScenarios,
@@ -37,10 +38,15 @@ const DEFAULT_DRAFT = (kurumId: string): ScenarioDraft => ({
 export default function ScenariosPage() {
   const { user } = useAuth();
   const [isMobile, setIsMobile] = useState(window.innerWidth < 900);
-  const [selectedKurumId, setSelectedKurumId] = useState<string>(KURUMLAR[0].id);
+  // Kurucu tüm kurumları seçebilir; müdür yalnızca kendi kurumunu görür.
+  const kurucu = user?.role?.trim().toLowerCase() === 'admin';
+  const kendiKurumu = kurucu ? null : branchIdToKurumId(user?.branchId);
+  const [selectedKurumId, setSelectedKurumId] = useState<string>(
+    () => kendiKurumu ?? KURUMLAR[0].id
+  );
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
   const [selectedScenarioId, setSelectedScenarioId] = useState<string | null>(null);
-  const [draft, setDraft] = useState<ScenarioDraft>(() => DEFAULT_DRAFT(KURUMLAR[0].id));
+  const [draft, setDraft] = useState<ScenarioDraft>(() => DEFAULT_DRAFT(kendiKurumu ?? KURUMLAR[0].id));
   const [allActiveScenarios, setAllActiveScenarios] = useState<Scenario[]>([]);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -94,6 +100,9 @@ export default function ScenariosPage() {
   const isNewUnsaved = !draft.id;
 
   const handleKurumChange = useCallback((id: string) => {
+    // Müdür kendi kurumu dışına çıkamaz — arayüzde seçici gizli ama
+    // buraya doğrudan çağrı gelirse de reddedilir.
+    if (kendiKurumu && id !== kendiKurumu) return;
     setSelectedKurumId(id);
   }, []);
 
@@ -186,6 +195,7 @@ export default function ScenariosPage() {
         <ScenarioToolbar
           selectedKurumId={selectedKurumId}
           onKurumChange={handleKurumChange}
+          kurumSecilebilir={kurucu}
           scenarios={scenarios}
           selectedScenarioId={selectedScenarioId}
           onScenarioChange={setSelectedScenarioId}

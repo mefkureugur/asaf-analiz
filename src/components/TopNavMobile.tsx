@@ -116,14 +116,18 @@ export default function TopNavMobile({ isAdmin }: MobileProps) {
           <SheetLink to="/performans" onClick={closeMenu}>🚀 Performans İzleme</SheetLink>
         )}
 
-        <SheetLink to="/ogrenci-listesi" onClick={closeMenu}>✍️ Kayıt Listesi</SheetLink>
+        {/* Kayıt Listesi yalnızca kurum müdürlerinde */}
+        {!showAdminMenu && (
+          <SheetLink to="/ogrenci-listesi" onClick={closeMenu}>✍️ Kayıt Listesi</SheetLink>
+        )}
 
         {isMefkureManager && (
           <SheetLink to="/reports/okul-sayilari" onClick={closeMenu}>🏫 Okul Sayıları</SheetLink>
         )}
 
         {showAdminMenu && <SheetLink to="/finance/view" onClick={closeMenu}>💰 Finans Analizi</SheetLink>}
-        {showAdminMenu && <SheetLink to="/scenarios" onClick={closeMenu}>📊 Senaryo Hesap</SheetLink>}
+        {/* Senaryo modülü herkese açık; müdür yalnızca kendi kurumunu görür */}
+        <SheetLink to="/scenarios" onClick={closeMenu}>📊 Senaryo Hesap</SheetLink>
 
         {showAdminMenu && (
           <>

@@ -74,7 +74,6 @@ function AppContent() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/compare" element={<ComparePage />} />
           <Route path="/students" element={<StudentsPage />} />
-          <Route path="/ogrenci-listesi" element={<StudentList />} /> 
           <Route path="/daily" element={<DailyEntryPage />} />
           
           {/* 🚀 GÜNLÜK KAYIT RAPORU: Hem Admin Hem Müdür Görebilir */}
@@ -90,6 +89,8 @@ function AppContent() {
               <Route path="/performans" element={<Navigate to="/dashboard" replace />} /> 
               <Route path="/user-management" element={<UserManagement />} />
               <Route path="/veri-aktarim" element={<DataMigration />} />
+              {/* Kayit Listesi kurum mudurlerinin ekrani; kurucular Gunluk Rapor kullanir */}
+              <Route path="/ogrenci-listesi" element={<Navigate to="/reports/daily" replace />} />
               {/* 💰 FİNANS: Görüntüleme Admin'e, Giriş SADECE Uğur Bey'e */}
               <Route path="/finance" element={<Navigate to="/finance/view" replace />} />
               <Route path="/finance/input" element={isUgur ? <FinanceInputPage /> : <Navigate to="/finance/view" replace />} />
@@ -100,6 +101,9 @@ function AppContent() {
             <>
               <Route path="/targets" element={<Navigate to="/performans" replace />} /> 
               <Route path="/performans" element={<ManagerTargets />} />
+              <Route path="/ogrenci-listesi" element={<StudentList />} />
+              {/* Senaryo: müdür yalnızca kendi kurumunu görür (sayfa içinde kilitli) */}
+              <Route path="/scenarios" element={<ScenariosPage />} />
               <Route path="/user-management" element={<Navigate to="/dashboard" replace />} />
               {/* 🚫 FİNANS KİLİDİ: Müdürler girmeye çalışırsa Dashboard'a atılır */}
               <Route path="/finance/*" element={<Navigate to="/dashboard" replace />} />

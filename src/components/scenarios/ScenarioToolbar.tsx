@@ -4,6 +4,9 @@ import type { Scenario } from '../../types/scenario';
 interface Props {
   selectedKurumId: string;
   onKurumChange: (id: string) => void;
+  /** Kurucu için true: kurum listesi açılır. Müdür için false: kendi
+      kurumunun adı sabit metin olarak görünür. */
+  kurumSecilebilir?: boolean;
   scenarios: Scenario[];
   selectedScenarioId: string | null;
   onScenarioChange: (id: string) => void;
@@ -18,7 +21,7 @@ interface Props {
 
 export default function ScenarioToolbar(props: Props) {
   const {
-    selectedKurumId, onKurumChange,
+    selectedKurumId, onKurumChange, kurumSecilebilir = true,
     scenarios, selectedScenarioId, onScenarioChange,
     onNew, onSave, onActivate, onDelete, onPrint,
     isSaving, isNewUnsaved
@@ -31,11 +34,19 @@ export default function ScenarioToolbar(props: Props) {
     <div style={toolbar} className="no-print">
       {/* Dropdowns */}
       <div style={dropdowns}>
-        <select value={selectedKurumId} onChange={e => onKurumChange(e.target.value)} style={sel}>
-          {KURUMLAR.map(k => (
-            <option key={k.id} value={k.id}>{k.name}</option>
-          ))}
-        </select>
+        {/* Kurucu kurum seçebilir; müdür kendi kurumuna kilitli olduğu için
+            seçici yerine kurumunun adını sabit görür. */}
+        {kurumSecilebilir ? (
+          <select value={selectedKurumId} onChange={e => onKurumChange(e.target.value)} style={sel}>
+            {KURUMLAR.map(k => (
+              <option key={k.id} value={k.id}>{k.name}</option>
+            ))}
+          </select>
+        ) : (
+          <div style={kurumEtiketi}>
+            {KURUMLAR.find(k => k.id === selectedKurumId)?.name ?? 'Kurum'}
+          </div>
+        )}
 
         <select
           value={selectedScenarioId ?? ''}
@@ -98,6 +109,19 @@ const toolbar: React.CSSProperties = {
 };
 const dropdowns: React.CSSProperties = { display: 'flex', gap: 10, flex: 1, flexWrap: 'wrap' };
 const buttons: React.CSSProperties = { display: 'flex', gap: 8, flexWrap: 'wrap' };
+const kurumEtiketi: React.CSSProperties = {
+  background: 'var(--surface)',
+  border: '1px solid var(--line)',
+  color: 'var(--text)',
+  borderRadius: 'var(--r-md)',
+  padding: '10px 14px',
+  fontSize: '0.85rem',
+  fontWeight: 700,
+  display: 'flex',
+  alignItems: 'center',
+  whiteSpace: 'nowrap',
+};
+
 const sel: React.CSSProperties = {
   background: 'var(--bg)', border: '1px solid var(--line-strong)', color: 'var(--text)',
   padding: '8px 12px', borderRadius: "var(--r-sm)", fontSize: '0.85rem', outline: 'none', cursor: 'pointer', minWidth: 160
