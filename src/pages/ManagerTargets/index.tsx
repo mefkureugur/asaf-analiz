@@ -3,6 +3,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "../../firebase"; 
 import { useAuth } from "../../store/AuthContext";
 import { useRecords } from "../../hooks/useRecords";
+import { aktifDonem, hedefBelgeKimligi, tarihinYili } from "../../constants/donem";
 
 const normalize = (s: any): string => {
   if (!s) return "";
@@ -36,8 +37,16 @@ export default function ManagerTargets() {
   // Yillik hedefler ayri bir belgede tutuluyor
   useEffect(() => {
     async function loadTargets() {
-      const snap = await getDoc(doc(db, "targets", "2026"));
-      if (snap.exists()) setTargets(snap.data());
+      try {
+        const snap = await getDoc(doc(db, "targets", hedefBelgeKimligi()));
+        // Belge yoksa da bir nesne yazılır. Aksi halde targets null kalır ve
+        // sayfa sonsuza kadar "Yükleniyor..." gösterirdi — yeni dönemin
+        // hedefleri henüz girilmemişken tam olarak bu oluyordu.
+        setTargets(snap.exists() ? snap.data() : { monthly: {}, yearly: {}, __bos: true });
+      } catch (e) {
+        console.warn("Hedefler yüklenemedi:", e);
+        setTargets({ monthly: {}, yearly: {}, __bos: true });
+      }
     }
     loadTargets();
   }, []);
@@ -57,7 +66,7 @@ export default function ManagerTargets() {
 
       const recs = allRecords.filter(r => {
         const p = r.SözleşmeTarihi.split(".");
-        return normalize(r.Okul) === normalize(branch) && p[2] === "2026" && (isYear ? true : parseInt(p[1]) === selectedMonth + 1);
+        return normalize(r.Okul) === normalize(branch) && Number(p[2]) === aktifDonem() && (isYear ? true : parseInt(p[1]) === selectedMonth + 1);
       });
       rC += recs.length;
       rR += recs.reduce((acc, curr) => acc + curr.SonTutar, 0);
@@ -74,10 +83,22 @@ export default function ManagerTargets() {
     };
   };
 
-  if (!targets) return <div className="page" style={{ textAlign: "center", paddingTop: "var(--sp-7)", color: "var(--text-2)" }}>Yükleniyor...</div>;
+  if (!targets) return <div className="page" style={{ textAlign: "center", paddingTop: "var(--sp-7)", color: "var(--text-2)" }}>Yükleniyor...</div>
+
+  const hedefYok = targets.__bos === true;
 
   return (
     <div className="page rise" style={{ maxWidth: 1200 }}>
+      {/* Yeni dönemin hedefleri henüz girilmemişse sebebini söyle; önceden
+          bu durumda sayfa sonsuza kadar "Yükleniyor..." gösteriyordu. */}
+      {hedefYok && (
+        <div style={hedefYokKutusu}>
+          <strong>{aktifDonem()} dönemi</strong> için henüz hedef girilmemiş. Gerçekleşen
+          rakamlar aşağıda görünür; hedef karşılaştırması, yönetim hedefleri girdikten
+          sonra çalışmaya başlar.
+        </div>
+      )}
+
       <header style={headerWrapper}>
         <div style={{ flex: 1 }}>
           <h2 style={{ fontSize: "1.3rem", fontWeight: 800, margin: 0 }}>Performans Paneli</h2>
@@ -101,7 +122,7 @@ export default function ManagerTargets() {
       <div style={{ display: "grid", gridTemplateColumns: window.innerWidth < 768 ? "1fr" : "repeat(auto-fit, minmax(400px, 1fr))", gap: 15 }}>
         {myBranches.map((branchName) => {
           const target = targets.monthly?.[selectedMonth]?.[branchName] || { student: 0, revenue: 0 };
-          const recs = allRecords.filter(r => normalize(r.Okul) === normalize(branchName) && r.SözleşmeTarihi.endsWith("2026") && parseInt(r.SözleşmeTarihi.split(".")[1]) === selectedMonth + 1);
+          const recs = allRecords.filter(r => normalize(r.Okul) === normalize(branchName) && tarihinYili(r.SözleşmeTarihi) === aktifDonem() && parseInt(r.SözleşmeTarihi.split(".")[1]) === selectedMonth + 1);
           const rC = recs.length;
           const rR = recs.reduce((acc, curr) => acc + curr.SonTutar, 0);
           const tA = target.student > 0 ? Math.round(target.revenue / target.student) : 0;
@@ -161,6 +182,17 @@ function MetricLine({ label, current, target, pct, isPrice, color }: any) {
 }
 
 // 🎨 MOBİL UYUMLU STİLLER
+const hedefYokKutusu: React.CSSProperties = {
+  background: "color-mix(in srgb, var(--warning) 10%, transparent)",
+  border: "1px solid color-mix(in srgb, var(--warning) 35%, transparent)",
+  color: "var(--text-2)",
+  borderRadius: "var(--r-md)",
+  padding: "var(--sp-3) var(--sp-4)",
+  fontSize: "0.85rem",
+  lineHeight: 1.6,
+  marginBottom: "var(--sp-4)",
+};
+
 const headerWrapper = { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, gap: 10 };
 const cardBase = { background: "var(--surface)", borderRadius: "var(--r-xl)", padding: "15px 20px", border: "1px solid var(--line)", position: "relative" as const, overflow: "hidden" };
 const cardHeader = { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, borderBottom: "1px solid var(--line)", paddingBottom: 8 };

@@ -94,7 +94,7 @@ export default function LoginPage() {
           </button>
         </form>
         
-        <p style={footerStyle}>© 2026 Sakarya ASAF Eğitim Kurumları</p>
+        <p style={footerStyle}>© {new Date().getFullYear()} Sakarya ASAF Eğitim Kurumları</p>
       </div>
     </div>
   );

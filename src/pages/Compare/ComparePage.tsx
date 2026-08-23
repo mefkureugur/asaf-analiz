@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { useAuth } from "../../store/AuthContext";
 import { useRecords } from "../../hooks/useRecords";
+import { aktifDonem, kiyasDonem } from "../../constants/donem";
 // ✅ Dashboard ile aynı veri kaynağını kilitliyoruz
 
 const normalize = (s: any): string => {
@@ -81,7 +82,7 @@ export default function ComparePage() {
       };
     };
 
-    return { curr: getStats(selY), prev: getStats(selY - 1) };
+    return { curr: getStats(selY), prev: getStats(selY - 1), yil: selY };
   }, [allRecords, cutoff, effectiveInstitution, selectedSubBranch]);
 
   const formatTL = (n: number) => `₺${Math.round(n).toLocaleString("tr-TR")}`;
@@ -125,9 +126,9 @@ export default function ComparePage() {
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 20 }}>
         {/* ✅ TS Hataları (v:any) şeklinde giderildi */}
-        <ResultCard title="ÖĞRENCİ SAYISI" curr={stats.curr.count} prev={stats.prev.count} format={(v: any) => v} />
-        <ResultCard title="TOPLAM CİRO" curr={stats.curr.total} prev={stats.prev.total} format={formatTL} />
-        <ResultCard title="ORTALAMA KAYIT" 
+        <ResultCard yil={stats.yil} title="ÖĞRENCİ SAYISI" curr={stats.curr.count} prev={stats.prev.count} format={(v: any) => v} />
+        <ResultCard yil={stats.yil} title="TOPLAM CİRO" curr={stats.curr.total} prev={stats.prev.total} format={formatTL} />
+        <ResultCard yil={stats.yil} title="ORTALAMA KAYIT" 
           curr={stats.curr.count > 0 ? stats.curr.total / stats.curr.count : 0} 
           prev={stats.prev.count > 0 ? stats.prev.total / stats.prev.count : 0} 
           format={formatTL} 
@@ -137,21 +138,21 @@ export default function ComparePage() {
   );
 }
 
-function ResultCard({ title, curr, prev, format }: any) {
+function ResultCard({ title, curr, prev, format, yil }: any) {
   const diff = prev > 0 ? ((curr - prev) / prev) * 100 : 0;
   const isUp = diff >= 0;
   return (
     <div style={{ background: "linear-gradient(145deg, var(--surface), var(--bg))", border: "1px solid var(--line)", borderRadius: "var(--r-lg)", padding: 25 }}>
       <div style={{ color: "var(--text-2)", fontSize: "0.75rem", fontWeight: 700, marginBottom: 20, letterSpacing: 1 }}>{title}</div>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
-        <span style={{ color: "var(--text-3)" }}>2025:</span>
+        <span style={{ color: "var(--text-3)" }}>{yil - 1}:</span>
         <span style={{ fontWeight: 600 }}>{format(prev)}</span>
       </div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <span style={{ color: "var(--accent)", fontWeight: 600 }}>2026:</span>
+        <span style={{ color: "var(--accent)", fontWeight: 600 }}>{yil}:</span>
         <span style={{ fontWeight: 800, fontSize: "1.5rem" }}>{format(curr)}</span>
       </div>
-      <div style={{ marginTop: 20, padding: "12px", borderRadius: "var(--r-md)", background: isUp ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)", color: isUp ? "var(--success)" : "var(--danger)", textAlign: "center", fontWeight: 700 }}>
+      <div style={{ marginTop: 20, padding: "12px", borderRadius: "var(--r-md)", background: isUp ? "color-mix(in srgb, var(--success) 12%, transparent)" : "color-mix(in srgb, var(--danger) 12%, transparent)", color: isUp ? "var(--success)" : "var(--danger)", textAlign: "center", fontWeight: 700 }}>
         {isUp ? "▲" : "▼"} %{Math.abs(diff).toFixed(1)} {isUp ? "Gelişim" : "Düşüş"}
       </div>
     </div>

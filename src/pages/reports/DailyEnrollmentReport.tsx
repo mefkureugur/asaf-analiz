@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { useAuth } from "../../store/AuthContext";
 import { useRecords } from "../../hooks/useRecords";
+import { tarihinYili } from "../../constants/donem";
 import { useIsMobile } from "../../hooks/useMediaQuery";
 import { Calendar, School, LayoutDashboard, FileText } from "lucide-react";
 
@@ -22,6 +23,9 @@ export default function DailyEnrollmentReport() {
   const reportData = useMemo(() => {
     const all = allRecords;
     const [y, m, d] = selectedDate.split("-");
+    // Dönem, SEÇİLEN TARİHİN yılıdır. Önceden ".2026" olarak koda
+    // gömülüydü; Ocak 2027'de yeni kayıtlar bu rapora hiç girmeyecekti.
+    const donem = Number(y);
     const pad = (n: string) => n.length < 2 ? "0" + n : n;
     const targetDateShort = `${parseInt(d)}.${parseInt(m)}.${y}`;
     const targetDateFull = `${pad(parseInt(d).toString())}.${pad(parseInt(m).toString())}.${y}`;
@@ -47,7 +51,7 @@ export default function DailyEnrollmentReport() {
       const rawCls = String(r.Sınıf || r.classType || "Belirsiz").replace(".0", "").trim();
       const cls = /^\d+$/.test(rawCls) ? parseInt(rawCls, 10).toString() : rawCls;
 
-      if (!cDate.includes(".2026")) return;
+      if (tarihinYili(cDate) !== donem) return;
       const isAllowed = user?.role === 'admin' || allowedKeywords.some(key => bNameNorm.includes(key));
       if (!isAllowed) return;
 
@@ -91,7 +95,8 @@ export default function DailyEnrollmentReport() {
     return { 
       branches: Object.entries(branchGroups).sort((a, b) => b[1].dailyTotal - a[1].dailyTotal),
       grandDaily: Object.values(branchGroups).reduce((a, b) => a + b.dailyTotal, 0),
-      grandOverall: Object.values(branchGroups).reduce((a, b) => a + b.overallTotal, 0)
+      grandOverall: Object.values(branchGroups).reduce((a, b) => a + b.overallTotal, 0),
+      donem
     };
   }, [allRecords, selectedDate, user]);
 
@@ -114,7 +119,7 @@ export default function DailyEnrollmentReport() {
           <div style={statValue}>{reportData.grandDaily}</div>
         </div>
         <div style={statCard("var(--sube-plus)")}>
-          <div style={statLabel}>2026 TOPLAM</div>
+          <div style={statLabel}>{reportData.donem} TOPLAM</div>
           <div style={statValue}>{reportData.grandOverall}</div>
         </div>
       </div>

@@ -3,6 +3,7 @@ import { doc, updateDoc } from "firebase/firestore";
 import { db } from "../../firebase";
 import { useAuth } from "../../store/AuthContext";
 import { useRecords, type Kayit } from "../../hooks/useRecords";
+import { aktifDonem, kiyasDonem, donemListesi, tarihinYili } from "../../constants/donem";
 import Modal from "../../components/ui/Modal";
 
 const normalize = (s: any): string => {
@@ -42,7 +43,7 @@ const MEFKURE_GROUP = {
   grades: ["5", "6", "7", "8", "9", "10", "11", "12", "Mezun", "Mood"]
 };
 
-type DonemSuzgeci = "2026" | "2025" | "hepsi";
+type DonemSuzgeci = string; // yıl metni veya "hepsi"
 type DurumSuzgeci = "aktif" | "iptal" | "hepsi";
 type KaynakSuzgeci = "hepsi" | "manual" | "excel";
 
@@ -57,7 +58,7 @@ export default function StudentList() {
   const [branchFilter, setBranchFilter] = useState("all");
   // Liste varsayilan olarak icinde bulunulan donemi gosterir; gecen yilin
   // kayitlari tarihsel veridir, iptal islemi oraya uygulanmaz.
-  const [donem, setDonem] = useState<DonemSuzgeci>("2026");
+  const [donem, setDonem] = useState<DonemSuzgeci>(String(aktifDonem()));
   const [durumSuzgeci, setDurumSuzgeci] = useState<DurumSuzgeci>("aktif");
   const [kaynakSuzgeci, setKaynakSuzgeci] = useState<KaynakSuzgeci>("hepsi");
   const [islemde, setIslemde] = useState<string | null>(null);
@@ -86,7 +87,7 @@ export default function StudentList() {
 
     const list = tumKayitlar.filter((r) => {
       // Donem suzgeci — sozlesme tarihinin yili
-      if (donem !== "hepsi" && kayitYili(r.SözleşmeTarihi) !== donem) return false;
+      if (donem !== "hepsi" && String(tarihinYili(r.SözleşmeTarihi) ?? "") !== donem) return false;
 
       // Yetki: admin hepsini, müdür kendi şubelerini görür
       const yetkili = isAdmin ||
@@ -113,6 +114,9 @@ export default function StudentList() {
 
   /** Gösterimde her zaman GG.AA.YYYY — kaynak dosyada "1.1.2026" gibi
       sıfırsız tarihler var, listede karışık görünmesin. */
+  // Dönem listesi veriden gelir; yeni yıl kayıt girilince kendiliğinden çıkar.
+  const donemler = useMemo(() => donemListesi(tumKayitlar), [tumKayitlar]);
+
   const saltOkunurSayisi = useMemo(
     () => filteredList.filter((r) => r.kaynak === "json").length,
     [filteredList]
@@ -247,7 +251,7 @@ export default function StudentList() {
         <div style={uyariKutusu}>
           Bu görünümdeki <strong>{saltOkunurSayisi} kayıt salt okunur</strong>. Uygulamanın içine
           gömülü dosyadan geliyorlar; veritabanında olmadıkları için düzenlenemez ve iptal edilemezler.
-          {donem === "2025"
+          {Number(donem) === kiyasDonem()
             ? " Geçmiş dönem kayıtları kapanmış sayıldığı için bilerek aktarılmadı."
             : isAdmin
               ? " Veri Aktarımı sayfasından aktarılabilirler."
@@ -267,8 +271,7 @@ export default function StudentList() {
             deger={donem}
             degistir={(v) => setDonem(v as DonemSuzgeci)}
             secenekler={[
-              { deger: "2026", etiket: "2026 Dönemi" },
-              { deger: "2025", etiket: "2025 Dönemi" },
+              ...donemler.map((d) => ({ deger: String(d), etiket: `${d} Dönemi` })),
               { deger: "hepsi", etiket: "Tüm Dönemler" },
             ]}
           />

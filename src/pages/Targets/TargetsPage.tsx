@@ -3,6 +3,7 @@ import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../../firebase"; 
 import { useAuth } from "../../store/AuthContext";
 import { useRecords } from "../../hooks/useRecords";
+import { aktifDonem, hedefBelgeKimligi, tarihinYili } from "../../constants/donem";
 
 const normalize = (s: any): string => {
   if (!s) return "";
@@ -56,7 +57,7 @@ export default function TargetsPage() {
   // Yillik hedefler ayri bir belgede tutuluyor
   useEffect(() => {
     async function load() {
-      const snap = await getDoc(doc(db, "targets", "2026"));
+      const snap = await getDoc(doc(db, "targets", hedefBelgeKimligi()));
       setTargets(snap.exists() ? snap.data() : { monthly: {}, yearly: {} });
     }
     load();
@@ -97,7 +98,7 @@ export default function TargetsPage() {
     else subList = [inst];
 
     const normList = subList.map(n => normalize(n));
-    const yearRecs = allRecords.filter(r => normList.includes(normalize(r.Okul)) && r.SözleşmeTarihi.endsWith("2026"));
+    const yearRecs = allRecords.filter(r => normList.includes(normalize(r.Okul)) && tarihinYili(r.SözleşmeTarihi) === aktifDonem());
     const finalRecs = isYear ? yearRecs : yearRecs.filter(r => parseInt(r.SözleşmeTarihi.split(".")[1]) === selectedMonth + 1);
     
     const count = finalRecs.length;
@@ -109,7 +110,7 @@ export default function TargetsPage() {
     if (user?.role !== 'admin') return;
     setSaving(true);
     try {
-      await setDoc(doc(db, "targets", "2026"), { ...targets, updatedAt: serverTimestamp() }, { merge: true });
+      await setDoc(doc(db, "targets", hedefBelgeKimligi()), { ...targets, updatedAt: serverTimestamp() }, { merge: true });
       alert("🎯 Hedefler Kaydedildi!");
     } catch (e) { alert("Hata!"); } finally { setSaving(false); }
   };
@@ -117,7 +118,7 @@ export default function TargetsPage() {
   return (
     <div className="page rise" style={{ maxWidth: 1000 }}>
       <header style={{ marginBottom: 30, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <h2 style={{ fontSize: "1.6rem", fontWeight: 700 }}>🎯 Hedef Yönetimi — 2026</h2>
+        <h2 style={{ fontSize: "1.6rem", fontWeight: 700 }}>🎯 Hedef Yönetimi — {aktifDonem()}</h2>
         <div style={{ display: "flex", gap: 10 }}>
           <div style={filterBox}>
             <label style={labSmall}>Ay:</label>

@@ -8,6 +8,7 @@ import asafFinansRaw from "../../data/finans.json";
 import FinanceAnalysisPage from "./FinanceComparisonPage"; 
 import FinanceEfficiencyPage from "./FinanceEfficiencyPage";
 import { useAuth } from "../../store/AuthContext";
+import { egitimYili, egitimYiliListesi } from "../../constants/donem";
 
 interface FinansRecord {
   Kurum: string; Alan: string; Dönem: string;
@@ -22,7 +23,7 @@ export default function FinanceViewPage() {
   
   const [selectedKurum, setSelectedKurum] = useState<string>("Mefkure YKS");
   const [selectedCategory, setSelectedCategory] = useState<string>("Toplam Giderler");
-  const [selectedDonem, setSelectedDonem] = useState<string>("2025-2026");
+  const [selectedDonem, setSelectedDonem] = useState<string>(egitimYili());
   const [activePage, setActivePage] = useState<number>(1);
   const [firebaseData, setFirebaseData] = useState<any[]>([]);
 
@@ -126,7 +127,7 @@ export default function FinanceViewPage() {
         {/* DÖNEM SEÇİCİ KALDIRILDI (Arka planda 2025-2026 olarak çalışmaya devam ediyor) 
         <div style={{ position: "relative", minWidth: isMobile ? "100%" : 140, flex: isMobile ? "none" : 0 }}>
           <select value={selectedDonem} onChange={(e) => setSelectedDonem(e.target.value)} style={mainSel}>
-            {["2024-2025", "2025-2026"].map(d => <option key={d} value={d}>{d}</option>)}
+            {egitimYiliListesi(1).map(d => <option key={d} value={d}>{d}</option>)}
           </select>
           <div style={chevronPos}><ChevronDown size={14} color="var(--text-3)" /></div>
         </div>

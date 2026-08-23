@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../../firebase";
 import { useAuth } from "../../store/AuthContext";
+import { aktifDonem, tarihinYili } from "../../constants/donem";
 import confetti from 'canvas-confetti';
 import Swal from 'sweetalert2'; // 🚀 Modern uyarı motoru eklendi
 
@@ -34,6 +35,21 @@ export default function DailyEntryPage() {
   const today = new Date().toISOString().slice(0, 10);
 
   const [date, setDate] = useState(today);
+
+  /* ---- DÖNEM ----
+     Sistem ana hat olarak içinde bulunulan yılı kullanır. Ama Aralık'ta
+     gelecek yılın kaydı, Ocak'ta geçen yılın geç kalmış kaydı girilebilmeli.
+     Bu yüzden dönem açıkça seçilebiliyor; seçim sözleşme tarihinin yılını
+     günceller (kaydın hangi döneme yazıldığını belirleyen şey tarihtir). */
+  const secilenDonem = tarihinYili(date) ?? aktifDonem();
+  const donemSecenekleri = Array.from(
+    new Set([aktifDonem() - 1, aktifDonem(), aktifDonem() + 1, secilenDonem])
+  ).sort((a, b) => a - b);
+
+  const donemDegistir = (yeniYil: number) => {
+    const [, ay, gun] = date.split("-");
+    setDate(`${yeniYil}-${ay}-${gun}`);
+  };
   const [studentName, setStudentName] = useState("");
   const [classType, setClassType] = useState("");
   const [branch, setBranch] = useState("");
@@ -196,6 +212,16 @@ export default function DailyEntryPage() {
 const infoBoxStyle: React.CSSProperties = { background: "rgba(30, 41, 59, 0.5)", padding: "10px 15px", borderRadius: "var(--r-sm)", marginBottom: "15px", fontSize: "0.85rem", border: "1px solid var(--line)" };
 const formContainerStyle: React.CSSProperties = { display: "grid", gap: 16, background: "var(--surface)", padding: 20, borderRadius: "var(--r-md)", border: "1px solid var(--line)", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" };
 const labelStyle: React.CSSProperties = { display: "flex", flexDirection: "column", gap: 4, fontSize: "0.9rem", color: "var(--text-2)" };
+const donemUyarisi: React.CSSProperties = {
+  background: "color-mix(in srgb, var(--warning) 12%, transparent)",
+  border: "1px solid color-mix(in srgb, var(--warning) 35%, transparent)",
+  color: "var(--text-2)",
+  borderRadius: "var(--r-sm)",
+  padding: "var(--sp-2) var(--sp-3)",
+  fontSize: "0.8rem",
+  marginTop: "-4px",
+};
+
 const inputStyle: React.CSSProperties = { width: "100%", padding: "10px 12px", background: "var(--bg)", border: "1px solid var(--line-strong)", borderRadius: "var(--r-sm)", color: "var(--text)", fontSize: "1rem", outline: "none" };
 // Renkli zemin uzerinde: metin iki temada da beyaz
 const buttonStyle: React.CSSProperties = { marginTop: 10, padding: "12px", color: "#ffffff", border: "none", borderRadius: "var(--r-sm)", cursor: "pointer", fontWeight: 600 };

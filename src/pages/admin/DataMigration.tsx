@@ -3,6 +3,7 @@ import { collection, doc, writeBatch, getDocs, query, where } from "firebase/fir
 import { db } from "../../firebase";
 import { useAuth } from "../../store/AuthContext";
 import { useRecords, kayitAnahtari } from "../../hooks/useRecords";
+import { aktifDonem, kiyasDonem } from "../../constants/donem";
 import asafRecordsRaw from "../../data/excel2json-1769487741734.json";
 
 /* =====================================================================
@@ -38,7 +39,7 @@ export default function DataMigration() {
   const { sayim, aktarimYapildi, loading, tumKayitlar, aktarilanAnahtarlar } = useRecords();
   // Geçmiş dönem kayıtları kapanmış sayılır; yalnızca yürürlükteki dönem
   // aktarılır. 2025 dosyadan okunmaya devam eder (karşılaştırma için).
-  const [donem, setDonem] = useState<"2026" | "2025" | "hepsi">("2026");
+  const [donem, setDonem] = useState<string>(String(aktifDonem()));
 
   const [durum, setDurum] = useState<"hazir" | "calisiyor" | "bitti" | "hata">("hazir");
   const [ilerleme, setIlerleme] = useState(0);
@@ -216,7 +217,7 @@ export default function DataMigration() {
         <div className="label" style={{ marginBottom: "var(--sp-3)" }}>AKTARILACAK</div>
 
         <div style={{ display: "inline-flex", background: "var(--bg)", border: "1px solid var(--line)", borderRadius: "var(--r-md)", padding: 2, marginBottom: "var(--sp-4)" }}>
-          {([["2026", "2026 Dönemi"], ["2025", "2025 Dönemi"], ["hepsi", "Hepsi"]] as const).map(([d, etiket]) => (
+          {([[String(aktifDonem()), `${aktifDonem()} Dönemi`], [String(kiyasDonem()), `${kiyasDonem()} Dönemi`], ["hepsi", "Hepsi"]] as const).map(([d, etiket]) => (
             <button
               key={d}
               onClick={() => setDonem(d)}

@@ -3,6 +3,7 @@ import { useAuth } from "../../store/AuthContext";
 import { useRecords } from "../../hooks/useRecords";
 import FilterBar from "../../components/FilterBar";
 import { useIsMobile } from "../../hooks/useMediaQuery";
+import { aktifDonem, kiyasDonem, donemListesi } from "../../constants/donem";
 
 // 🛡️ Zırh 1: Normalizasyon fonksiyonunu memoize ederek işlemci yükünü azaltıyoruz
 const normalize = (s: any): string => {
@@ -25,7 +26,8 @@ export default function DashboardPage() {
     };
   }, []);
 
-  const [year, setYear] = useState<number>(2026); 
+  // Dönem takvim yılından gelir; Ocak'ta kendiliğinden yeni yıla geçer.
+  const [year, setYear] = useState<number>(aktifDonem());
   const [viewMode, setViewMode] = useState<"today" | "all">("today"); 
   const [branch, setBranch] = useState<string>("");
   const [classTypes, setClassTypes] = useState<string[]>([]);
@@ -74,7 +76,7 @@ export default function DashboardPage() {
     };
 
     const currentData = allRecords.filter((r: any) => filterLogic(r, year));
-    const lastYearData = allRecords.filter((r: any) => filterLogic(r, 2025));
+    const lastYearData = allRecords.filter((r: any) => filterLogic(r, kiyasDonem(year)));
 
     const cC = currentData.length;
     const cT = currentData.reduce((acc, curr) => acc + curr.SonTutar, 0);
@@ -105,12 +107,14 @@ export default function DashboardPage() {
     return counts;
   }, [allRecords, branch, myAllowedNames]);
 
-  const data2025 = useMemo(() => getYearlyData(2025), [getYearlyData]);
-  const data2026 = useMemo(() => getYearlyData(2026), [getYearlyData]);
+  const oncekiYilVerisi = useMemo(() => getYearlyData(kiyasDonem(year)), [getYearlyData, year]);
+  const buYilVerisi = useMemo(() => getYearlyData(year), [getYearlyData, year]);
 
   // window.innerWidth'i render sırasında okumak yerine izliyoruz:
   // cihaz döndürüldüğünde düzen artık gerçekten güncelleniyor.
   const isMobile = useIsMobile();
+  // Dönem listesi veriden gelir; yeni yıl kayıt girilince kendiliğinden eklenir.
+  const donemler = useMemo(() => donemListesi(allRecords), [allRecords]);
 
   return (
     <div className="page">
@@ -126,8 +130,9 @@ export default function DashboardPage() {
       >
         <div style={{ display: "flex", gap: "var(--sp-3)", flex: 1 }}>
           <select value={year} onChange={(e) => setYear(Number(e.target.value))} style={{ flex: 1 }}>
-            <option value={2025}>2025 Dönemi</option>
-            <option value={2026}>2026 Dönemi</option>
+            {donemler.map((d) => (
+              <option key={d} value={d}>{d} Dönemi</option>
+            ))}
           </select>
           <select value={viewMode} onChange={(e) => setViewMode(e.target.value as any)} style={{ flex: 1 }}>
             <option value="today">Bugün ({targetDay} {new Intl.DateTimeFormat("tr-TR", { month: "short" }).format(now)})</option>
@@ -152,14 +157,14 @@ export default function DashboardPage() {
           gap: "var(--sp-4)",
         }}
       >
-        <SmartCard className="rise rise-1" title="ÖĞRENCİ SAYISI" value={stats.cC} compareValue={stats.lC} diff={stats.countDiff} showCompare={year === 2026} />
-        <SmartCard className="rise rise-2" title="TOPLAM CİRO" value={`₺${stats.cT.toLocaleString("tr-TR")}`} compareValue={`₺${stats.lT.toLocaleString("tr-TR")}`} diff={stats.totalDiff} showCompare={year === 2026} />
-        <SmartCard className="rise rise-3" title="ORTALAMA KAYIT" value={`₺${Math.round(stats.cC > 0 ? stats.cT / stats.cC : 0).toLocaleString("tr-TR")}`} compareValue={`₺${Math.round(stats.lC > 0 ? stats.lT / stats.lC : 0).toLocaleString("tr-TR")}`} diff={stats.avgDiff} showCompare={year === 2026} />
+        <SmartCard className="rise rise-1" title="ÖĞRENCİ SAYISI" value={stats.cC} compareValue={stats.lC} diff={stats.countDiff} showCompare={year === aktifDonem()} />
+        <SmartCard className="rise rise-2" title="TOPLAM CİRO" value={`₺${stats.cT.toLocaleString("tr-TR")}`} compareValue={`₺${stats.lT.toLocaleString("tr-TR")}`} diff={stats.totalDiff} showCompare={year === aktifDonem()} />
+        <SmartCard className="rise rise-3" title="ORTALAMA KAYIT" value={`₺${Math.round(stats.cC > 0 ? stats.cT / stats.cC : 0).toLocaleString("tr-TR")}`} compareValue={`₺${Math.round(stats.lC > 0 ? stats.lT / stats.lC : 0).toLocaleString("tr-TR")}`} diff={stats.avgDiff} showCompare={year === aktifDonem()} />
       </div>
 
       <div className="rise rise-4" style={{ marginTop: "var(--sp-6)", display: "flex", flexDirection: "column", gap: "var(--sp-5)" }}>
-        <MonthGrid title="2025 AY DETAYLARI" data={data2025} compareData={data2026} is2026={false} isMobile={isMobile} />
-        <MonthGrid title="2026 AY DETAYLARI" data={data2026} compareData={data2025} is2026={true} isMobile={isMobile} />
+        <MonthGrid title={`${kiyasDonem(year)} AY DETAYLARI`} data={oncekiYilVerisi} compareData={buYilVerisi} buDonem={false} isMobile={isMobile} />
+        <MonthGrid title={`${year} AY DETAYLARI`} data={buYilVerisi} compareData={oncekiYilVerisi} buDonem={true} isMobile={isMobile} />
       </div>
 
       <div className="caption" style={{ marginTop: "var(--sp-6)", padding: "var(--sp-3)", background: "var(--surface)", borderRadius: "var(--r-sm)", border: "1px solid var(--line)", opacity: 0.6, wordBreak: "break-all" }}>
@@ -230,7 +235,7 @@ function SmartCard({ title, value, compareValue, diff, showCompare, className }:
 /* =====================================================================
    AY IZGARASI
    ===================================================================== */
-function MonthGrid({ title, data, compareData, is2026, isMobile }: any) {
+function MonthGrid({ title, data, compareData, buDonem, isMobile }: any) {
   const names = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"];
 
   return (
@@ -246,11 +251,11 @@ function MonthGrid({ title, data, compareData, is2026, isMobile }: any) {
         {names.map((n, i) => {
           const val = data[i];
           const otherVal = compareData ? compareData[i] : 0;
-          const isEmpty = is2026 && i > 0 && val === 0;
+          const isEmpty = buDonem && i > 0 && val === 0;
 
           let textColor = "var(--text-3)";
           if (val > 0) {
-            if (is2026) textColor = val >= otherVal ? "var(--success)" : "var(--danger)";
+            if (buDonem) textColor = val >= otherVal ? "var(--success)" : "var(--danger)";
             else textColor = "var(--text)";
           }
 

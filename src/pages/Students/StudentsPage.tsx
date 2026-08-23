@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useAuth } from "../../store/AuthContext";
 import { useRecords } from "../../hooks/useRecords";
+import { aktifDonem, kiyasDonem, tarihinYili } from "../../constants/donem";
 
 const strictNormalize = (s: any): string => {
   if (!s) return "";
@@ -27,35 +28,36 @@ export default function RegistrationAnalysis() {
   const stats = useMemo(() => {
     const combined = allRecords;
     
-    const pool2025 = new Set();
+    // Önceki dönem havuzu: bu isimler bu yıl da varsa "yenileme" sayılır
+    const oncekiHavuz = new Set();
     combined.forEach(r => {
       const dateVal = String(r.SözleşmeTarihi || r.contractDate || r["Sözleşme Tarihi"] || "");
-      if (dateVal.includes("2025")) {
+      if (tarihinYili(dateVal) === kiyasDonem()) {
         const name = r.ÖğrenciAdSoyad || r.studentName || r["Ad Soyad"] || r["Öğrenci Ad Soyad"];
-        if (name) pool2025.add(strictNormalize(name));
+        if (name) oncekiHavuz.add(strictNormalize(name));
       }
     });
 
     const results: any = {};
     Object.entries(institutionGroups).forEach(([instName, branches]) => {
       const normBranches = branches.map(b => strictNormalize(b));
-      const recs2026 = combined.filter(r => {
+      const buDonemKayitlari = combined.filter(r => {
         const dateVal = String(r.SözleşmeTarihi || r.contractDate || r["Sözleşme Tarihi"] || "");
         const branchVal = strictNormalize(r.Okul || r.branch || r.subeAd);
-        return dateVal.includes("2026") && normBranches.some(nb => branchVal.includes(nb));
+        return tarihinYili(dateVal) === aktifDonem() && normBranches.some(nb => branchVal.includes(nb));
       });
 
       let yeni = 0; let yenileme = 0;
-      recs2026.forEach(r => {
+      buDonemKayitlari.forEach(r => {
         const name = r.ÖğrenciAdSoyad || r.studentName || r["Ad Soyad"] || r["Öğrenci Ad Soyad"];
         const nameKey = strictNormalize(name);
-        if (nameKey && pool2025.has(nameKey)) yenileme++;
+        if (nameKey && oncekiHavuz.has(nameKey)) yenileme++;
         else yeni++;
       });
       results[instName] = { yeni, yenileme, total: yeni + yenileme };
     });
 
-    return { results, poolSize: pool2025.size };
+    return { results, poolSize: oncekiHavuz.size };
   }, [allRecords]);
 
   return (

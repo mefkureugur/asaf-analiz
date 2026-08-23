@@ -4,6 +4,7 @@ import { collection, query, onSnapshot, doc, setDoc } from "firebase/firestore";
 import { db } from "../../firebase"; // 🔥 DB bağlantısı
 import { TrendingUp, Calculator, ChevronDown, Save, ArrowLeft, Database, Edit3, Users } from "lucide-react";
 import { saveFinanceSnapshot } from "../../services/financeSnapshot.service";
+import { egitimYili, egitimYiliListesi } from "../../constants/donem";
 import { loadFinance, saveFinance } from "../../store/FinanceStore";
 
 interface FinanceInput {
@@ -18,7 +19,9 @@ interface FinanceState {
 }
 
 const BRANCH_LIST = ["Mefkure YKS", "Mefkure LGS", "Altınküre Lise", "Altınküre İlköğretim", "Altınküre Teknokent"];
-const DONEM_LIST = ["2024-2025", "2025-2026"];
+// Eğitim-öğretim yılı listesi takvimden türetilir: 2027 gelince
+// "2026-2027" kendiliğinden eklenir.
+const DONEM_LIST = egitimYiliListesi(1);
 const EXPENSE_TYPES = ["Toplam Giderler", "Maaşlar", "SGK"];
 const ALL_MONTHS = ["Ağustos", "Eylül", "Ekim", "Kasım", "Aralık", "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz"];
 const ENTRY_MONTHS = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz"];
@@ -26,7 +29,7 @@ const ENTRY_MONTHS = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "T
 export default function FinanceInputPage() {
   const navigate = useNavigate();
   const [incomeBranch, setIncomeBranch] = useState("Mefkure YKS");
-  const [incomeDonem, setIncomeDonem] = useState("2025-2026"); 
+  const [incomeDonem, setIncomeDonem] = useState(egitimYili()); 
   const [expenseBranch, setExpenseBranch] = useState("Mefkure YKS");
   const [expenseType, setExpenseType] = useState("Toplam Giderler");
   const [finance, setFinance] = useState<FinanceState>(() => loadFinance() as any);
@@ -170,7 +173,7 @@ export default function FinanceInputPage() {
               <div style={labelStyle}>DÖNEM</div>
               <div style={{ position: "relative" }}>
                 <select value={incomeDonem} onChange={(e) => setIncomeDonem(e.target.value)} style={mainSel}>
-                  {DONEM_LIST.map(d => <option key={d} value={d}>{d}</option>)}
+                  {DONEM_LIST.map((d: string) => <option key={d} value={d}>{d}</option>)}
                 </select>
                 <ChevronDown style={chevronStyle} size={14} />
               </div>
