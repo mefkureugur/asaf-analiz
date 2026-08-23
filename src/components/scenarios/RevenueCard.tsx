@@ -31,23 +31,23 @@ export default function RevenueCard({ ogrenciSayisi, yillikOgrenciUcreti, onChan
         </div>
       </div>
       <div style={ciroBadge}>
-        <span style={{ color: '#64748b', fontSize: '0.75rem' }}>Hesaplanan Yıllık Ciro</span>
-        <span style={{ color: '#22c55e', fontSize: '1.3rem', fontWeight: 800 }}>{fmt(ciro)}</span>
+        <span style={{ color: 'var(--text-3)', fontSize: '0.75rem' }}>Hesaplanan Yıllık Ciro</span>
+        <span style={{ color: 'var(--success)', fontSize: '1.3rem', fontWeight: 800 }}>{fmt(ciro)}</span>
       </div>
     </div>
   );
 }
 
-const card: React.CSSProperties = { background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 12, padding: '20px' };
-const cardTitle: React.CSSProperties = { color: '#94a3b8', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em', marginBottom: 14 };
+const card: React.CSSProperties = { background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: "var(--r-md)", padding: '20px' };
+const cardTitle: React.CSSProperties = { color: 'var(--text-2)', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em', marginBottom: 14 };
 const grid: React.CSSProperties = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 };
 const fieldWrap: React.CSSProperties = { display: 'flex', flexDirection: 'column', gap: 6 };
-const lbl: React.CSSProperties = { color: '#64748b', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.04em' };
+const lbl: React.CSSProperties = { color: 'var(--text-3)', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.04em' };
 const inp: React.CSSProperties = {
-  background: '#1e293b', border: '1px solid #334155', color: 'white',
-  padding: '10px 12px', borderRadius: 8, fontSize: '0.9rem', outline: 'none', width: '100%', boxSizing: 'border-box'
+  background: 'var(--line)', border: '1px solid var(--line-strong)', color: 'white',
+  padding: '10px 12px', borderRadius: "var(--r-sm)", fontSize: '0.9rem', outline: 'none', width: '100%', boxSizing: 'border-box'
 };
 const ciroBadge: React.CSSProperties = {
-  marginTop: 14, background: '#022c1a', border: '1px solid #166534', borderRadius: 8,
+  marginTop: 14, background: '#022c1a', border: '1px solid #166534', borderRadius: "var(--r-sm)",
   padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center'
 };

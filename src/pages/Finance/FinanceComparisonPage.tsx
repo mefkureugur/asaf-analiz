@@ -100,9 +100,9 @@ export default function FinanceComparisonPage({ selectedKurum }: { selectedKurum
     <div style={{ marginTop: 10, padding: isMobile ? "0 5px" : 0 }}>
       {/* 📊 ÜST ÖZET KARTLARI */}
       <div style={{ ...grid3, gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fit, minmax(350px, 1fr))" }}>
-        <CompCard title="CİRO KIYASLAMA" v1={comparison.data2025.ciro} v2={comparison.data2026.ciro} icon={<TrendingUp size={16}/>} color="#22c55e" format={formatCurrency} isMobile={isMobile} isRevenue={true} />
-        <CompCard title="TOPLAM GİDER (ORT)" v1={comparison.data2025.giderAvg} v2={comparison.data2026.giderAvg} icon={<Calculator size={16}/>} color="#ef4444" format={formatCurrency} isMobile={isMobile} />
-        <CompCard title="PERSONEL YÜKÜ (ORT)" v1={comparison.data2025.maasAvg + comparison.data2025.sgkAvg} v2={comparison.data2026.maasAvg + comparison.data2026.sgkAvg} icon={<Users size={16}/>} color="#ef4444" format={formatCurrency} isMobile={isMobile} />
+        <CompCard title="CİRO KIYASLAMA" v1={comparison.data2025.ciro} v2={comparison.data2026.ciro} icon={<TrendingUp size={16}/>} color="var(--success)" format={formatCurrency} isMobile={isMobile} isRevenue={true} />
+        <CompCard title="TOPLAM GİDER (ORT)" v1={comparison.data2025.giderAvg} v2={comparison.data2026.giderAvg} icon={<Calculator size={16}/>} color="var(--danger)" format={formatCurrency} isMobile={isMobile} />
+        <CompCard title="PERSONEL YÜKÜ (ORT)" v1={comparison.data2025.maasAvg + comparison.data2025.sgkAvg} v2={comparison.data2026.maasAvg + comparison.data2026.sgkAvg} icon={<Users size={16}/>} color="var(--danger)" format={formatCurrency} isMobile={isMobile} />
       </div>
 
       {/* 📉 GRAFİK ALANI */}
@@ -114,7 +114,7 @@ export default function FinanceComparisonPage({ selectedKurum }: { selectedKurum
               <span style={summaryItem}>{formatCurrency(activeStats.v1)} <small>2025 Ort.</small></span>
               {!isMobile && <div style={summaryDivider} />}
               <span style={{ ...summaryItem, color: '#f8fafc' }}>{formatCurrency(activeStats.v2)} <small>2026 Ort.</small></span>
-              <div style={{ ...miniBadge, background: activeStats.diff > 0 ? "#ef444420" : "#22c55e20", color: activeStats.diff > 0 ? "#ef4444" : "#22c55e" }}>
+              <div style={{ ...miniBadge, background: activeStats.diff > 0 ? "#ef444420" : "#22c55e20", color: activeStats.diff > 0 ? "var(--danger)" : "var(--success)" }}>
                 {activeStats.diff > 0 ? <ArrowUpRight size={12}/> : <ArrowDownRight size={12}/>} %{Math.abs(activeStats.diff).toFixed(1)}
               </div>
             </div>
@@ -138,7 +138,7 @@ export default function FinanceComparisonPage({ selectedKurum }: { selectedKurum
               ) : (
                 <><XAxis dataKey="name" stroke="var(--text-3)" fontSize={11} tickLine={false} /><YAxis hide /></>
               )}
-              <Tooltip cursor={{fill: '#1e293b', opacity: 0.4}} contentStyle={tooltipStyle} itemStyle={{ color: '#f8fafc', fontSize: '12px', fontWeight: 600 }} formatter={(v: any) => [formatCurrency(v), "Tutar"]} />
+              <Tooltip cursor={{fill: 'var(--line)', opacity: 0.4}} contentStyle={tooltipStyle} itemStyle={{ color: 'var(--text)', fontSize: '12px', fontWeight: 600 }} formatter={(v: any) => [formatCurrency(v), "Tutar"]} />
               <Legend verticalAlign="top" align="right" iconType="circle" wrapperStyle={{ paddingBottom: 20, fontSize: isMobile ? '10px' : '11px' }} />
               <Bar name="2025" dataKey="2025" fill="var(--line-strong)" radius={isMobile ? [0, 4, 4, 0] : [4, 4, 0, 0]} barSize={isMobile ? 12 : 20} />
               <Bar name="2026" dataKey="2026" fill="#3b82f6" radius={isMobile ? [0, 4, 4, 0] : [4, 4, 0, 0]} barSize={isMobile ? 12 : 20}>
@@ -180,19 +180,19 @@ function CompCard({ title, v1, v2, icon, color, format, isMobile, isRevenue }: a
 }
 
 const headerLayout = { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 25 };
-const headerSummaryBox = { display: 'flex', alignItems: 'center', gap: 15, background: '#1e293b50', padding: '8px 15px', borderRadius: '10px', border: '1px solid #1e2937' };
-const summaryItem = { fontSize: '0.8rem', fontWeight: 800, color: '#94a3b8', display: 'flex', flexDirection: 'column' as const };
-const summaryDivider = { width: 1, height: 25, background: '#1e2937' };
+const headerSummaryBox = { display: 'flex', alignItems: 'center', gap: 15, background: '#1e293b50', padding: '8px 15px', borderRadius: '10px', border: '1px solid var(--line)' };
+const summaryItem = { fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-2)', display: 'flex', flexDirection: 'column' as const };
+const summaryDivider = { width: 1, height: 25, background: 'var(--line)' };
 const miniBadge = { padding: '4px 8px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: 3 };
-const selectStyle = { background: "#1e293b", border: "1px solid #334155", color: "#3b82f6", padding: "10px 40px 10px 15px", borderRadius: "10px", appearance: "none" as const, fontSize: "0.75rem", fontWeight: 800, cursor: "pointer", width: "100%", outline: "none" };
+const selectStyle = { background: "var(--surface)", border: "1px solid var(--line-strong)", color: "var(--accent)", padding: "10px 40px 10px 15px", borderRadius: "var(--r-md)", appearance: "none" as const, fontSize: "0.75rem", fontWeight: 800, cursor: "pointer", width: "100%", outline: "none" };
 const chevronStyle = { position: "absolute" as const, right: 15, top: "50%", transform: "translateY(-50%)", color: "#3b82f6", pointerEvents: "none" as const };
-const chartWrapper = { background: "var(--surface)", border: "1px solid #1e2937", borderRadius: 16 };
-const headerStyle = { fontSize: "0.75rem", fontWeight: 800, color: "#64748b", letterSpacing: "0.05em" };
-const tooltipStyle = { background: "var(--bg)", border: "1px solid #1e2937", borderRadius: "8px" };
+const chartWrapper = { background: "var(--surface)", border: "1px solid var(--line)", borderRadius: "var(--r-lg)" };
+const headerStyle = { fontSize: "0.75rem", fontWeight: 800, color: "var(--text-3)", letterSpacing: "0.05em" };
+const tooltipStyle = { background: "var(--bg)", border: "1px solid var(--line)", borderRadius: "var(--r-sm)" };
 const grid3 = { display: "grid", gap: 20, marginBottom: 25 };
-const cardStyle = { background: "var(--surface)", border: "1px solid #1e2937", borderRadius: 16, display: "flex", flexDirection: "column" as const, gap: 12 };
-const cardHeader = { fontSize: "0.65rem", fontWeight: 800, color: "#64748b", display: "flex", alignItems: "center", gap: 8 };
+const cardStyle = { background: "var(--surface)", border: "1px solid var(--line)", borderRadius: "var(--r-lg)", display: "flex", flexDirection: "column" as const, gap: 12 };
+const cardHeader = { fontSize: "0.65rem", fontWeight: 800, color: "var(--text-3)", display: "flex", alignItems: "center", gap: 8 };
 const valRow = { display: "flex", justifyContent: "space-between", alignItems: "center" };
 const oldVal = { fontSize: "0.95rem", color: "#475569", fontWeight: 600, display: "flex", flexDirection: "column" as const };
-const newVal = { fontSize: "1.45rem", color: "#f8fafc", fontWeight: 900, display: "flex", flexDirection: "column" as const, textAlign: "right" as const };
-const diffBadge = { alignSelf: "flex-start", padding: "4px 10px", borderRadius: "8px", fontSize: "0.8rem", fontWeight: 800, display: "flex", alignItems: "center", gap: 4 };
+const newVal = { fontSize: "1.45rem", color: "var(--text)", fontWeight: 900, display: "flex", flexDirection: "column" as const, textAlign: "right" as const };
+const diffBadge = { alignSelf: "flex-start", padding: "4px 10px", borderRadius: "var(--r-sm)", fontSize: "0.8rem", fontWeight: 800, display: "flex", alignItems: "center", gap: 4 };

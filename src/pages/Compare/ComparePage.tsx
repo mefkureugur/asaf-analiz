@@ -103,11 +103,11 @@ export default function ComparePage() {
   const formatTL = (n: number) => `₺${Math.round(n).toLocaleString("tr-TR")}`;
 
   return (
-    <div style={{ padding: 25, color: "white", maxWidth: 1200, margin: "0 auto", fontFamily: "sans-serif" }}>
+    <div className="page rise" style={{ maxWidth: 1200 }}>
       <header style={{ marginBottom: 30, display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 20 }}>
         <div>
            <h2 style={{ fontSize: "1.8rem", fontWeight: 800, marginBottom: 10 }}>⚖️ Yıl Karşılaştırması</h2>
-           <p style={{ color: "#38bdf8" }}>{selectedSubBranch !== "HEPSİ" ? selectedSubBranch : effectiveInstitution} Analizi</p>
+           <p style={{ color: "var(--accent)" }}>{selectedSubBranch !== "HEPSİ" ? selectedSubBranch : effectiveInstitution} Analizi</p>
         </div>
 
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
@@ -157,24 +157,24 @@ function ResultCard({ title, curr, prev, format }: any) {
   const diff = prev > 0 ? ((curr - prev) / prev) * 100 : 0;
   const isUp = diff >= 0;
   return (
-    <div style={{ background: "linear-gradient(145deg, var(--surface), var(--bg))", border: "1px solid var(--line)", borderRadius: 16, padding: 25 }}>
-      <div style={{ color: "#94a3b8", fontSize: "0.75rem", fontWeight: 700, marginBottom: 20, letterSpacing: 1 }}>{title}</div>
+    <div style={{ background: "linear-gradient(145deg, var(--surface), var(--bg))", border: "1px solid var(--line)", borderRadius: "var(--r-lg)", padding: 25 }}>
+      <div style={{ color: "var(--text-2)", fontSize: "0.75rem", fontWeight: 700, marginBottom: 20, letterSpacing: 1 }}>{title}</div>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
-        <span style={{ color: "#64748b" }}>2025:</span>
+        <span style={{ color: "var(--text-3)" }}>2025:</span>
         <span style={{ fontWeight: 600 }}>{format(prev)}</span>
       </div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <span style={{ color: "#38bdf8", fontWeight: 600 }}>2026:</span>
+        <span style={{ color: "var(--accent)", fontWeight: 600 }}>2026:</span>
         <span style={{ fontWeight: 800, fontSize: "1.5rem" }}>{format(curr)}</span>
       </div>
-      <div style={{ marginTop: 20, padding: "12px", borderRadius: 10, background: isUp ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)", color: isUp ? "#22c55e" : "#ef4444", textAlign: "center", fontWeight: 700 }}>
+      <div style={{ marginTop: 20, padding: "12px", borderRadius: "var(--r-md)", background: isUp ? "rgba(34,197,94,0.1)" : "rgba(239,68,68,0.1)", color: isUp ? "var(--success)" : "var(--danger)", textAlign: "center", fontWeight: 700 }}>
         {isUp ? "▲" : "▼"} %{Math.abs(diff).toFixed(1)} {isUp ? "Gelişim" : "Düşüş"}
       </div>
     </div>
   );
 }
 
-const filterBox = { background: "var(--surface)", padding: "10px 15px", borderRadius: 12, border: "1px solid var(--line)", minWidth: "160px" };
-const labelStyle = { fontSize: "0.7rem", color: "#94a3b8", display: "block", marginBottom: 5, fontWeight: 700 };
+const filterBox = { background: "var(--surface)", padding: "10px 15px", borderRadius: "var(--r-md)", border: "1px solid var(--line)", minWidth: "160px" };
+const labelStyle = { fontSize: "0.7rem", color: "var(--text-2)", display: "block", marginBottom: 5, fontWeight: 700 };
 const selectStyle = { background: "transparent", border: "none", color: "white", outline: "none", cursor: "pointer", fontSize: "0.9rem", width: "100%", colorScheme: "dark" };
-const optStyle = { background: "#0f172a", color: "white" };
+const optStyle = { background: "var(--surface)", color: "white" };

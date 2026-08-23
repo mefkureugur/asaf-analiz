@@ -59,15 +59,15 @@ export default function ComparisonTable({ activeScenarios }: Props) {
                     <td style={td}>{fmt(r.result.totalPersonel)}</td>
                     <td style={td}>{fmt(r.result.digerGiderler)}</td>
                     <td style={td}>{fmt(r.result.kurumlarVergisi)}</td>
-                    <td style={{ ...td, color: r.result.netKar >= 0 ? '#22c55e' : '#ef4444', fontWeight: 700 }}>
+                    <td style={{ ...td, color: r.result.netKar >= 0 ? 'var(--success)' : 'var(--danger)', fontWeight: 700 }}>
                       {r.result.netKar >= 0 ? '' : '-'}{fmt(r.result.netKar)}
                     </td>
-                    <td style={{ ...td, color: r.result.karMarji >= 0 ? '#22c55e' : '#ef4444', fontWeight: 700 }}>
+                    <td style={{ ...td, color: r.result.karMarji >= 0 ? 'var(--success)' : 'var(--danger)', fontWeight: 700 }}>
                       {pct(r.result.karMarji)}
                     </td>
                   </>
                 ) : (
-                  <td colSpan={7} style={{ ...td, color: '#334155', textAlign: 'center' }}>— aktif senaryo yok —</td>
+                  <td colSpan={7} style={{ ...td, color: 'var(--line-strong)', textAlign: 'center' }}>— aktif senaryo yok —</td>
                 )}
               </tr>
             ))}
@@ -80,10 +80,10 @@ export default function ComparisonTable({ activeScenarios }: Props) {
                 <td style={{ ...td, fontWeight: 700 }}>{fmt(totals.personel)}</td>
                 <td style={{ ...td, fontWeight: 700 }}>{fmt(totals.diger)}</td>
                 <td style={{ ...td, fontWeight: 700 }}>{fmt(totals.vergi)}</td>
-                <td style={{ ...td, fontWeight: 800, color: totals.netKar >= 0 ? '#22c55e' : '#ef4444' }}>
+                <td style={{ ...td, fontWeight: 800, color: totals.netKar >= 0 ? 'var(--success)' : 'var(--danger)' }}>
                   {totals.netKar >= 0 ? '' : '-'}{fmt(totals.netKar)}
                 </td>
-                <td style={{ ...td, fontWeight: 700, color: totals.ciro > 0 ? (totals.netKar >= 0 ? '#22c55e' : '#ef4444') : '#64748b' }}>
+                <td style={{ ...td, fontWeight: 700, color: totals.ciro > 0 ? (totals.netKar >= 0 ? 'var(--success)' : 'var(--danger)') : 'var(--text-3)' }}>
                   {totals.ciro > 0 ? pct((totals.netKar / totals.ciro) * 100) : '—'}
                 </td>
               </tr>
@@ -95,9 +95,9 @@ export default function ComparisonTable({ activeScenarios }: Props) {
   );
 }
 
-const card: React.CSSProperties = { background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 12, padding: '20px' };
-const cardTitle: React.CSSProperties = { color: '#94a3b8', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em', marginBottom: 14 };
+const card: React.CSSProperties = { background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: "var(--r-md)", padding: '20px' };
+const cardTitle: React.CSSProperties = { color: 'var(--text-2)', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em', marginBottom: 14 };
 const tbl: React.CSSProperties = { width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' };
-const th: React.CSSProperties = { color: '#64748b', fontWeight: 700, fontSize: '0.65rem', letterSpacing: '0.04em', padding: '8px 12px', textAlign: 'left', borderBottom: '1px solid #1e293b' };
-const tr: React.CSSProperties = { borderBottom: '1px solid #1e2937' };
-const td: React.CSSProperties = { color: '#94a3b8', padding: '10px 12px', whiteSpace: 'nowrap' };
+const th: React.CSSProperties = { color: 'var(--text-3)', fontWeight: 700, fontSize: '0.65rem', letterSpacing: '0.04em', padding: '8px 12px', textAlign: 'left', borderBottom: '1px solid var(--line)' };
+const tr: React.CSSProperties = { borderBottom: '1px solid var(--line)' };
+const td: React.CSSProperties = { color: 'var(--text-2)', padding: '10px 12px', whiteSpace: 'nowrap' };

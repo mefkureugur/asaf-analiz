@@ -55,17 +55,17 @@ export default function ScenarioToolbar(props: Props) {
 
       {/* Butonlar */}
       <div style={buttons}>
-        <Btn onClick={onNew} label="+ Yeni" color="#38bdf8" />
-        <Btn onClick={onSave} label={isSaving ? 'Kaydediliyor...' : '💾 Kaydet'} color="#22c55e" disabled={isSaving} />
+        <Btn onClick={onNew} label="+ Yeni" color="var(--accent)" />
+        <Btn onClick={onSave} label={isSaving ? 'Kaydediliyor...' : '💾 Kaydet'} color="var(--success)" disabled={isSaving} />
         <Btn
           onClick={onActivate}
           label="⭐ Aktif Yap"
-          color="#f59e0b"
+          color="var(--warning)"
           disabled={isNewUnsaved || isActive}
           title={isActive ? 'Zaten aktif' : undefined}
         />
-        <Btn onClick={onDelete} label="🗑 Sil" color="#ef4444" disabled={isNewUnsaved} />
-        <Btn onClick={onPrint} label="🖨 PDF" color="#94a3b8" />
+        <Btn onClick={onDelete} label="🗑 Sil" color="var(--danger)" disabled={isNewUnsaved} />
+        <Btn onClick={onPrint} label="🖨 PDF" color="var(--text-2)" />
       </div>
     </div>
   );
@@ -77,11 +77,13 @@ function Btn({ onClick, label, color, disabled, title }: { onClick: () => void; 
       onClick={onClick}
       disabled={disabled}
       title={title}
+      // Saydam kenar icin hex'e alfa eklemek yerine color-mix kullaniliyor:
+      // `${color}60` yalnizca hex ile calisirdi, var(--token) ile bozulurdu.
       style={{
         background: 'transparent',
-        border: `1px solid ${disabled ? 'var(--line)' : color + '60'}`,
-        color: disabled ? '#334155' : color,
-        padding: '8px 12px', borderRadius: 8, cursor: disabled ? 'default' : 'pointer',
+        border: `1px solid ${disabled ? 'var(--line)' : `color-mix(in srgb, ${color} 38%, transparent)`}`,
+        color: disabled ? 'var(--line-strong)' : color,
+        padding: '8px 12px', borderRadius: "var(--r-sm)", cursor: disabled ? 'default' : 'pointer',
         fontSize: '0.8rem', fontWeight: 600, whiteSpace: 'nowrap', transition: 'all 0.15s'
       }}
     >
@@ -91,12 +93,12 @@ function Btn({ onClick, label, color, disabled, title }: { onClick: () => void; 
 }
 
 const toolbar: React.CSSProperties = {
-  background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 12,
+  background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: "var(--r-md)",
   padding: '12px 16px', display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center'
 };
 const dropdowns: React.CSSProperties = { display: 'flex', gap: 10, flex: 1, flexWrap: 'wrap' };
 const buttons: React.CSSProperties = { display: 'flex', gap: 8, flexWrap: 'wrap' };
 const sel: React.CSSProperties = {
-  background: '#020617', border: '1px solid #334155', color: 'white',
-  padding: '8px 12px', borderRadius: 8, fontSize: '0.85rem', outline: 'none', cursor: 'pointer', minWidth: 160
+  background: 'var(--bg)', border: '1px solid var(--line-strong)', color: 'white',
+  padding: '8px 12px', borderRadius: "var(--r-sm)", fontSize: '0.85rem', outline: 'none', cursor: 'pointer', minWidth: 160
 };

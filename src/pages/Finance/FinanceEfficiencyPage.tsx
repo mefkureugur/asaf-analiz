@@ -173,11 +173,11 @@ export default function FinanceEfficiencyPage({ selectedKurum, selectedDonem }: 
     <div style={{ marginTop: 10, padding: isMobile ? "0 5px" : 0 }}>
       {/* 📊 ÜST ÖZET KARTLARI */}
       <div style={{ ...grid3, gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(auto-fit, minmax(200px, 1fr))" }}>
-        <StatCard title="ÖĞRENCİ BAŞI MALİYET" value={formatCurrency(analysis.summary.ogrenciMaliyet)} icon={<TrendingUp size={16}/>} color="#ef4444" isMobile={isMobile} active={activeMetric === "ogrenciMaliyet"} onClick={() => setActiveMetric("ogrenciMaliyet")} />
+        <StatCard title="ÖĞRENCİ BAŞI MALİYET" value={formatCurrency(analysis.summary.ogrenciMaliyet)} icon={<TrendingUp size={16}/>} color="var(--danger)" isMobile={isMobile} active={activeMetric === "ogrenciMaliyet"} onClick={() => setActiveMetric("ogrenciMaliyet")} />
         <StatCard title="SINIF BAŞI MALİYET" value={formatCurrency(analysis.summary.sinifMaliyet)} icon={<Presentation size={16}/>} color="#ec4899" isMobile={isMobile} active={activeMetric === "sinifMaliyet"} onClick={() => setActiveMetric("sinifMaliyet")} />
-        <StatCard title="SINIF BAŞINA ÖĞRENCİ" value={analysis.summary.sinifDoluluk.toFixed(1)} icon={<Presentation size={16}/>} color="#22c55e" isMobile={isMobile} active={activeMetric === "sinifDoluluk"} onClick={() => setActiveMetric("sinifDoluluk")} />
-        <StatCard title="PERSONEL BAŞINA ÖĞRENCİ" value={analysis.summary.personelBasinaOgrenci.toFixed(1)} icon={<Users size={16}/>} color="#3b82f6" isMobile={isMobile} active={activeMetric === "personelBasinaOgrenci"} onClick={() => setActiveMetric("personelBasinaOgrenci")} />
-        <StatCard title="İDARECİ BAŞINA ÖĞRENCİ" value={analysis.summary.idareciBasinaOgrenci.toFixed(1)} icon={<Users size={16}/>} color="#f59e0b" isMobile={isMobile} active={activeMetric === "idareciBasinaOgrenci"} onClick={() => setActiveMetric("idareciBasinaOgrenci")} />
+        <StatCard title="SINIF BAŞINA ÖĞRENCİ" value={analysis.summary.sinifDoluluk.toFixed(1)} icon={<Presentation size={16}/>} color="var(--success)" isMobile={isMobile} active={activeMetric === "sinifDoluluk"} onClick={() => setActiveMetric("sinifDoluluk")} />
+        <StatCard title="PERSONEL BAŞINA ÖĞRENCİ" value={analysis.summary.personelBasinaOgrenci.toFixed(1)} icon={<Users size={16}/>} color="var(--accent)" isMobile={isMobile} active={activeMetric === "personelBasinaOgrenci"} onClick={() => setActiveMetric("personelBasinaOgrenci")} />
+        <StatCard title="İDARECİ BAŞINA ÖĞRENCİ" value={analysis.summary.idareciBasinaOgrenci.toFixed(1)} icon={<Users size={16}/>} color="var(--warning)" isMobile={isMobile} active={activeMetric === "idareciBasinaOgrenci"} onClick={() => setActiveMetric("idareciBasinaOgrenci")} />
       </div>
 
       {/* 📉 GRAFİK: KURUMLARIN İDARECİ VERİMLİLİĞİ */}
@@ -194,7 +194,7 @@ export default function FinanceEfficiencyPage({ selectedKurum, selectedDonem }: 
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" vertical={false} />
                   <XAxis dataKey="name" stroke="var(--text-3)" fontSize={10} tickLine={false} tick={{ dy: 15 }} />
                   <YAxis hide domain={[(dataMin: number) => (dataMin < 0 ? dataMin * 1.2 : 0), 'dataMax * 1.2']} />
-                  <Tooltip cursor={{fill: '#1e293b', opacity: 0.4}} contentStyle={tooltipStyle} itemStyle={{ color: '#f8fafc', fontSize: '12px', fontWeight: 600 }} formatter={(v: any) => [activeConf.formatter(v), activeConf.title]} />
+                  <Tooltip cursor={{fill: 'var(--line)', opacity: 0.4}} contentStyle={tooltipStyle} itemStyle={{ color: 'var(--text)', fontSize: '12px', fontWeight: 600 }} formatter={(v: any) => [activeConf.formatter(v), activeConf.title]} />
                   <ReferenceLine y={activeMetricAvg} stroke="#cbd5e1" strokeDasharray="3 3">
                      <Label position="insideTopLeft" value={`Ort: ${activeConf.formatter(activeMetricAvg)}`} fill="var(--text-2)" fontSize={10} />
                   </ReferenceLine>
@@ -242,8 +242,8 @@ export default function FinanceEfficiencyPage({ selectedKurum, selectedDonem }: 
         </div>
       ) : (
         <div style={{ ...chartWrapper, padding: "20px", display: "flex", flexDirection: "column", gap: 15 }}>
-          <div style={headerStyle}><Info size={16} color="#3b82f6"/> STRATEJİK DEĞERLENDİRME ÖZETİ</div>
-          <div style={{ color: "#94a3b8", fontSize: "0.9rem", lineHeight: "1.6" }}>
+          <div style={headerStyle}><Info size={16} color="var(--accent)"/> STRATEJİK DEĞERLENDİRME ÖZETİ</div>
+          <div style={{ color: "var(--text-2)", fontSize: "0.9rem", lineHeight: "1.6" }}>
             Seçilen kurum (<b>{selectedKurum}</b>) için {analysis.summary.sinif} sınıfta, toplam <b>{analysis.summary.ogrenci}</b> öğrenci eğitim görmektedir. 
             Bu durum sınıf başına ortalama <b>{analysis.summary.sinifDoluluk.toFixed(1)}</b> öğrenci düştüğünü göstermektedir. 
             Ayrıca 1 çalışan başına <b>{analysis.summary.personelBasinaOgrenci.toFixed(1)}</b> öğrenci düşmekte olup, 
@@ -261,9 +261,9 @@ function StatCard({ title, value, icon, color, isMobile, active, onClick }: any)
       onClick={onClick}
       style={{ 
         background: active ? "var(--line)" : "var(--surface)", 
-        border: `1px solid ${active ? color : '#1e2937'}`, 
+        border: `1px solid ${active ? color : 'var(--line)'}`, 
         borderTop: `3px solid ${color}`, 
-        borderRadius: 12, 
+        borderRadius: "var(--r-md)", 
         padding: isMobile ? "12px" : "18px",
         cursor: "pointer",
         transition: "all 0.2s ease-in-out",
@@ -271,13 +271,13 @@ function StatCard({ title, value, icon, color, isMobile, active, onClick }: any)
         transform: active ? "translateY(-2px)" : "none"
       }}
     >
-      <div style={{ color: active ? "#cbd5e1" : "#64748b", fontSize: isMobile ? "0.6rem" : "0.65rem", fontWeight: 800, marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>{icon} {title}</div>
-      <div style={{ fontSize: isMobile ? "1.2rem" : "1.6rem", fontWeight: 900, color: "#f8fafc" }}>{value}</div>
+      <div style={{ color: active ? "#cbd5e1" : "var(--text-3)", fontSize: isMobile ? "0.6rem" : "0.65rem", fontWeight: 800, marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>{icon} {title}</div>
+      <div style={{ fontSize: isMobile ? "1.2rem" : "1.6rem", fontWeight: 900, color: "var(--text)" }}>{value}</div>
     </div>
   );
 }
 
 const grid3 = { display: "grid", gap: 15, marginBottom: 25 };
-const chartWrapper = { background: "var(--surface)", border: "1px solid #1e2937", borderRadius: 16 };
-const headerStyle = { fontSize: "0.75rem", fontWeight: 800, color: "#94a3b8", letterSpacing: "0.05em", display: "flex", alignItems: "center", gap: 6 };
-const tooltipStyle = { background: "var(--bg)", border: "1px solid #1e2937", borderRadius: "8px" };
+const chartWrapper = { background: "var(--surface)", border: "1px solid var(--line)", borderRadius: "var(--r-lg)" };
+const headerStyle = { fontSize: "0.75rem", fontWeight: 800, color: "var(--text-2)", letterSpacing: "0.05em", display: "flex", alignItems: "center", gap: 6 };
+const tooltipStyle = { background: "var(--bg)", border: "1px solid var(--line)", borderRadius: "var(--r-sm)" };

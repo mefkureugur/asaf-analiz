@@ -155,10 +155,10 @@ export default function StudentList() {
     }
   };
 
-  if (loading) return <div style={{ padding: 100, color: "white", textAlign: "center" }}>📡 Yükleniyor...</div>;
+  if (loading) return <div className="page" style={{ textAlign: "center", paddingTop: "var(--sp-7)", color: "var(--text-2)" }}>📡 Yükleniyor...</div>;
 
   return (
-    <div style={{ padding: "15px", color: "white", maxWidth: "800px", margin: "0 auto" }}>
+    <div className="page rise" style={{ maxWidth: 800 }}>
       <header style={{ marginBottom: "20px", borderLeft: "4px solid var(--accent)", paddingLeft: "15px" }}>
         <h2 style={{ fontSize: "1.3rem", fontWeight: 800 }}>✍️ Manüel Kayıt Yönetimi</h2>
       </header>
@@ -192,11 +192,11 @@ export default function StudentList() {
                 <div style={{ fontWeight: 700 }}>{s.studentName}</div>
                 <span style={dateBadge}>{formatDateDisplay(s.SözleşmeTarihi)}</span>
               </div>
-              <div style={{ fontSize: "0.75rem", color: "#94a3b8", marginTop: "4px" }}>
+              <div style={{ fontSize: "0.75rem", color: "var(--text-2)", marginTop: "4px" }}>
                 📍 {s.Okul} | 🎓 Sınıf: {s.Sınıf} | 💰 {s.SonTutar?.toLocaleString("tr-TR")} TL
               </div>
               {s.GittigiOkul && (
-                <div style={{ fontSize: "0.75rem", color: "#38bdf8", marginTop: "2px" }}>
+                <div style={{ fontSize: "0.75rem", color: "var(--accent)", marginTop: "2px" }}>
                   🏫 Gittiği Okul: {s.GittigiOkul}
                 </div>
               )}
@@ -208,14 +208,14 @@ export default function StudentList() {
           </div>
         ))}
         {filteredList.length === 0 && (
-          <div style={{ textAlign: "center", padding: "20px", color: "#64748b" }}>Kayıt bulunamadı.</div>
+          <div style={{ textAlign: "center", padding: "20px", color: "var(--text-3)" }}>Kayıt bulunamadı.</div>
         )}
       </div>
 
       {editingStudent && (
         <div style={modalOverlay}>
           <div style={modalContent}>
-            <h3 style={{ color: "#38bdf8", marginBottom: "20px" }}>Kaydı Düzenle</h3>
+            <h3 style={{ color: "var(--accent)", marginBottom: "20px" }}>Kaydı Düzenle</h3>
             
             <label style={labelStyle}>Öğrenci Adı</label>
             <input style={inputStyle} value={editingStudent.studentName || ""} onChange={e => setEditingStudent({...editingStudent, studentName: e.target.value})} />
@@ -280,14 +280,14 @@ export default function StudentList() {
 }
 
 // STİLLER
-const searchInputStyle: any = { width: "100%", padding: "12px", background: "#1e293b", border: "1px solid #334155", color: "white", borderRadius: "10px", fontSize: "1rem", outline: "none", boxSizing: "border-box" };
-const cardStyle: any = { background: "#111827", padding: "15px", borderRadius: "12px", border: "1px solid #1f2937", display: "flex", alignItems: "center", gap: "10px" };
-const dateBadge: any = { background: "rgba(56, 189, 248, 0.1)", color: "#38bdf8", padding: "2px 8px", borderRadius: "6px", fontSize: "0.65rem", fontWeight: 700 };
-const btnEdit: any = { background: "#3b82f6", color: "white", border: "none", padding: "8px 14px", borderRadius: "8px", cursor: "pointer", fontWeight: 600 };
-const btnDel: any = { background: "rgba(239, 68, 68, 0.1)", color: "#ef4444", border: "1px solid #ef4444", padding: "8px 14px", borderRadius: "8px", cursor: "pointer" };
+const searchInputStyle: any = { width: "100%", padding: "12px", background: "var(--line)", border: "1px solid var(--line-strong)", color: "white", borderRadius: "var(--r-md)", fontSize: "1rem", outline: "none", boxSizing: "border-box" };
+const cardStyle: any = { background: "var(--surface)", padding: "15px", borderRadius: "var(--r-md)", border: "1px solid var(--line)", display: "flex", alignItems: "center", gap: "10px" };
+const dateBadge: any = { background: "rgba(56, 189, 248, 0.1)", color: "var(--accent)", padding: "2px 8px", borderRadius: "var(--r-sm)", fontSize: "0.65rem", fontWeight: 700 };
+const btnEdit: any = { background: "var(--accent)", color: "var(--accent-ink)", border: "none", padding: "8px 14px", borderRadius: "var(--r-sm)", cursor: "pointer", fontWeight: 600 };
+const btnDel: any = { background: "rgba(239, 68, 68, 0.1)", color: "var(--danger)", border: "1px solid var(--danger)", padding: "8px 14px", borderRadius: "var(--r-sm)", cursor: "pointer" };
 const modalOverlay: any = { position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(2, 6, 23, 0.95)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000, backdropFilter: "blur(4px)" };
-const modalContent: any = { background: "var(--surface)", padding: "25px", borderRadius: "20px", width: "95%", maxWidth: "450px", border: "1px solid var(--line)" };
-const inputStyle: any = { width: "100%", padding: "12px", background: "#1e293b", border: "1px solid #334155", color: "white", borderRadius: "10px", marginBottom: "12px", boxSizing: "border-box" };
-const labelStyle: any = { fontSize: "0.7rem", color: "#64748b", marginBottom: "5px", display: "block" };
-const saveBtn: any = { flex: 1, background: "#22c55e", color: "white", border: "none", padding: "14px", borderRadius: "10px", fontWeight: 700 };
-const cancelBtn: any = { flex: 1, background: "#334155", color: "white", border: "none", padding: "14px", borderRadius: "10px" };
+const modalContent: any = { background: "var(--surface)", padding: "25px", borderRadius: "var(--r-xl)", width: "95%", maxWidth: "450px", border: "1px solid var(--line)" };
+const inputStyle: any = { width: "100%", padding: "12px", background: "var(--line)", border: "1px solid var(--line-strong)", color: "white", borderRadius: "var(--r-md)", marginBottom: "12px", boxSizing: "border-box" };
+const labelStyle: any = { fontSize: "0.7rem", color: "var(--text-3)", marginBottom: "5px", display: "block" };
+const saveBtn: any = { flex: 1, background: "var(--success)", color: "white", border: "none", padding: "14px", borderRadius: "var(--r-md)", fontWeight: 700 };
+const cancelBtn: any = { flex: 1, background: "var(--line-strong)", color: "white", border: "none", padding: "14px", borderRadius: "var(--r-md)" };

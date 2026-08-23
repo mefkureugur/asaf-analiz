@@ -97,6 +97,8 @@ p {
 ========================= */
 .page {
   width: 100%;
+  /* Sayfalar kendi kapsayicilarini uydurmasin diye ortalama burada */
+  margin-inline: auto;
   /* Yatayda çentik/kavisli köşe, altta ana ekran çubuğu için pay bırakılır */
   padding: var(--sp-4);
   padding-left: max(var(--sp-4), var(--safe-left));

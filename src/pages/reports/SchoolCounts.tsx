@@ -73,15 +73,15 @@ export default function SchoolCounts() {
     return { rows: list, totalStudents: total };
   }, [records, user, isAdmin, searchTerm]);
 
-  if (loading) return <div style={{ padding: 100, color: "white", textAlign: "center" }}>📡 Yükleniyor...</div>;
+  if (loading) return <div className="page" style={{ textAlign: "center", paddingTop: "var(--sp-7)", color: "var(--text-2)" }}>📡 Yükleniyor...</div>;
 
   return (
-    <div style={{ padding: "15px", color: "white", maxWidth: "800px", margin: "0 auto" }}>
+    <div className="page rise" style={{ maxWidth: 800 }}>
       <header style={{ marginBottom: "20px", borderLeft: "4px solid var(--accent)", paddingLeft: "15px" }}>
         <h2 style={{ fontSize: "1.3rem", fontWeight: 800, display: "flex", alignItems: "center", gap: 8 }}>
-          <School size={22} color="#38bdf8" /> Okul Bazlı Öğrenci Sayıları
+          <School size={22} color="var(--accent)" /> Okul Bazlı Öğrenci Sayıları
         </h2>
-        <div style={{ fontSize: "0.8rem", color: "#94a3b8", marginTop: 4 }}>
+        <div style={{ fontSize: "0.8rem", color: "var(--text-2)", marginTop: 4 }}>
           Mefkure öğrencilerinin geldiği okullar — çoktan aza
         </div>
       </header>
@@ -100,7 +100,7 @@ export default function SchoolCounts() {
 
       {/* Arama */}
       <div style={{ position: "relative", marginBottom: 15 }}>
-        <Search size={16} color="#64748b" style={{ position: "absolute", left: 12, top: 13 }} />
+        <Search size={16} color="var(--text-3)" style={{ position: "absolute", left: 12, top: 13 }} />
         <input
           type="text"
           placeholder="Okul ara..."
@@ -136,7 +136,7 @@ export default function SchoolCounts() {
           );
         })}
         {rows.length === 0 && (
-          <div style={{ textAlign: "center", padding: "30px", color: "#64748b" }}>
+          <div style={{ textAlign: "center", padding: "30px", color: "var(--text-3)" }}>
             Henüz gittiği okul girilmiş kayıt bulunmuyor.
           </div>
         )}
@@ -147,20 +147,20 @@ export default function SchoolCounts() {
 
 // STİLLER
 // `color` burada hex OLMALI: aşağıda `${color}40` şeklinde alfa eki alıyor.
-const statCard = (color: string): React.CSSProperties => ({ background: "#0f172a", padding: "16px", borderRadius: "14px", border: `1px solid ${color}40`, borderLeft: `5px solid ${color}`, textAlign: "center" });
-const statLabel: React.CSSProperties = { fontSize: "0.7rem", fontWeight: 700, color: "#94a3b8", marginBottom: 5 };
+const statCard = (color: string): React.CSSProperties => ({ background: "var(--surface)", padding: "16px", borderRadius: "var(--r-md)", border: `1px solid ${color}40`, borderLeft: `5px solid ${color}`, textAlign: "center" });
+const statLabel: React.CSSProperties = { fontSize: "0.7rem", fontWeight: 700, color: "var(--text-2)", marginBottom: 5 };
 const statValue: React.CSSProperties = { fontSize: "1.8rem", fontWeight: 900 };
-const searchInputStyle: React.CSSProperties = { width: "100%", padding: "12px", background: "#1e293b", border: "1px solid #334155", color: "white", borderRadius: "10px", fontSize: "1rem", outline: "none", boxSizing: "border-box" };
-const rowStyle: React.CSSProperties = { background: "#111827", padding: "12px 15px", borderRadius: "12px", border: "1px solid #1f2937", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 };
+const searchInputStyle: React.CSSProperties = { width: "100%", padding: "12px", background: "var(--line)", border: "1px solid var(--line-strong)", color: "white", borderRadius: "var(--r-md)", fontSize: "1rem", outline: "none", boxSizing: "border-box" };
+const rowStyle: React.CSSProperties = { background: "var(--surface)", padding: "12px 15px", borderRadius: "var(--r-md)", border: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 };
 const rankBadge = (idx: number): React.CSSProperties => ({
-  width: 28, height: 28, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center",
+  width: 28, height: 28, borderRadius: "var(--r-sm)", display: "flex", alignItems: "center", justifyContent: "center",
   fontWeight: 800, fontSize: "0.8rem",
   background: idx === 0 ? "#eab30820" : idx === 1 ? "#94a3b820" : idx === 2 ? "#b4530920" : "var(--line)",
-  color: idx === 0 ? "#eab308" : idx === 1 ? "#cbd5e1" : idx === 2 ? "#f97316" : "#64748b",
+  color: idx === 0 ? "#eab308" : idx === 1 ? "#cbd5e1" : idx === 2 ? "#f97316" : "var(--text-3)",
   border: `1px solid ${idx < 3 ? "transparent" : "var(--line-strong)"}`,
 });
-const countBadge: React.CSSProperties = { display: "flex", alignItems: "center", gap: 6, background: "rgba(56, 189, 248, 0.1)", color: "#38bdf8", padding: "6px 12px", borderRadius: "8px", fontSize: "0.8rem", fontWeight: 700, whiteSpace: "nowrap" };
+const countBadge: React.CSSProperties = { display: "flex", alignItems: "center", gap: 6, background: "rgba(56, 189, 248, 0.1)", color: "var(--accent)", padding: "6px 12px", borderRadius: "var(--r-sm)", fontSize: "0.8rem", fontWeight: 700, whiteSpace: "nowrap" };
 const branchChip = (label: string): React.CSSProperties => {
   const color = BRANCH_COLORS[label] || "#64748b";
-  return { background: `${color}1a`, color, border: `1px solid ${color}40`, padding: "2px 8px", borderRadius: "6px", fontSize: "0.7rem", fontWeight: 700, whiteSpace: "nowrap" };
+  return { background: `${color}1a`, color, border: `1px solid ${color}40`, padding: "2px 8px", borderRadius: "var(--r-sm)", fontSize: "0.7rem", fontWeight: 700, whiteSpace: "nowrap" };
 };

@@ -143,12 +143,12 @@ export default function DailyEntryPage() {
   };
 
   return (
-    <div style={{ padding: 24, color: "white", maxWidth: 520, margin: "0 auto" }}>
+    <div className="page rise" style={{ maxWidth: 520 }}>
       <h2 style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>✍️ Kayıt Girişi</h2>
       
       <div style={infoBoxStyle}>
-        Kullanıcı: <span style={{color: "#38bdf8"}}>{user?.displayName}</span> 
-        {!isAdmin && <span> | Grup: <span style={{color: "#22c55e"}}>{user?.branchId}</span></span>}
+        Kullanıcı: <span style={{color: "var(--accent)"}}>{user?.displayName}</span> 
+        {!isAdmin && <span> | Grup: <span style={{color: "var(--success)"}}>{user?.branchId}</span></span>}
       </div>
 
       <form onSubmit={handleSubmit} style={formContainerStyle}>
@@ -175,7 +175,7 @@ export default function DailyEntryPage() {
         </label>
 
         {isMefkure && (
-          <label style={labelStyle}>Gittiği Okul <span style={{ color: "#64748b", fontWeight: 400 }}>(opsiyonel)</span>
+          <label style={labelStyle}>Gittiği Okul <span style={{ color: "var(--text-3)", fontWeight: 400 }}>(opsiyonel)</span>
             <input value={studentSchool} onChange={(e) => setStudentSchool(e.target.value)} placeholder="Öğrencinin gittiği okul" style={inputStyle} />
           </label>
         )}
@@ -193,8 +193,8 @@ export default function DailyEntryPage() {
 }
 
 // Stil Nesneleri
-const infoBoxStyle: React.CSSProperties = { background: "rgba(30, 41, 59, 0.5)", padding: "10px 15px", borderRadius: "8px", marginBottom: "15px", fontSize: "0.85rem", border: "1px solid var(--line)" };
-const formContainerStyle: React.CSSProperties = { display: "grid", gap: 16, background: "var(--surface)", padding: 20, borderRadius: 12, border: "1px solid var(--line)", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" };
-const labelStyle: React.CSSProperties = { display: "flex", flexDirection: "column", gap: 4, fontSize: "0.9rem", color: "#94a3b8" };
-const inputStyle: React.CSSProperties = { width: "100%", padding: "10px 12px", background: "#020617", border: "1px solid #334155", borderRadius: 8, color: "white", fontSize: "1rem", outline: "none" };
-const buttonStyle: React.CSSProperties = { marginTop: 10, padding: "12px", color: "white", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600 };
+const infoBoxStyle: React.CSSProperties = { background: "rgba(30, 41, 59, 0.5)", padding: "10px 15px", borderRadius: "var(--r-sm)", marginBottom: "15px", fontSize: "0.85rem", border: "1px solid var(--line)" };
+const formContainerStyle: React.CSSProperties = { display: "grid", gap: 16, background: "var(--surface)", padding: 20, borderRadius: "var(--r-md)", border: "1px solid var(--line)", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" };
+const labelStyle: React.CSSProperties = { display: "flex", flexDirection: "column", gap: 4, fontSize: "0.9rem", color: "var(--text-2)" };
+const inputStyle: React.CSSProperties = { width: "100%", padding: "10px 12px", background: "var(--bg)", border: "1px solid var(--line-strong)", borderRadius: "var(--r-sm)", color: "white", fontSize: "1rem", outline: "none" };
+const buttonStyle: React.CSSProperties = { marginTop: 10, padding: "12px", color: "white", border: "none", borderRadius: "var(--r-sm)", cursor: "pointer", fontWeight: 600 };

@@ -145,7 +145,7 @@ export default function FinanceInputPage() {
   };
 
   return (
-    <div style={{ padding: isMobile ? "10px" : "20px", color: "white", maxWidth: 1200, margin: "0 auto", backgroundColor: "#020617", minHeight: "100vh" }}>
+    <div className="page rise" style={{ maxWidth: 1200 }}>
       <button onClick={() => navigate("/finance/view")} style={backBtn}>
         <ArrowLeft size={14}/> Analize Dön
       </button>
@@ -154,7 +154,7 @@ export default function FinanceInputPage() {
         
         {/* 🛡️ SOL PANEL: CİRO YÖNETİMİ */}
         <div style={{ ...cardStyle, padding: isMobile ? "20px 15px" : "24px" }}>
-          <div style={{ ...headerStyle, marginBottom: 20 }}><TrendingUp size={16} color="#3b82f6"/> CİRO YÖNETİMİ</div>
+          <div style={{ ...headerStyle, marginBottom: 20 }}><TrendingUp size={16} color="var(--accent)"/> CİRO YÖNETİMİ</div>
           
           <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", gap: 10, marginBottom: 15 }}>
             <div style={{ flex: 2 }}>
@@ -202,13 +202,13 @@ export default function FinanceInputPage() {
         {/* 🛡️ SAĞ PANEL: GİDERLER */}
         <div style={{ ...cardStyle, padding: isMobile ? "20px 15px" : "24px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: isMobile ? "flex-start" : "center", marginBottom: 20, flexDirection: isMobile ? "column" : "row", gap: 15 }}>
-            <div style={headerStyle}><Calculator size={16} color="#ef4444"/> GİDER GİRİŞİ</div>
+            <div style={headerStyle}><Calculator size={16} color="var(--danger)"/> GİDER GİRİŞİ</div>
             <div style={{ display: "flex", gap: 8, width: isMobile ? "100%" : "auto" }}>
                 <div style={{ position: "relative", flex: 1 }}>
                     <select value={expenseType} onChange={(e) => setExpenseType(e.target.value)} style={typeSel}>
                         {EXPENSE_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                     </select>
-                    <ChevronDown style={chevronStyle} size={12} color="#3b82f6" />
+                    <ChevronDown style={chevronStyle} size={12} color="var(--accent)" />
                 </div>
                 <div style={{ position: "relative", flex: 1.2 }}>
                     <select value={expenseBranch} onChange={(e) => setExpenseBranch(e.target.value)} style={mainSel}>
@@ -293,7 +293,7 @@ export default function FinanceInputPage() {
           })}
         </div>
         
-        <button onClick={handleOpSave} disabled={saving} style={{ ...saveBtnStyle, background: "#eab308", color: "#020617", width: isMobile ? "100%" : "300px" }}>
+        <button onClick={handleOpSave} disabled={saving} style={{ ...saveBtnStyle, background: "#eab308", color: "var(--bg)", width: isMobile ? "100%" : "300px" }}>
           <Save size={16}/> OPERASYONEL VERİYİ KAYDET
         </button>
       </div>
@@ -301,14 +301,14 @@ export default function FinanceInputPage() {
   );
 }
 
-const cardStyle = { background: "var(--surface)", border: "1px solid #1e2937", borderRadius: 16, boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.4)" };
-const inputStyle = { background: "#020617", border: "1px solid #334155", borderRadius: 10, padding: "12px", color: "white", outline: "none", fontSize: "0.9rem" };
-const mainSel = { background: "#020617", border: "1px solid #1e2937", color: "white", padding: "10px 35px 10px 15px", borderRadius: 10, outline: 'none', appearance: 'none' as const, WebkitAppearance: 'none' as const, fontWeight: 700, width: '100%', fontSize: "0.8rem", cursor: "pointer" };
-const typeSel = { background: "#1e293b", border: "1px solid #334155", color: "#3b82f6", padding: "10px 40px 10px 15px", borderRadius: 10, outline: 'none', appearance: 'none' as const, WebkitAppearance: 'none' as const, fontWeight: 800, fontSize: "0.75rem", cursor: "pointer", width: '100%' };
-const chevronStyle = { position: "absolute" as const, right: 12, top: "50%", transform: "translateY(-50%)", color: "#64748b", pointerEvents: "none" as const };
-const labelStyle = { fontSize: "0.65rem", fontWeight: 700, color: "#64748b", marginBottom: 6, letterSpacing: "0.05em" };
+const cardStyle = { background: "var(--surface)", border: "1px solid var(--line)", borderRadius: "var(--r-lg)", boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.4)" };
+const inputStyle = { background: "var(--bg)", border: "1px solid var(--line-strong)", borderRadius: "var(--r-md)", padding: "12px", color: "white", outline: "none", fontSize: "0.9rem" };
+const mainSel = { background: "var(--bg)", border: "1px solid var(--line)", color: "white", padding: "10px 35px 10px 15px", borderRadius: "var(--r-md)", outline: 'none', appearance: 'none' as const, WebkitAppearance: 'none' as const, fontWeight: 700, width: '100%', fontSize: "0.8rem", cursor: "pointer" };
+const typeSel = { background: "var(--surface)", border: "1px solid var(--line-strong)", color: "var(--accent)", padding: "10px 40px 10px 15px", borderRadius: "var(--r-md)", outline: 'none', appearance: 'none' as const, WebkitAppearance: 'none' as const, fontWeight: 800, fontSize: "0.75rem", cursor: "pointer", width: '100%' };
+const chevronStyle = { position: "absolute" as const, right: 12, top: "50%", transform: "translateY(-50%)", color: "var(--text-3)", pointerEvents: "none" as const };
+const labelStyle = { fontSize: "0.65rem", fontWeight: 700, color: "var(--text-3)", marginBottom: 6, letterSpacing: "0.05em" };
 const headerStyle = { fontSize: "0.8rem", fontWeight: 800, color: "white", display: "flex", alignItems: "center", gap: 8, letterSpacing: "0.05em" };
-const saveBtnStyle = { background: "#3b82f6", color: "white", border: "none", width: "100%", padding: "14px", borderRadius: 12, fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 };
-const revizeBtnStyle = { background: "transparent", border: "1px solid #334155", color: "#94a3b8", flex: 1, padding: "12px", borderRadius: 12, fontWeight: 700, cursor: "pointer", fontSize: "0.7rem", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 };
-const backBtn = { background: "transparent", border: "1px solid #334155", color: "#94a3b8", padding: "10px 18px", borderRadius: 10, cursor: "pointer", display: "flex", alignItems: "center", gap: 8, fontSize: "0.75rem", fontWeight: 600 };
-const monthBoxStyle = { background: "#1e293b30", padding: "12px", borderRadius: 12, border: "1px solid #1e2937" };
+const saveBtnStyle = { background: "var(--accent)", color: "var(--accent-ink)", border: "none", width: "100%", padding: "14px", borderRadius: "var(--r-md)", fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 };
+const revizeBtnStyle = { background: "transparent", border: "1px solid var(--line-strong)", color: "var(--text-2)", flex: 1, padding: "12px", borderRadius: "var(--r-md)", fontWeight: 700, cursor: "pointer", fontSize: "0.7rem", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 };
+const backBtn = { background: "transparent", border: "1px solid var(--line-strong)", color: "var(--text-2)", padding: "10px 18px", borderRadius: "var(--r-md)", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, fontSize: "0.75rem", fontWeight: 600 };
+const monthBoxStyle = { background: "#1e293b30", padding: "12px", borderRadius: "var(--r-md)", border: "1px solid var(--line)" };

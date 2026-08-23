@@ -110,12 +110,12 @@ export default function DailyEnrollmentReport() {
   }, [firebaseRecords, selectedDate, user]);
 
   return (
-    <div style={{ padding: isMobile ? "10px" : "20px", color: "white", maxWidth: 1100, margin: "0 auto", backgroundColor: "#020617", minHeight: "100vh" }}>
+    <div className="page rise" style={{ maxWidth: 1100 }}>
       
       <div style={headerCard}>
         <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", justifyContent: "space-between", gap: 15 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <LayoutDashboard size={24} color="#38bdf8" />
+            <LayoutDashboard size={24} color="var(--accent)" />
             <div style={{ fontSize: "1.1rem", fontWeight: 800 }}>GÜNLÜK KAYIT RAPORU</div>
           </div>
           <input type="date" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} style={dateInputStyle} />
@@ -176,25 +176,25 @@ export default function DailyEnrollmentReport() {
 }
 
 // STİLLER (Korundu)
-const headerCard = { background: "var(--surface)", padding: "20px", borderRadius: "16px", border: "1px solid var(--line)", marginBottom: 20 };
-const dateInputStyle = { background: "#1e293b", border: "1px solid #334155", color: "white", padding: "10px", borderRadius: "10px", outline: "none" };
+const headerCard = { background: "var(--surface)", padding: "20px", borderRadius: "var(--r-lg)", border: "1px solid var(--line)", marginBottom: 20 };
+const dateInputStyle = { background: "var(--line)", border: "1px solid var(--line-strong)", color: "white", padding: "10px", borderRadius: "var(--r-md)", outline: "none" };
 // `color` burada hex OLMALI: aşağıda `${color}40` şeklinde alfa eki alıyor.
-const statCard = (color: string) => ({ background: "#0f172a", padding: "20px", borderRadius: "16px", border: `1px solid ${color}40`, borderLeft: `5px solid ${color}`, textAlign: "center" as const });
-const statLabel = { fontSize: "0.7rem", fontWeight: 700, color: "#94a3b8", marginBottom: 5 };
+const statCard = (color: string) => ({ background: "var(--surface)", padding: "20px", borderRadius: "var(--r-lg)", border: `1px solid ${color}40`, borderLeft: `5px solid ${color}`, textAlign: "center" as const });
+const statLabel = { fontSize: "0.7rem", fontWeight: 700, color: "var(--text-2)", marginBottom: 5 };
 const statValue = { fontSize: "2rem", fontWeight: 900 };
-const branchContainer = { background: "var(--surface)", borderRadius: "16px", border: "1px solid var(--line)", marginBottom: 25, overflow: "hidden" };
-const branchTitle = { padding: "12px 20px", background: "#1e293b50", borderBottom: "1px solid #1e293b", fontWeight: 800, color: "#38bdf8", display: "flex", alignItems: "center", gap: 10, fontSize: "0.9rem" };
+const branchContainer = { background: "var(--surface)", borderRadius: "var(--r-lg)", border: "1px solid var(--line)", marginBottom: 25, overflow: "hidden" };
+const branchTitle = { padding: "12px 20px", background: "#1e293b50", borderBottom: "1px solid var(--line)", fontWeight: 800, color: "var(--accent)", display: "flex", alignItems: "center", gap: 10, fontSize: "0.9rem" };
 const tableStyle = { width: "100%", borderCollapse: "collapse" as const };
 const tableHeaderRow = { background: "var(--bg)" };
-const thStyle = { padding: "12px 20px", fontSize: "0.7rem", color: "#64748b", fontWeight: 800 };
+const thStyle = { padding: "12px 20px", fontSize: "0.7rem", color: "var(--text-3)", fontWeight: 800 };
 const thLeft = { ...thStyle, textAlign: "left" as const };
 const thCenter = { ...thStyle, textAlign: "center" as const };
 const thRight = { ...thStyle, textAlign: "right" as const };
 const tableRow = (hasDaily: boolean) => ({ borderBottom: "1px solid #1e293b50", background: hasDaily ? "#38bdf808" : "transparent" });
 const tdStyle = { padding: "12px 20px", fontSize: "0.8rem", fontWeight: 600 };
-const tdLeft = { ...tdStyle, textAlign: "left" as const, color: "#f8fafc" };
-const tdLeftSub = { ...tdStyle, textAlign: "left" as const, color: "#38bdf8", fontWeight: 800, borderRight: "1px solid #1e293b" };
-const tdCenter = (active: boolean) => ({ ...tdStyle, textAlign: "center" as const, color: active ? "#38bdf8" : "#f8fafc" });
-const tdRight = { ...tdStyle, textAlign: "right" as const, color: "#f8fafc" };
+const tdLeft = { ...tdStyle, textAlign: "left" as const, color: "var(--text)" };
+const tdLeftSub = { ...tdStyle, textAlign: "left" as const, color: "var(--accent)", fontWeight: 800, borderRight: "1px solid var(--line)" };
+const tdCenter = (active: boolean) => ({ ...tdStyle, textAlign: "center" as const, color: active ? "var(--accent)" : "var(--text)" });
+const tdRight = { ...tdStyle, textAlign: "right" as const, color: "var(--text)" };
 const footerRow = { background: "#1e293b40" };
-const tdLeftFooter = { ...tdStyle, textAlign: "left" as const, color: "#38bdf8", fontWeight: 900 };
+const tdLeftFooter = { ...tdStyle, textAlign: "left" as const, color: "var(--accent)", fontWeight: 900 };

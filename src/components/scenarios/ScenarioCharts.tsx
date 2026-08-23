@@ -37,7 +37,7 @@ export default function ScenarioCharts({ result, people, kidemOn }: Props) {
     }).filter(d => d.value > 0);
   }, [people, kidemOn]);
 
-  const tooltipStyle = { background: 'var(--bg)', border: '1px solid var(--line)', borderRadius: 8, fontSize: '0.75rem' };
+  const tooltipStyle = { background: 'var(--bg)', border: '1px solid var(--line)', borderRadius: "var(--r-sm)", fontSize: '0.75rem' };
 
   return (
     <div style={card}>
@@ -93,5 +93,5 @@ export default function ScenarioCharts({ result, people, kidemOn }: Props) {
   );
 }
 
-const card: React.CSSProperties = { background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 12, padding: '20px' };
-const cardTitle: React.CSSProperties = { color: '#94a3b8', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em', marginBottom: 10 };
+const card: React.CSSProperties = { background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: "var(--r-md)", padding: '20px' };
+const cardTitle: React.CSSProperties = { color: 'var(--text-2)', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em', marginBottom: 10 };

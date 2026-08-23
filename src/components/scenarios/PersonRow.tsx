@@ -121,24 +121,24 @@ export default function PersonRow({ person, kidemOn, onChange, onRemove }: Props
 }
 
 const card: React.CSSProperties = {
-  background: 'var(--bg)', border: '1px solid var(--line)', borderRadius: 10,
+  background: 'var(--bg)', border: '1px solid var(--line)', borderRadius: "var(--r-md)",
   padding: '14px', display: 'flex', flexDirection: 'column', gap: 10
 };
 const topRow: React.CSSProperties = { display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' };
 const inputGrid: React.CSSProperties = { display: 'flex', gap: 8, flexWrap: 'wrap' };
 const fieldWrap: React.CSSProperties = { display: 'flex', flexDirection: 'column', gap: 4, minWidth: 110, flex: 1 };
-const fieldLabel: React.CSSProperties = { color: '#64748b', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.04em' };
+const fieldLabel: React.CSSProperties = { color: 'var(--text-3)', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.04em' };
 const inp: React.CSSProperties = {
-  background: '#1e293b', border: '1px solid #334155', color: 'white',
-  padding: '7px 10px', borderRadius: 6, fontSize: '0.85rem', outline: 'none', width: '100%', boxSizing: 'border-box'
+  background: 'var(--line)', border: '1px solid var(--line-strong)', color: 'white',
+  padding: '7px 10px', borderRadius: "var(--r-sm)", fontSize: '0.85rem', outline: 'none', width: '100%', boxSizing: 'border-box'
 };
 const sel: React.CSSProperties = {
-  background: '#1e293b', border: '1px solid #334155', color: 'white',
-  padding: '7px 8px', borderRadius: 6, fontSize: '0.8rem', outline: 'none', cursor: 'pointer'
+  background: 'var(--line)', border: '1px solid var(--line-strong)', color: 'white',
+  padding: '7px 8px', borderRadius: "var(--r-sm)", fontSize: '0.8rem', outline: 'none', cursor: 'pointer'
 };
 const delBtn: React.CSSProperties = {
-  background: 'transparent', border: '1px solid #334155', color: '#ef4444',
-  width: 30, height: 30, borderRadius: 6, cursor: 'pointer', fontSize: '0.85rem',
+  background: 'transparent', border: '1px solid var(--line-strong)', color: 'var(--danger)',
+  width: 30, height: 30, borderRadius: "var(--r-sm)", cursor: 'pointer', fontSize: '0.85rem',
   display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
 };
 const costRow: React.CSSProperties = { display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' };
@@ -147,5 +147,5 @@ const tag = (color: string): React.CSSProperties => ({
   padding: '2px 8px', borderRadius: 4, fontSize: '0.7rem', fontWeight: 600
 });
 const totalTag: React.CSSProperties = {
-  marginLeft: 'auto', color: '#f8fafc', fontSize: '0.75rem', fontWeight: 700
+  marginLeft: 'auto', color: 'var(--text)', fontSize: '0.75rem', fontWeight: 700
 };

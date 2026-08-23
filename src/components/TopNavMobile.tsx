@@ -68,7 +68,7 @@ export default function TopNavMobile({ isAdmin }: MobileProps) {
           onClick={handleLogoClick}
           style={{ display: "flex", alignItems: "center", gap: "var(--sp-3)", cursor: "pointer", userSelect: "none" }}
         >
-          <img src="/logo512.png" alt="" style={{ height: 30, width: 30, borderRadius: 7, objectFit: "cover" }} />
+          <img src="/logo512.png" alt="" style={{ height: 30, width: 30, borderRadius: "var(--r-sm)", objectFit: "cover" }} />
           <div>ASAF <span>ANALİZ</span></div>
         </div>
 

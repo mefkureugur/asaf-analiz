@@ -24,12 +24,12 @@ export default function GeneralSummaryCard({
       style={{
         background: "var(--bg)",
         border: "1px solid var(--line)",
-        borderRadius: 12,
+        borderRadius: "var(--r-md)",
         padding: 16,
         marginTop: 16,
       }}
     >
-      <h3 style={{ marginBottom: 16, fontSize: "1.1rem", color: "#f8fafc" }}>
+      <h3 style={{ marginBottom: 16, fontSize: "1.1rem", color: "var(--text)" }}>
         📊 Geçen Yıla Göre Durum
       </h3>
 
@@ -54,7 +54,7 @@ export default function GeneralSummaryCard({
         paddingTop: 8, 
         borderTop: "1px solid var(--line)", 
         fontSize: "0.75rem", 
-        color: "#64748b",
+        color: "var(--text-3)",
         textAlign: "center"
       }}>
         * Bugünün tarihi ile geçen yılın aynı günü kıyaslanmaktadır.
@@ -81,7 +81,7 @@ function MetricRow({
         marginBottom: 10,
       }}
     >
-      <span style={{ color: "#94a3b8", fontSize: "0.9rem" }}>{label}</span>
+      <span style={{ color: "var(--text-2)", fontSize: "0.9rem" }}>{label}</span>
       <span style={{ 
         color: color, 
         fontWeight: "bold", 

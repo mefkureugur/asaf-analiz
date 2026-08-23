@@ -73,8 +73,8 @@ export default function UserManagement() {
   };
 
   return (
-    <div style={{ padding: '30px', color: 'white', maxWidth: '1000px', margin: '0 auto' }}>
-      <h2 style={{ color: '#38bdf8', borderBottom: '2px solid #1e293b', paddingBottom: '10px' }}>
+    <div className="page rise" style={{ maxWidth: 1000 }}>
+      <h2 style={{ color: 'var(--accent)', borderBottom: '2px solid var(--line)', paddingBottom: '10px' }}>
           🛡️ ASAF ANALİZ | Yönetim Paneli
       </h2>
 
@@ -147,9 +147,9 @@ export default function UserManagement() {
 }
 
 const formCardStyle = { backgroundColor: 'var(--surface)', padding: '25px', borderRadius: '12px', border: '1px solid var(--line)', marginBottom: '30px' };
-const inputStyle = { backgroundColor: '#1e293b', border: '1px solid #334155', color: 'white', padding: '12px', borderRadius: '8px', flex: 1 };
+const inputStyle = { backgroundColor: 'var(--line)', border: '1px solid var(--line-strong)', color: 'white', padding: '12px', borderRadius: '8px', flex: 1 };
 const addBtnStyle = { backgroundColor: '#10b981', color: 'white', border: 'none', padding: '12px 25px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' as const };
 const tableWrapperStyle = { backgroundColor: 'var(--surface)', borderRadius: '12px', border: '1px solid var(--line)', overflow: 'hidden' };
-const selectStyle = { backgroundColor: '#1e293b', color: 'white', border: '1px solid #334155', padding: '10px', borderRadius: '8px', width: '100%' };
-const saveBtnStyle = { backgroundColor: '#38bdf8', color: '#020617', border: 'none', padding: '10px 12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' as const };
+const selectStyle = { backgroundColor: 'var(--line)', color: 'white', border: '1px solid var(--line-strong)', padding: '10px', borderRadius: '8px', width: '100%' };
+const saveBtnStyle = { backgroundColor: 'var(--accent)', color: 'var(--bg)', border: 'none', padding: '10px 12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' as const };
 const paddingStyle = { padding: '15px' };

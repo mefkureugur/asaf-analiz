@@ -162,23 +162,23 @@ export default function ScenariosPage() {
   return (
     <>
       <style>{printCss}</style>
-      <div style={{ padding: isMobile ? '12px 12px' : '20px 30px', color: 'white', maxWidth: 1400, margin: '0 auto' }}>
+      <div className="page rise" style={{ maxWidth: 1400 }}>
 
         {/* Sadece baskıda görünen başlık */}
         <div className="print-header">
-          <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a', marginBottom: 4 }}>
+          <div style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--surface)', marginBottom: 4 }}>
             ASAF ANALİZ — Senaryo Raporu
           </div>
           <div style={{ color: '#475569', fontSize: '0.85rem' }}>
             {selectedKurumName} · {draft.name}
           </div>
-          <div style={{ color: '#94a3b8', fontSize: '0.75rem', marginTop: 2 }}>
+          <div style={{ color: 'var(--text-2)', fontSize: '0.75rem', marginTop: 2 }}>
             {new Date().toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric' })}
           </div>
           <hr style={{ margin: '10px 0 0 0', borderColor: '#cbd5e1' }} />
         </div>
 
-        <div className="no-print" style={{ marginBottom: 16, color: '#94a3b8', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.05em' }}>
+        <div className="no-print" style={{ marginBottom: 16, color: 'var(--text-2)', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.05em' }}>
           SENARYO HESAP MODÜLÜ
         </div>
 
@@ -257,7 +257,7 @@ export default function ScenariosPage() {
           <ComparisonTable activeScenarios={allActiveScenarios} />
         </div>
 
-        <div style={{ marginTop: 16, color: '#334155', fontSize: '0.65rem' }}>
+        <div style={{ marginTop: 16, color: 'var(--line-strong)', fontSize: '0.65rem' }}>
           Görüntüleyen: {user?.displayName} ({user?.email})
         </div>
       </div>
@@ -265,15 +265,15 @@ export default function ScenariosPage() {
   );
 }
 
-const nameCard: React.CSSProperties = { background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 12, padding: '20px' };
-const nameLbl: React.CSSProperties = { color: '#94a3b8', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em', marginBottom: 10, display: 'block' };
+const nameCard: React.CSSProperties = { background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: "var(--r-md)", padding: '20px' };
+const nameLbl: React.CSSProperties = { color: 'var(--text-2)', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em', marginBottom: 10, display: 'block' };
 const nameInp: React.CSSProperties = {
-  background: '#1e293b', border: '1px solid #334155', color: 'white',
-  padding: '10px 14px', borderRadius: 8, fontSize: '1rem', outline: 'none', width: '100%', boxSizing: 'border-box'
+  background: 'var(--line)', border: '1px solid var(--line-strong)', color: 'white',
+  padding: '10px 14px', borderRadius: "var(--r-sm)", fontSize: '1rem', outline: 'none', width: '100%', boxSizing: 'border-box'
 };
 const noteArea: React.CSSProperties = {
-  background: '#1e293b', border: '1px solid #334155', color: '#94a3b8',
-  padding: '10px 14px', borderRadius: 8, fontSize: '0.85rem', outline: 'none',
+  background: 'var(--line)', border: '1px solid var(--line-strong)', color: 'var(--text-2)',
+  padding: '10px 14px', borderRadius: "var(--r-sm)", fontSize: '0.85rem', outline: 'none',
   width: '100%', boxSizing: 'border-box', resize: 'vertical', lineHeight: 1.5
 };
 
@@ -303,7 +303,7 @@ const printCss = `
 
     /* Tüm metinleri koyu yap */
     body, div, span, p, label, td, th, textarea {
-      color: #1e293b !important;
+      color: var(--line) !important;
     }
 
     /* Net kâr renk kodları korunsun */
@@ -313,7 +313,7 @@ const printCss = `
     /* Input/select görünümü */
     input, select, textarea {
       border: 1px solid #cbd5e1 !important;
-      color: #1e293b !important;
+      color: var(--line) !important;
     }
     input[type="range"] { display: none !important; }
     button { display: none !important; }

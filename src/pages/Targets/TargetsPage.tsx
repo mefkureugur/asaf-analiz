@@ -123,7 +123,7 @@ export default function TargetsPage() {
   };
 
   return (
-    <div style={{ padding: 25, color: "white", maxWidth: 1000, margin: "0 auto", fontFamily: "sans-serif" }}>
+    <div className="page rise" style={{ maxWidth: 1000 }}>
       <header style={{ marginBottom: 30, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <h2 style={{ fontSize: "1.6rem", fontWeight: 700 }}>🎯 Hedef Yönetimi — 2026</h2>
         <div style={{ display: "flex", gap: 10 }}>
@@ -191,22 +191,22 @@ function ResultLine({ label, val, tar }: any) {
   const pct = tar > 0 ? Math.round((numVal / tar) * 100) : 0;
   return (
     <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.9rem", marginBottom: 12 }}>
-      <span style={{ color: "#94a3b8" }}>{label}:</span>
-      <span style={{ fontWeight: 700 }}>{val} <span style={{ color: pct >= 100 ? "#22c55e" : "#ef4444", marginLeft: 8 }}>%{pct}</span></span>
+      <span style={{ color: "var(--text-2)" }}>{label}:</span>
+      <span style={{ fontWeight: 700 }}>{val} <span style={{ color: pct >= 100 ? "var(--success)" : "var(--danger)", marginLeft: 8 }}>%{pct}</span></span>
     </div>
   );
 }
 
-const cardStyle = { background: "#111827", borderRadius: 24, padding: 30, border: "1px solid #1f2937" };
-const filterBox = { background: "#111827", padding: "8px 15px", borderRadius: 12, border: "1px solid #1f2937", minWidth: "120px" };
-const labSmall = { fontSize: "0.6rem", color: "#64748b", display: "block", fontWeight: 800, textTransform: "uppercase" as const, marginBottom: 4 };
+const cardStyle = { background: "var(--surface)", borderRadius: "var(--r-xl)", padding: 30, border: "1px solid var(--line)" };
+const filterBox = { background: "var(--surface)", padding: "8px 15px", borderRadius: "var(--r-md)", border: "1px solid var(--line)", minWidth: "120px" };
+const labSmall = { fontSize: "0.6rem", color: "var(--text-3)", display: "block", fontWeight: 800, textTransform: "uppercase" as const, marginBottom: 4 };
 const selStyle = { background: "transparent", border: "none", color: "white", outline: "none", cursor: "pointer", fontSize: "0.85rem", width: "100%", colorScheme: "dark" };
-const cardSelStyle = { background: "#1f2937", color: "white", border: "1px solid #374151", padding: "8px 12px", borderRadius: 10, fontSize: "0.8rem", outline: "none", colorScheme: "dark" };
-const optStyle = { background: "#111827", color: "white" };
+const cardSelStyle = { background: "var(--line)", color: "white", border: "1px solid #374151", padding: "8px 12px", borderRadius: "var(--r-md)", fontSize: "0.8rem", outline: "none", colorScheme: "dark" };
+const optStyle = { background: "var(--surface)", color: "white" };
 const secTitle = { fontSize: "0.8rem", fontWeight: 800, color: "#4b5563", letterSpacing: 1 };
 const inputGroup = { display: "flex", flexDirection: "column" as const, gap: 15, marginBottom: 25 };
 const row = { display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "0.95rem" };
-const inp = { background: "#1f2937", border: "1px solid #374151", color: "white", padding: "10px", borderRadius: 10, width: "120px", textAlign: "right" as const, outline: "none" };
-const autoVal = { fontWeight: 700, color: "#38bdf8" };
-const resBox = { background: "rgba(0,0,0,0.3)", padding: 20, borderRadius: 20, borderLeft: "4px solid var(--success)" };
-const saveButtonStyle = { background: "#38bdf8", color: "#0f172a", border: "none", padding: "10px 20px", borderRadius: 12, fontWeight: 700, cursor: "pointer" };
+const inp = { background: "var(--line)", border: "1px solid #374151", color: "white", padding: "10px", borderRadius: "var(--r-md)", width: "120px", textAlign: "right" as const, outline: "none" };
+const autoVal = { fontWeight: 700, color: "var(--accent)" };
+const resBox = { background: "rgba(0,0,0,0.3)", padding: 20, borderRadius: "var(--r-xl)", borderLeft: "4px solid var(--success)" };
+const saveButtonStyle = { background: "var(--accent)", color: "var(--surface)", border: "none", padding: "10px 20px", borderRadius: "var(--r-md)", fontWeight: 700, cursor: "pointer" };

@@ -56,11 +56,11 @@ export default function PeopleCard({ people, kidemOn, onChange }: Props) {
   );
 }
 
-const card: React.CSSProperties = { background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 12, padding: '20px' };
+const card: React.CSSProperties = { background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: "var(--r-md)", padding: '20px' };
 const header: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 };
-const title: React.CSSProperties = { color: '#94a3b8', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em' };
-const badge: React.CSSProperties = { background: '#1e293b', color: '#94a3b8', fontSize: '0.65rem', padding: '2px 8px', borderRadius: 4 };
+const title: React.CSSProperties = { color: 'var(--text-2)', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em' };
+const badge: React.CSSProperties = { background: 'var(--line)', color: 'var(--text-2)', fontSize: '0.65rem', padding: '2px 8px', borderRadius: 4 };
 const addBtn: React.CSSProperties = {
-  marginTop: 10, background: 'transparent', border: '1px dashed #334155', color: '#38bdf8',
-  padding: '10px', borderRadius: 8, cursor: 'pointer', width: '100%', fontSize: '0.85rem', fontWeight: 600
+  marginTop: 10, background: 'transparent', border: '1px dashed var(--line-strong)', color: 'var(--accent)',
+  padding: '10px', borderRadius: "var(--r-sm)", cursor: 'pointer', width: '100%', fontSize: '0.85rem', fontWeight: 600
 };

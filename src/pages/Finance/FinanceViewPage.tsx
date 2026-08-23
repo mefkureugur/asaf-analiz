@@ -113,14 +113,14 @@ export default function FinanceViewPage() {
   }, [firebaseData, selectedKurum, selectedCategory, selectedDonem, rawData]);
 
   return (
-    <div style={{ padding: isMobile ? "10px" : "15px 25px", color: "white", maxWidth: 1200, margin: "0 auto", backgroundColor: "#020617", minHeight: "100vh" }}>
+    <div className="page rise" style={{ maxWidth: 1200 }}>
       
       <div style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap", alignItems: "center" }}>
         <div style={{ position: "relative", minWidth: isMobile ? "100%" : 220, flex: 1 }}>
           <select value={selectedKurum} onChange={(e) => setSelectedKurum(e.target.value)} style={mainSel}>
             {BRANCH_LIST.map(k => <option key={k} value={k}>{k}</option>)}
           </select>
-          <div style={chevronPos}><ChevronDown size={14} color="#64748b" /></div>
+          <div style={chevronPos}><ChevronDown size={14} color="var(--text-3)" /></div>
         </div>
 
         {/* DÖNEM SEÇİCİ KALDIRILDI (Arka planda 2025-2026 olarak çalışmaya devam ediyor) 
@@ -128,7 +128,7 @@ export default function FinanceViewPage() {
           <select value={selectedDonem} onChange={(e) => setSelectedDonem(e.target.value)} style={mainSel}>
             {["2024-2025", "2025-2026"].map(d => <option key={d} value={d}>{d}</option>)}
           </select>
-          <div style={chevronPos}><ChevronDown size={14} color="#64748b" /></div>
+          <div style={chevronPos}><ChevronDown size={14} color="var(--text-3)" /></div>
         </div>
         */}
 
@@ -163,7 +163,7 @@ export default function FinanceViewPage() {
       ) : (
         <>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: isMobile ? 10 : 15, marginBottom: 25 }}>
-            <SmartCard title={`${selectedCategory.toUpperCase()} ORT.`} value={formatCurrency(avgGider)} icon={<Calculator size={18} />} color="#3b82f6" isMobile={isMobile} />
+            <SmartCard title={`${selectedCategory.toUpperCase()} ORT.`} value={formatCurrency(avgGider)} icon={<Calculator size={18} />} color="var(--accent)" isMobile={isMobile} />
             <SmartCard 
               title={selectedCategory === "Toplam Giderler" ? "KAR ANALİZİ (TAHMİNİ)" : "TAHMİNİ YIL SONU"} 
               value={selectedCategory === "Toplam Giderler" ? formatCurrency(tahminiKar) : formatCurrency(tahminiYilSonu)} 
@@ -172,19 +172,19 @@ export default function FinanceViewPage() {
                 `Kâr Oranı: %${karYuzdesi.toFixed(1)}`
               ] : undefined}
               icon={<TrendingUp size={18} />} 
-              color={selectedCategory === "Toplam Giderler" ? (tahminiKar > 0 ? "#22c55e" : "#ef4444") : "#a855f7"} 
+              color={selectedCategory === "Toplam Giderler" ? (tahminiKar > 0 ? "var(--success)" : "var(--danger)") : "#a855f7"} 
               isMobile={isMobile} 
             />
           </div>
 
           <div style={{ ...containerStyle, padding: isMobile ? "15px" : "20px" }}>
             <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", justifyContent: "space-between", alignItems: isMobile ? "flex-start" : "center", marginBottom: 25, gap: isMobile ? 12 : 0 }}>
-              <div style={headerStyle}><Landmark size={14} style={{ color: "#3b82f6" }} /> {selectedCategory.toUpperCase()} ANALİZİ</div>
+              <div style={headerStyle}><Landmark size={14} style={{ color: "var(--accent)" }} /> {selectedCategory.toUpperCase()} ANALİZİ</div>
               <div style={{ position: "relative", minWidth: isMobile ? "100%" : 180 }}>
                 <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} style={categorySel}>
                   {CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                 </select>
-                <div style={chevronPos}><ListFilter size={12} color="#3b82f6" /></div>
+                <div style={chevronPos}><ListFilter size={12} color="var(--accent)" /></div>
               </div>
             </div>
 
@@ -194,7 +194,7 @@ export default function FinanceViewPage() {
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" vertical={false} />
                   <XAxis type="number" hide />
                   <YAxis dataKey="name" type="category" stroke="var(--text-2)" fontSize={isMobile ? 10 : 12} width={isMobile ? 70 : 85} tickLine={false} axisLine={false} />
-                  <Tooltip cursor={{fill: '#1e293b', opacity: 0.4}} contentStyle={{ background: '#020617', border: '1px solid #1e2937', borderRadius: '8px' }} itemStyle={{ color: '#f8fafc', fontSize: '12px' }} formatter={(value: any) => [formatCurrency(value), "Tutar"]} />
+                  <Tooltip cursor={{fill: 'var(--line)', opacity: 0.4}} contentStyle={{ background: 'var(--bg)', border: '1px solid var(--line)', borderRadius: '8px' }} itemStyle={{ color: 'var(--text)', fontSize: '12px' }} formatter={(value: any) => [formatCurrency(value), "Tutar"]} />
                   <Bar dataKey="tutar" radius={[0, 4, 4, 0]} barSize={isMobile ? 18 : 22}>
                     <LabelList dataKey="label" position="right" fill="var(--text)" fontSize={isMobile ? 9 : 10} fontWeight={800} offset={12} />
                     {chartData.map((entry, index) => (
@@ -213,9 +213,9 @@ export default function FinanceViewPage() {
 
 function SmartCard({ title, value, icon, color, isMobile, extra }: any) {
   return (
-    <div style={{ background: "var(--surface)", border: `1px solid ${color}30`, borderLeft: `4px solid ${color}`, borderRadius: 12, padding: isMobile ? "12px 15px" : "18px 22px" }}>
-      <div style={{ color: "#94a3b8", fontSize: isMobile ? "0.55rem" : "0.6rem", fontWeight: 700, marginBottom: 8, letterSpacing: "0.1em", display: "flex", justifyContent: "space-between" }}>{title} <span>{icon}</span></div>
-      <div style={{ fontSize: isMobile ? "1rem" : "1.7rem", fontWeight: 900, color: "#f8fafc" }}>{value}</div>
+    <div style={{ background: "var(--surface)", border: `1px solid color-mix(in srgb, ${color} 19%, transparent)`, borderLeft: `4px solid ${color}`, borderRadius: "var(--r-md)", padding: isMobile ? "12px 15px" : "18px 22px" }}>
+      <div style={{ color: "var(--text-2)", fontSize: isMobile ? "0.55rem" : "0.6rem", fontWeight: 700, marginBottom: 8, letterSpacing: "0.1em", display: "flex", justifyContent: "space-between" }}>{title} <span>{icon}</span></div>
+      <div style={{ fontSize: isMobile ? "1rem" : "1.7rem", fontWeight: 900, color: "var(--text)" }}>{value}</div>
       {extra && Array.isArray(extra) && (
         <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 2 }}>
           {extra.map((line: string, i: number) => (
@@ -227,16 +227,16 @@ function SmartCard({ title, value, icon, color, isMobile, extra }: any) {
   );
 }
 
-const mainSel = { background: "#020617", border: "1px solid #1e2937", color: "white", padding: "10px 35px 10px 15px", borderRadius: 10, width: "100%", outline: 'none', appearance: 'none' as const, WebkitAppearance: 'none' as const, fontWeight: 700, fontSize: "0.85rem" };
-const categorySel = { background: "#1e293b", border: "1px solid #334155", color: "#3b82f6", padding: "8px 30px 8px 12px", borderRadius: 8, width: "100%", outline: 'none', appearance: 'none' as const, fontSize: "0.75rem", fontWeight: 700, cursor: "pointer" };
+const mainSel = { background: "var(--bg)", border: "1px solid var(--line)", color: "white", padding: "10px 35px 10px 15px", borderRadius: "var(--r-md)", width: "100%", outline: 'none', appearance: 'none' as const, WebkitAppearance: 'none' as const, fontWeight: 700, fontSize: "0.85rem" };
+const categorySel = { background: "var(--surface)", border: "1px solid var(--line-strong)", color: "var(--accent)", padding: "8px 30px 8px 12px", borderRadius: "var(--r-sm)", width: "100%", outline: 'none', appearance: 'none' as const, fontSize: "0.75rem", fontWeight: 700, cursor: "pointer" };
 const chevronPos = { position: "absolute" as const, right: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" as const, display: "flex", alignItems: "center" };
-const veriGirisStyle = { background: "#0f172a", border: "1px solid #1e2937", color: "#94a3b8", padding: "8px 15px", borderRadius: 8, fontSize: "0.75rem", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 };
+const veriGirisStyle = { background: "var(--surface)", border: "1px solid var(--line)", color: "var(--text-2)", padding: "8px 15px", borderRadius: "var(--r-sm)", fontSize: "0.75rem", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 };
 const headerStyle = { fontSize: "0.75rem", fontWeight: 800, color: "white", display: "flex", alignItems: "center", gap: 8 };
-const containerStyle = { background: "var(--surface)", border: "1px solid #1e2937", borderRadius: 12, padding: "20px" };
+const containerStyle = { background: "var(--surface)", border: "1px solid var(--line)", borderRadius: "var(--r-md)", padding: "20px" };
 
 function NavButton({ id, active, onClick, icon, label, isMobile }: any) {
   const isActive = active === id;
   return (
-    <button onClick={() => onClick(id)} style={{ background: isActive ? "#3b82f6" : "#0f172a", border: `1px solid ${isActive ? "#3b82f6" : "#1e2937"}`, color: isActive ? "white" : "#94a3b8", padding: "8px 12px", borderRadius: 8, fontSize: "0.7rem", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, flex: isMobile ? 1 : "none", justifyContent: "center" }}>{icon} <span className={isMobile ? "inline" : "hidden md:inline"}>{isMobile ? label.split(' ')[0] : label}</span></button>
+    <button onClick={() => onClick(id)} style={{ background: isActive ? "var(--accent)" : "var(--surface)", border: `1px solid ${isActive ? "var(--accent)" : "var(--line)"}`, color: isActive ? "var(--accent-ink)" : "var(--text-2)", padding: "8px 12px", borderRadius: "var(--r-sm)", fontSize: "0.7rem", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, flex: isMobile ? 1 : "none", justifyContent: "center" }}>{icon} <span className={isMobile ? "inline" : "hidden md:inline"}>{isMobile ? label.split(' ')[0] : label}</span></button>
   );
 }
