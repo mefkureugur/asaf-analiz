@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { collection, onSnapshot, query, doc, getDoc } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { db } from "../../firebase"; 
 import { useAuth } from "../../store/AuthContext";
-import asafRecordsRaw from "../../data/excel2json-1769487741734.json"; 
+import { useRecords } from "../../hooks/useRecords";
 
 const normalize = (s: any): string => {
   if (!s) return "";
@@ -13,7 +13,6 @@ const normalize = (s: any): string => {
 
 export default function ManagerTargets() {
   const { user } = useAuth();
-  const [firebaseRecords, setFirebaseRecords] = useState<any[]>([]);
   const [targets, setTargets] = useState<any>(null);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
 
@@ -33,26 +32,19 @@ export default function ManagerTargets() {
 
   const hasMultipleBranches = myBranches.length > 1;
 
+
+  // Yillik hedefler ayri bir belgede tutuluyor
   useEffect(() => {
-    const unsub = onSnapshot(query(collection(db, "records")), (snap) => {
-      setFirebaseRecords(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    });
     async function loadTargets() {
       const snap = await getDoc(doc(db, "targets", "2026"));
       if (snap.exists()) setTargets(snap.data());
     }
     loadTargets();
-    return () => unsub();
   }, []);
 
-  const allRecords = useMemo(() => {
-    const jsonRecords = Array.isArray(asafRecordsRaw) ? asafRecordsRaw : [];
-    return [...jsonRecords, ...firebaseRecords].map((r: any) => ({
-      ...r, Okul: r.Okul || r.subeAd || "Bilinmeyen",
-      SonTutar: Number(r.SonTutar || r.amount || 0),
-      SözleşmeTarihi: String(r.SözleşmeTarihi || "")
-    }));
-  }, [firebaseRecords]);
+  // Tek veri kaynagi: JSON/Firestore birlestirmesi ve iptal suzgeci
+  // useRecords icinde yapiliyor. Iptal edilen kayitlar buraya gelmez.
+  const { records: allRecords } = useRecords();
 
   const calculateData = (isYear: boolean) => {
     let tS = 0; let tR = 0;

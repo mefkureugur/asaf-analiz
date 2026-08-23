@@ -115,9 +115,7 @@ export default function TopNavMobile({ isAdmin }: MobileProps) {
           <SheetLink to="/performans" onClick={closeMenu}>🚀 Performans İzleme</SheetLink>
         )}
 
-        {!showAdminMenu && (
-          <SheetLink to="/ogrenci-listesi" onClick={closeMenu}>✍️ Kayıt Listesi</SheetLink>
-        )}
+        <SheetLink to="/ogrenci-listesi" onClick={closeMenu}>✍️ Kayıt Listesi</SheetLink>
 
         {isMefkureManager && (
           <SheetLink to="/reports/okul-sayilari" onClick={closeMenu}>🏫 Okul Sayıları</SheetLink>
@@ -130,6 +128,7 @@ export default function TopNavMobile({ isAdmin }: MobileProps) {
           <>
             <Divider />
             <SheetLink to="/user-management" onClick={closeMenu} accent>🛡️ Yetki Yönetimi</SheetLink>
+            <SheetLink to="/veri-aktarim" onClick={closeMenu} accent>📥 Veri Aktarımı</SheetLink>
           </>
         )}
 

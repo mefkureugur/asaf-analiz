@@ -1,9 +1,8 @@
-import { useState, useMemo, useEffect } from "react";
-import { collection, onSnapshot, query } from "firebase/firestore";
-import { db } from "../../firebase"; 
+import { useState, useMemo } from "react";
 import { useAuth } from "../../store/AuthContext";
+import { useRecords } from "../../hooks/useRecords";
+import { useIsMobile } from "../../hooks/useMediaQuery";
 import { Calendar, School, LayoutDashboard, FileText } from "lucide-react";
-import asafRecordsRaw from "../../data/excel2json-1769487741734.json"; 
 
 const superNormalize = (s: any): string => {
   if (!s) return "";
@@ -15,26 +14,13 @@ const superNormalize = (s: any): string => {
 
 export default function DailyEnrollmentReport() {
   const { user } = useAuth();
-  const [firebaseRecords, setFirebaseRecords] = useState<any[]>([]);
+  // Iptal edilen kayitlar rapora girmez
+  const { records: allRecords } = useRecords();
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener("resize", handleResize);
-    const q = query(collection(db, "records"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      setFirebaseRecords(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-    });
-    return () => {
-      unsubscribe();
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
+  const isMobile = useIsMobile();
 
   const reportData = useMemo(() => {
-    const jsonRecords = Array.isArray(asafRecordsRaw) ? asafRecordsRaw : [];
-    const all = [...jsonRecords, ...firebaseRecords];
+    const all = allRecords;
     const [y, m, d] = selectedDate.split("-");
     const pad = (n: string) => n.length < 2 ? "0" + n : n;
     const targetDateShort = `${parseInt(d)}.${parseInt(m)}.${y}`;
@@ -107,7 +93,7 @@ export default function DailyEnrollmentReport() {
       grandDaily: Object.values(branchGroups).reduce((a, b) => a + b.dailyTotal, 0),
       grandOverall: Object.values(branchGroups).reduce((a, b) => a + b.overallTotal, 0)
     };
-  }, [firebaseRecords, selectedDate, user]);
+  }, [allRecords, selectedDate, user]);
 
   return (
     <div className="page rise" style={{ maxWidth: 1100 }}>

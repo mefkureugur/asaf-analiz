@@ -1,7 +1,6 @@
-import { useState, useEffect, useMemo } from "react";
-import { collection, onSnapshot, query } from "firebase/firestore";
-import { db } from "../../firebase";
+import { useState, useMemo } from "react";
 import { useAuth } from "../../store/AuthContext";
+import { useRecords } from "../../hooks/useRecords";
 import { School, Users, Search } from "lucide-react";
 
 const normalize = (s: any): string => {
@@ -21,20 +20,11 @@ const BRANCH_COLORS: Record<string, string> = { "LGS": "#22c55e", "PLUS": "#8b5c
 
 export default function SchoolCounts() {
   const { user } = useAuth();
-  const [records, setRecords] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Iptal edilen kayitlar sayima girmez
+  const { records, loading } = useRecords();
   const [searchTerm, setSearchTerm] = useState("");
 
   const isAdmin = user?.role?.trim().toLowerCase() === 'admin' || user?.email === 'ugur@asaf.com';
-
-  useEffect(() => {
-    const q = query(collection(db, "records"));
-    const unsub = onSnapshot(q, (snap) => {
-      setRecords(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-      setLoading(false);
-    });
-    return () => unsub();
-  }, []);
 
   const { rows, totalStudents } = useMemo(() => {
     const userKey = normalize(user?.branchId);
@@ -44,7 +34,7 @@ export default function SchoolCounts() {
     const groups: Record<string, { name: string; count: number; branches: Record<string, number> }> = {};
 
     records.forEach((r: any) => {
-      if (r.source !== "manual") return;
+      if (r.kaynak !== "manual") return;
       const okul = String(r.GittigiOkul || "").trim();
       if (!okul) return; // sadece gittiği okulu girilmiş Mefkure kayıtları
 

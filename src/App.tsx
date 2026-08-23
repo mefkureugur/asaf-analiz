@@ -20,6 +20,7 @@ import DailyEnrollmentReport from "./pages/reports/DailyEnrollmentReport";
 import SchoolCounts from "./pages/reports/SchoolCounts";
 import LoginPage from "./pages/Login/LoginPage";
 import UserManagement from "./pages/admin/UserManagement";
+import DataMigration from "./pages/admin/DataMigration";
 import ScenariosPage from "./pages/ScenariosPage";
 
 // COMPONENTS
@@ -82,6 +83,7 @@ function AppContent() {
               <Route path="/targets" element={<TargetsPage />} />
               <Route path="/performans" element={<Navigate to="/dashboard" replace />} /> 
               <Route path="/user-management" element={<UserManagement />} />
+              <Route path="/veri-aktarim" element={<DataMigration />} />
               {/* 💰 FİNANS: Görüntüleme Admin'e, Giriş SADECE Uğur Bey'e */}
               <Route path="/finance" element={<Navigate to="/finance/view" replace />} />
               <Route path="/finance/input" element={isUgur ? <FinanceInputPage /> : <Navigate to="/finance/view" replace />} />

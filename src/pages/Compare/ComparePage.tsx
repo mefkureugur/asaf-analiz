@@ -1,9 +1,7 @@
-import { useState, useMemo, useEffect } from "react";
-import { collection, onSnapshot, query } from "firebase/firestore";
-import { db } from "../../firebase"; 
+import { useState, useMemo } from "react";
 import { useAuth } from "../../store/AuthContext";
+import { useRecords } from "../../hooks/useRecords";
 // ✅ Dashboard ile aynı veri kaynağını kilitliyoruz
-import asafRecordsRaw from "../../data/excel2json-1769487741734.json"; 
 
 const normalize = (s: any): string => {
   if (!s) return "";
@@ -31,7 +29,6 @@ const institutionGroups: Record<string, string[]> = {
 
 export default function ComparePage() {
   const { user } = useAuth();
-  const [firebaseRecords, setFirebaseRecords] = useState<any[]>([]);
   
   // 🕒 27 Ocak kilidini kaldırıp, sayfanın her zaman o günün tarihinde açılmasını sağladık
   const [cutoff, setCutoff] = useState(new Date().toISOString().split('T')[0]);
@@ -46,23 +43,10 @@ export default function ComparePage() {
   }, [user, selectedInstitution]);
 
 
-  useEffect(() => {
-    const q = query(collection(db, "records"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      setFirebaseRecords(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-    }, (err) => console.warn("Firebase hatası:", err));
-    return () => unsubscribe();
-  }, []);
 
-  const allRecords = useMemo(() => {
-    const jsonRecords = Array.isArray(asafRecordsRaw) ? asafRecordsRaw : [];
-    return [...jsonRecords, ...firebaseRecords].map((r: any) => ({
-      ...r,
-      Okul: r.Okul || r.branch || r.subeAd || "Bilinmeyen",
-      SonTutar: Number(r.SonTutar || r.amount || 0),
-      SözleşmeTarihi: String(r.SözleşmeTarihi || "")
-    }));
-  }, [firebaseRecords]);
+  // Tek veri kaynagi: JSON/Firestore birlestirmesi ve iptal suzgeci
+  // useRecords icinde yapiliyor. Iptal edilen kayitlar buraya gelmez.
+  const { records: allRecords } = useRecords();
 
   const stats = useMemo(() => {
     const [selY, selM, selD] = cutoff.split("-").map(Number);

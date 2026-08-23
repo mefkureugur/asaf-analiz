@@ -107,9 +107,7 @@ export default function TopNav({ isAdmin }: TopNavProps) {
           <Link to="/performans" className="press" style={linkStyle("/performans")}>🚀 Performans İzleme</Link>
         )}
 
-        {!showAdminMenu && (
-          <Link to="/ogrenci-listesi" className="press" style={linkStyle("/ogrenci-listesi")}>✍️ Kayıt Listesi</Link>
-        )}
+        <Link to="/ogrenci-listesi" className="press" style={linkStyle("/ogrenci-listesi")}>✍️ Kayıt Listesi</Link>
 
         {isMefkureManager && (
           <Link to="/reports/okul-sayilari" className="press" style={linkStyle("/reports/okul-sayilari")}>🏫 Okul Sayıları</Link>
@@ -121,6 +119,10 @@ export default function TopNav({ isAdmin }: TopNavProps) {
 
         {showAdminMenu && (
           <Link to="/scenarios" className="press" style={linkStyle("/scenarios")}>📊 Senaryo Hesap</Link>
+        )}
+
+        {showAdminMenu && (
+          <Link to="/veri-aktarim" className="press" style={linkStyle("/veri-aktarim")}>📥 Veri Aktarımı</Link>
         )}
 
         {showAdminMenu && (

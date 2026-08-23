@@ -1,8 +1,6 @@
-import { useState, useMemo, useEffect } from "react";
-import { collection, onSnapshot, query } from "firebase/firestore";
-import { db } from "../../firebase"; 
+import { useMemo } from "react";
 import { useAuth } from "../../store/AuthContext";
-import asafRecordsRaw from "../../data/excel2json-1769487741734.json"; 
+import { useRecords } from "../../hooks/useRecords";
 
 const strictNormalize = (s: any): string => {
   if (!s) return "";
@@ -14,7 +12,8 @@ const strictNormalize = (s: any): string => {
 
 export default function RegistrationAnalysis() {
   const { user } = useAuth();
-  const [firebaseRecords, setFirebaseRecords] = useState<any[]>([]);
+  // Iptal edilen kayitlar bu listeye gelmez
+  const { records: allRecords } = useRecords();
 
   const institutionGroups: Record<string, string[]> = {
     "Mefkure LGS": ["Mefkure LGS"],
@@ -25,16 +24,8 @@ export default function RegistrationAnalysis() {
     "Altınküre Teknokent": ["Altınküre Teknokent"]
   };
 
-  useEffect(() => {
-    const unsub = onSnapshot(query(collection(db, "records")), (snap) => {
-      setFirebaseRecords(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-    });
-    return () => unsub();
-  }, []);
-
   const stats = useMemo(() => {
-    const jsonRecords = Array.isArray(asafRecordsRaw) ? asafRecordsRaw : [];
-    const combined = [...jsonRecords, ...firebaseRecords];
+    const combined = allRecords;
     
     const pool2025 = new Set();
     combined.forEach(r => {
@@ -65,7 +56,7 @@ export default function RegistrationAnalysis() {
     });
 
     return { results, poolSize: pool2025.size };
-  }, [firebaseRecords, asafRecordsRaw]);
+  }, [allRecords]);
 
   return (
     <div className="page rise" style={{ maxWidth: 1000 }}>

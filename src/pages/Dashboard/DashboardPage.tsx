@@ -1,9 +1,7 @@
-import { useState, useMemo, useEffect, useCallback } from "react";
-import { collection, onSnapshot, query } from "firebase/firestore";
-import { db } from "../../firebase"; 
+import { useState, useMemo, useCallback } from "react";
 import { useAuth } from "../../store/AuthContext";
+import { useRecords } from "../../hooks/useRecords";
 import FilterBar from "../../components/FilterBar";
-import asafRecordsRaw from "../../data/excel2json-1769487741734.json";
 import { useIsMobile } from "../../hooks/useMediaQuery";
 
 // 🛡️ Zırh 1: Normalizasyon fonksiyonunu memoize ederek işlemci yükünü azaltıyoruz
@@ -16,7 +14,6 @@ const normalize = (s: any): string => {
 
 export default function DashboardPage() {
   const { user } = useAuth();
-  const [firebaseRecords, setFirebaseRecords] = useState<any[]>([]);
 
   // 🛡️ Zırh 2: Tarih objesini her renderda yeniden oluşturmuyoruz (Sonsuz döngü engeli)
   const { targetDay, targetMonth, now } = useMemo(() => {
@@ -33,25 +30,10 @@ export default function DashboardPage() {
   const [branch, setBranch] = useState<string>("");
   const [classTypes, setClassTypes] = useState<string[]>([]);
 
-  useEffect(() => {
-    const q = query(collection(db, "records"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      setFirebaseRecords(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-    }, (err) => console.warn("Firebase hatası:", err));
-    return () => unsubscribe();
-  }, []);
 
-  // 🛡️ Zırh 3: Veri birleştirme mantığını optimize ettik
-  const allRecords = useMemo(() => {
-    const jsonRecords = Array.isArray(asafRecordsRaw) ? asafRecordsRaw : [];
-    return [...jsonRecords, ...firebaseRecords].map((r: any) => ({
-      ...r,
-      Okul: r.Okul || r.branch || r.subeAd || "Bilinmeyen",
-      SonTutar: Number(r.SonTutar || r.amount || 0),
-      Sınıf: String(r.Sınıf || r.classType || "").replace(".0", "").trim(),
-      SözleşmeTarihi: String(r.SözleşmeTarihi || "")
-    }));
-  }, [firebaseRecords]);
+  // Tek veri kaynagi: JSON/Firestore birlestirmesi ve iptal suzgeci
+  // useRecords icinde yapiliyor. Iptal edilen kayitlar buraya gelmez.
+  const { records: allRecords } = useRecords();
 
   const myAllowedNames = useMemo(() => {
     if (!user) return [];
