@@ -26,6 +26,8 @@ import ScenariosPage from "./pages/ScenariosPage";
 // COMPONENTS
 import TopNav from "./components/TopNav";
 import TopNavMobile from "./components/TopNavMobile";
+import BildirimKutusu from "./components/ui/BildirimKutusu";
+import RozetYoneticisi from "./components/ui/RozetYoneticisi";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -61,6 +63,10 @@ function AppContent() {
     <DataProvider>
       <ScrollToTop />
       {isMobile ? <TopNavMobile isAdmin={isAdmin} /> : <TopNav isAdmin={isAdmin} />}
+
+      {/* Kuruculara bildirim izni daveti ve canlı bildirim şeridi */}
+      <BildirimKutusu />
+      <RozetYoneticisi />
       
       <main style={mainContentStyle}>
         <Routes>
