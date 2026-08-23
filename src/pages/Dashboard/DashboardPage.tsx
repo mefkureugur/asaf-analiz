@@ -116,6 +116,10 @@ export default function DashboardPage() {
   // Dönem listesi veriden gelir; yeni yıl kayıt girilince kendiliğinden eklenir.
   const donemler = useMemo(() => donemListesi(allRecords), [allRecords]);
 
+  // Kıyas rozeti, seçilen dönemin bir öncesinde kayıt varsa gösterilir.
+  // (2027 seçilince 2026 verisi olduğu için kıyas görünmeye devam eder.)
+  const oncekiDonemdeVeriVar = stats.lC > 0 || stats.lT > 0;
+
   return (
     <div className="page">
       {/* Filtre çubuğu: içerik altından akan, üstte duran materyal katman (§12) */}
@@ -131,7 +135,9 @@ export default function DashboardPage() {
         <div style={{ display: "flex", gap: "var(--sp-3)", flex: 1 }}>
           <select value={year} onChange={(e) => setYear(Number(e.target.value))} style={{ flex: 1 }}>
             {donemler.map((d) => (
-              <option key={d} value={d}>{d} Dönemi</option>
+              <option key={d} value={d}>
+                {d} Dönemi{d === aktifDonem() ? " (bu yıl)" : ""}
+              </option>
             ))}
           </select>
           <select value={viewMode} onChange={(e) => setViewMode(e.target.value as any)} style={{ flex: 1 }}>
@@ -157,9 +163,9 @@ export default function DashboardPage() {
           gap: "var(--sp-4)",
         }}
       >
-        <SmartCard className="rise rise-1" title="ÖĞRENCİ SAYISI" value={stats.cC} compareValue={stats.lC} diff={stats.countDiff} showCompare={year === aktifDonem()} />
-        <SmartCard className="rise rise-2" title="TOPLAM CİRO" value={`₺${stats.cT.toLocaleString("tr-TR")}`} compareValue={`₺${stats.lT.toLocaleString("tr-TR")}`} diff={stats.totalDiff} showCompare={year === aktifDonem()} />
-        <SmartCard className="rise rise-3" title="ORTALAMA KAYIT" value={`₺${Math.round(stats.cC > 0 ? stats.cT / stats.cC : 0).toLocaleString("tr-TR")}`} compareValue={`₺${Math.round(stats.lC > 0 ? stats.lT / stats.lC : 0).toLocaleString("tr-TR")}`} diff={stats.avgDiff} showCompare={year === aktifDonem()} />
+        <SmartCard className="rise rise-1" title="ÖĞRENCİ SAYISI" value={stats.cC} compareValue={stats.lC} diff={stats.countDiff} showCompare={oncekiDonemdeVeriVar} />
+        <SmartCard className="rise rise-2" title="TOPLAM CİRO" value={`₺${stats.cT.toLocaleString("tr-TR")}`} compareValue={`₺${stats.lT.toLocaleString("tr-TR")}`} diff={stats.totalDiff} showCompare={oncekiDonemdeVeriVar} />
+        <SmartCard className="rise rise-3" title="ORTALAMA KAYIT" value={`₺${Math.round(stats.cC > 0 ? stats.cT / stats.cC : 0).toLocaleString("tr-TR")}`} compareValue={`₺${Math.round(stats.lC > 0 ? stats.lT / stats.lC : 0).toLocaleString("tr-TR")}`} diff={stats.avgDiff} showCompare={oncekiDonemdeVeriVar} />
       </div>
 
       <div className="rise rise-4" style={{ marginTop: "var(--sp-6)", display: "flex", flexDirection: "column", gap: "var(--sp-5)" }}>

@@ -42,15 +42,19 @@ export function tarihinYili(tarih: unknown): number | null {
 }
 
 /**
- * Veride gerçekten bulunan dönemleri yeniden eskiye sıralar.
- * Aktif ve kıyas dönemi, veride hiç kayıt olmasa bile listeye eklenir —
- * böylece Ocak ayında (henüz kayıt yokken) yeni dönem seçilebilir.
+ * Veride bulunan dönemleri yeniden eskiye sıralar.
+ *
+ * Veride hiç kayıt olmasa bile şunlar listeye eklenir:
+ *   • gelecek dönem  — Aralık'ta önümüzdeki yılın kayıtları girilmeye
+ *     başlanır; henüz kayıt yokken de o dönemi seçip bakabilmek gerekir
+ *   • aktif dönem    — içinde bulunulan yıl (varsayılan seçim)
+ *   • kıyas dönemi   — bir önceki yıl
  */
 export function donemListesi(
   kayitlar: { SözleşmeTarihi?: unknown }[],
   ekstra: number[] = []
 ): number[] {
-  const set = new Set<number>([aktifDonem(), kiyasDonem(), ...ekstra]);
+  const set = new Set<number>([aktifDonem() + 1, aktifDonem(), kiyasDonem(), ...ekstra]);
   kayitlar.forEach((k) => {
     const y = tarihinYili(k.SözleşmeTarihi);
     if (y) set.add(y);
