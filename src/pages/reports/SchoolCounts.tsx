@@ -15,6 +15,8 @@ const normalize = (s: any): string => {
 const MEFKURE_KEYS = ["mefkureyks", "mefkurelgs"];
 const MEFKURE_BRANCHES = ["Mefkure LGS", "Mefkure PLUS", "Mefkure VİP"];
 const BRANCH_ORDER = ["LGS", "PLUS", "VİP"];
+// DİKKAT: bu değerler aşağıda `${color}40` gibi alfa eki alıyor.
+// Alfa eki yalnızca hex ile çalışır — buraya var(--token) YAZILMAMALI.
 const BRANCH_COLORS: Record<string, string> = { "LGS": "#22c55e", "PLUS": "#8b5cf6", "VİP": "#eab308" };
 
 export default function SchoolCounts() {
@@ -75,7 +77,7 @@ export default function SchoolCounts() {
 
   return (
     <div style={{ padding: "15px", color: "white", maxWidth: "800px", margin: "0 auto" }}>
-      <header style={{ marginBottom: "20px", borderLeft: "4px solid #38bdf8", paddingLeft: "15px" }}>
+      <header style={{ marginBottom: "20px", borderLeft: "4px solid var(--accent)", paddingLeft: "15px" }}>
         <h2 style={{ fontSize: "1.3rem", fontWeight: 800, display: "flex", alignItems: "center", gap: 8 }}>
           <School size={22} color="#38bdf8" /> Okul Bazlı Öğrenci Sayıları
         </h2>
@@ -144,6 +146,7 @@ export default function SchoolCounts() {
 }
 
 // STİLLER
+// `color` burada hex OLMALI: aşağıda `${color}40` şeklinde alfa eki alıyor.
 const statCard = (color: string): React.CSSProperties => ({ background: "#0f172a", padding: "16px", borderRadius: "14px", border: `1px solid ${color}40`, borderLeft: `5px solid ${color}`, textAlign: "center" });
 const statLabel: React.CSSProperties = { fontSize: "0.7rem", fontWeight: 700, color: "#94a3b8", marginBottom: 5 };
 const statValue: React.CSSProperties = { fontSize: "1.8rem", fontWeight: 900 };
@@ -152,9 +155,9 @@ const rowStyle: React.CSSProperties = { background: "#111827", padding: "12px 15
 const rankBadge = (idx: number): React.CSSProperties => ({
   width: 28, height: 28, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center",
   fontWeight: 800, fontSize: "0.8rem",
-  background: idx === 0 ? "#eab30820" : idx === 1 ? "#94a3b820" : idx === 2 ? "#b4530920" : "#1e293b",
+  background: idx === 0 ? "#eab30820" : idx === 1 ? "#94a3b820" : idx === 2 ? "#b4530920" : "var(--line)",
   color: idx === 0 ? "#eab308" : idx === 1 ? "#cbd5e1" : idx === 2 ? "#f97316" : "#64748b",
-  border: `1px solid ${idx < 3 ? "transparent" : "#334155"}`,
+  border: `1px solid ${idx < 3 ? "transparent" : "var(--line-strong)"}`,
 });
 const countBadge: React.CSSProperties = { display: "flex", alignItems: "center", gap: 6, background: "rgba(56, 189, 248, 0.1)", color: "#38bdf8", padding: "6px 12px", borderRadius: "8px", fontSize: "0.8rem", fontWeight: 700, whiteSpace: "nowrap" };
 const branchChip = (label: string): React.CSSProperties => {

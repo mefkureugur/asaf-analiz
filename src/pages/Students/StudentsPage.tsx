@@ -69,7 +69,7 @@ export default function RegistrationAnalysis() {
 
   return (
     <div style={{ padding: "15px", color: "white", maxWidth: "1000px", margin: "0 auto", fontFamily: "sans-serif" }}>
-      <header style={{ marginBottom: "20px", borderLeft: "4px solid #38bdf8", paddingLeft: "15px" }}>
+      <header style={{ marginBottom: "20px", borderLeft: "4px solid var(--accent)", paddingLeft: "15px" }}>
         <h2 style={{ fontSize: "1.3rem", fontWeight: 800 }}>🧑‍🎓 Kayıt Analizi (Sistem Otomatik)</h2>
         <p style={{ color: "#64748b", fontSize: "0.8rem" }}>{stats.poolSize} eski öğrenci üzerinden eşleştirme yapıldı.</p>
       </header>
@@ -101,7 +101,7 @@ function AnalysisCard({ title, data }: any) {
         <span style={{ color: "#38bdf8", fontSize: "0.8rem", fontWeight: 700 }}>🔵 YENİLEME</span>
         <span style={{ fontWeight: 800, fontSize: "1rem" }}>{data?.yenileme || 0}</span>
       </div>
-      <div style={{ borderTop: "1px solid #1e293b", paddingTop: "10px", display: "flex", justifyContent: "flex-end", alignItems: "center" }}>
+      <div style={{ borderTop: "1px solid var(--line)", paddingTop: "10px", display: "flex", justifyContent: "flex-end", alignItems: "center" }}>
         <div style={{ fontSize: "1.1rem", fontWeight: 900 }}>{data?.total || 0}</div>
       </div>
     </div>

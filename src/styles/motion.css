@@ -1,0 +1,126 @@
+/* =====================================================================
+   HAREKET KATMANI
+   Jest içermeyen, kesilmesi gerekmeyen hareketler burada. Sürüklenebilir
+   her şey (Sheet) yay motorunu kullanır — CSS geçişi uçarken yakalanamaz.
+   ===================================================================== */
+
+/* ---------------------------------------------------------------------
+   1. TEPKİ (§1) — geri bildirim BASMA anında, bırakma anında değil.
+   :active kullanılıyor çünkü pointer-down ile tetiklenir; :hover gibi
+   dokunmatikte gecikmez.
+   --------------------------------------------------------------------- */
+.press {
+  transition: transform var(--dur-fast) var(--ease-out),
+              background-color var(--dur-fast) var(--ease-out),
+              border-color var(--dur-fast) var(--ease-out);
+  -webkit-tap-highlight-color: transparent;
+}
+.press:active {
+  transform: scale(0.97);
+}
+/* Küçük hedefler daha az küçülmeli; aynı oran büyük yüzeyde abartılı durur */
+.press-sm:active { transform: scale(0.94); }
+
+/* Hedefin çevresinde görünmez tolerans (§10): 44px'lik dokunma alanı */
+.tap-target {
+  position: relative;
+}
+.tap-target::after {
+  content: "";
+  position: absolute;
+  inset: -8px;
+}
+
+/* ---------------------------------------------------------------------
+   2. ODAK — klavye kullanıcısı için görünür, fare kullanıcısı için sessiz
+   --------------------------------------------------------------------- */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
+/* ---------------------------------------------------------------------
+   3. GİRİŞ ANİMASYONLARI
+   Sayfa yüklenince içerik "kayarak belirir". Kademeli gecikme, gözü
+   yukarıdan aşağı taşır ve hiyerarşiyi hareketle de anlatır.
+   --------------------------------------------------------------------- */
+@keyframes asaf-rise {
+  from { opacity: 0; transform: translate3d(0, 10px, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes asaf-scrim-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Modal düz solmaz: ölçek + blur ile MATERYALLEŞİR (§12) */
+@keyframes asaf-modal-in {
+  from {
+    opacity: 0;
+    transform: scale(0.94) translate3d(0, 8px, 0);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translate3d(0, 0, 0);
+    filter: blur(0);
+  }
+}
+
+.rise {
+  animation: asaf-rise 380ms var(--ease-out) both;
+}
+/* Kademeli giriş — kartlar sırayla gelir */
+.rise-1 { animation-delay: 40ms; }
+.rise-2 { animation-delay: 80ms; }
+.rise-3 { animation-delay: 120ms; }
+.rise-4 { animation-delay: 160ms; }
+
+/* ---------------------------------------------------------------------
+   4. KAYDIRMA KENARI (§12)
+   Yatay kayan nav'da 1px sert çizgi yerine kenarda yumuşak maske:
+   içeriğin devam ettiğini gösterir, ayırıcı gibi görünmez.
+   --------------------------------------------------------------------- */
+.scroll-x {
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+  mask-image: linear-gradient(to right, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%);
+}
+.scroll-x::-webkit-scrollbar { display: none; }
+
+/* ---------------------------------------------------------------------
+   5. MATERYAL YÜZEYLER (§12)
+   Nav opak bir şerit değil; içerik altından akan yarı saydam katman.
+   --------------------------------------------------------------------- */
+.material-nav {
+  background: var(--material-nav);
+  backdrop-filter: blur(var(--material-blur)) saturate(var(--material-saturate));
+  -webkit-backdrop-filter: blur(var(--material-blur)) saturate(var(--material-saturate));
+  border-bottom: 1px solid var(--line);
+  /* Üstte ışığı yakalayan ince kenar: yüzeyin kalınlığını okutur */
+  box-shadow: inset 0 -1px 0 var(--material-edge);
+}
+
+/* ---------------------------------------------------------------------
+   6. HAREKET AZALTMA (§14)
+   Kayma ve ölçek yerine sade çapraz geçiş. Geri bildirim kaybolmaz,
+   yalnızca vestibüler yükü olan hareket kalkar.
+   --------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .rise {
+    animation: asaf-scrim-in 160ms var(--ease-out) both;
+  }
+  .press:active,
+  .press-sm:active {
+    transform: none;
+    background-color: var(--surface-raised);
+  }
+  @keyframes asaf-modal-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+}

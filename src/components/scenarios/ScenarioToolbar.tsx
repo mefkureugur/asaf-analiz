@@ -79,7 +79,7 @@ function Btn({ onClick, label, color, disabled, title }: { onClick: () => void; 
       title={title}
       style={{
         background: 'transparent',
-        border: `1px solid ${disabled ? '#1e293b' : color + '60'}`,
+        border: `1px solid ${disabled ? 'var(--line)' : color + '60'}`,
         color: disabled ? '#334155' : color,
         padding: '8px 12px', borderRadius: 8, cursor: disabled ? 'default' : 'pointer',
         fontSize: '0.8rem', fontWeight: 600, whiteSpace: 'nowrap', transition: 'all 0.15s'
@@ -91,7 +91,7 @@ function Btn({ onClick, label, color, disabled, title }: { onClick: () => void; 
 }
 
 const toolbar: React.CSSProperties = {
-  background: '#0f172a', border: '1px solid #1e293b', borderRadius: 12,
+  background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 12,
   padding: '12px 16px', display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center'
 };
 const dropdowns: React.CSSProperties = { display: 'flex', gap: 10, flex: 1, flexWrap: 'wrap' };

@@ -191,12 +191,12 @@ export default function FinanceEfficiencyPage({ selectedKurum, selectedDonem }: 
             <div style={{ height: 300, marginTop: 15 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={analysis.branchStats} margin={{ top: 25, right: 10, left: 10, bottom: 25 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-                  <XAxis dataKey="name" stroke="#64748b" fontSize={10} tickLine={false} tick={{ dy: 15 }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" vertical={false} />
+                  <XAxis dataKey="name" stroke="var(--text-3)" fontSize={10} tickLine={false} tick={{ dy: 15 }} />
                   <YAxis hide domain={[(dataMin: number) => (dataMin < 0 ? dataMin * 1.2 : 0), 'dataMax * 1.2']} />
                   <Tooltip cursor={{fill: '#1e293b', opacity: 0.4}} contentStyle={tooltipStyle} itemStyle={{ color: '#f8fafc', fontSize: '12px', fontWeight: 600 }} formatter={(v: any) => [activeConf.formatter(v), activeConf.title]} />
                   <ReferenceLine y={activeMetricAvg} stroke="#cbd5e1" strokeDasharray="3 3">
-                     <Label position="insideTopLeft" value={`Ort: ${activeConf.formatter(activeMetricAvg)}`} fill="#94a3b8" fontSize={10} />
+                     <Label position="insideTopLeft" value={`Ort: ${activeConf.formatter(activeMetricAvg)}`} fill="var(--text-2)" fontSize={10} />
                   </ReferenceLine>
                   <Bar dataKey={activeMetric} radius={[4, 4, 0, 0]} barSize={30}>
                     <LabelList 
@@ -214,7 +214,7 @@ export default function FinanceEfficiencyPage({ selectedKurum, selectedDonem }: 
                           <text 
                             x={(x || 0) + (width || 0) / 2} 
                             y={yPos} 
-                            fill={isNegative ? "#ef4444" : "#94a3b8"} 
+                            fill={isNegative ? "var(--danger)" : "var(--text-2)"} 
                             fontSize={10} 
                             fontWeight={800} 
                             textAnchor="middle"
@@ -232,7 +232,7 @@ export default function FinanceEfficiencyPage({ selectedKurum, selectedDonem }: 
                       } else {
                         isGood = val <= activeMetricAvg;
                       }
-                      return <Cell key={index} fill={val === 0 ? "#1e293b" : (isGood ? "#22c55e" : "#ef4444")} />;
+                      return <Cell key={index} fill={val === 0 ? "var(--line)" : (isGood ? "var(--success)" : "var(--danger)")} />;
                     })}
                   </Bar>
                 </BarChart>
@@ -260,7 +260,7 @@ function StatCard({ title, value, icon, color, isMobile, active, onClick }: any)
     <div 
       onClick={onClick}
       style={{ 
-        background: active ? "#1e293b" : "#0f172a", 
+        background: active ? "var(--line)" : "var(--surface)", 
         border: `1px solid ${active ? color : '#1e2937'}`, 
         borderTop: `3px solid ${color}`, 
         borderRadius: 12, 
@@ -278,6 +278,6 @@ function StatCard({ title, value, icon, color, isMobile, active, onClick }: any)
 }
 
 const grid3 = { display: "grid", gap: 15, marginBottom: 25 };
-const chartWrapper = { background: "#0f172a", border: "1px solid #1e2937", borderRadius: 16 };
+const chartWrapper = { background: "var(--surface)", border: "1px solid #1e2937", borderRadius: 16 };
 const headerStyle = { fontSize: "0.75rem", fontWeight: 800, color: "#94a3b8", letterSpacing: "0.05em", display: "flex", alignItems: "center", gap: 6 };
-const tooltipStyle = { background: "#020617", border: "1px solid #1e2937", borderRadius: "8px" };
+const tooltipStyle = { background: "var(--bg)", border: "1px solid #1e2937", borderRadius: "8px" };

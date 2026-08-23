@@ -176,15 +176,16 @@ export default function DailyEnrollmentReport() {
 }
 
 // STİLLER (Korundu)
-const headerCard = { background: "#0f172a", padding: "20px", borderRadius: "16px", border: "1px solid #1e293b", marginBottom: 20 };
+const headerCard = { background: "var(--surface)", padding: "20px", borderRadius: "16px", border: "1px solid var(--line)", marginBottom: 20 };
 const dateInputStyle = { background: "#1e293b", border: "1px solid #334155", color: "white", padding: "10px", borderRadius: "10px", outline: "none" };
+// `color` burada hex OLMALI: aşağıda `${color}40` şeklinde alfa eki alıyor.
 const statCard = (color: string) => ({ background: "#0f172a", padding: "20px", borderRadius: "16px", border: `1px solid ${color}40`, borderLeft: `5px solid ${color}`, textAlign: "center" as const });
 const statLabel = { fontSize: "0.7rem", fontWeight: 700, color: "#94a3b8", marginBottom: 5 };
 const statValue = { fontSize: "2rem", fontWeight: 900 };
-const branchContainer = { background: "#0f172a", borderRadius: "16px", border: "1px solid #1e293b", marginBottom: 25, overflow: "hidden" };
+const branchContainer = { background: "var(--surface)", borderRadius: "16px", border: "1px solid var(--line)", marginBottom: 25, overflow: "hidden" };
 const branchTitle = { padding: "12px 20px", background: "#1e293b50", borderBottom: "1px solid #1e293b", fontWeight: 800, color: "#38bdf8", display: "flex", alignItems: "center", gap: 10, fontSize: "0.9rem" };
 const tableStyle = { width: "100%", borderCollapse: "collapse" as const };
-const tableHeaderRow = { background: "#020617" };
+const tableHeaderRow = { background: "var(--bg)" };
 const thStyle = { padding: "12px 20px", fontSize: "0.7rem", color: "#64748b", fontWeight: 800 };
 const thLeft = { ...thStyle, textAlign: "left" as const };
 const thCenter = { ...thStyle, textAlign: "center" as const };

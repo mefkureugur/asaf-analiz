@@ -92,7 +92,7 @@ export default function ManagerTargets() {
           <p style={{ color: "#64748b", fontSize: "0.75rem", marginTop: 2 }}>{user?.displayName || "Müdürüm"}</p>
         </div>
         <select value={selectedMonth} onChange={(e) => setSelectedMonth(Number(e.target.value))} style={selStyle}>
-          {["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"].map((m, i) => <option key={i} value={i} style={{background: "#0f172a"}}>{m}</option>)}
+          {["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"].map((m, i) => <option key={i} value={i} style={{background: "var(--surface)"}}>{m}</option>)}
         </select>
       </header>
 
@@ -129,7 +129,7 @@ export default function ManagerTargets() {
 
 function StandardCard({ data, isMonth, isBranch }: any) {
   const isYear = data.title.includes("YILLIK");
-  const mainColor = isMonth ? "#38bdf8" : (isYear ? "#a855f7" : "#38bdf8");
+  const mainColor = isMonth ? "var(--accent)" : (isYear ? "#a855f7" : "var(--accent)");
   
   return (
     <div style={{ ...cardBase, borderTop: `5px solid ${mainColor}` }}>
@@ -149,7 +149,7 @@ function StandardCard({ data, isMonth, isBranch }: any) {
 
 function MetricLine({ label, current, target, pct, isPrice, color }: any) {
   const isDone = pct >= 100;
-  const textColor = isDone ? "#22c55e" : "#f1f5f9"; 
+  const textColor = isDone ? "var(--success)" : "#f1f5f9"; 
   
   return (
     <div style={metricRow}>
@@ -161,7 +161,7 @@ function MetricLine({ label, current, target, pct, isPrice, color }: any) {
         </span>
       </div>
       <div style={barContainer}>
-        <div style={barBase}><div style={{ ...barFill, width: `${Math.min(pct, 100)}%`, background: isDone ? "#22c55e" : color }}></div></div>
+        <div style={barBase}><div style={{ ...barFill, width: `${Math.min(pct, 100)}%`, background: isDone ? "var(--success)" : color }}></div></div>
         <span style={{ ...pctText, color: isDone ? "#22c55e" : "#94a3b8" }}>%{pct}</span>
       </div>
     </div>
@@ -171,7 +171,7 @@ function MetricLine({ label, current, target, pct, isPrice, color }: any) {
 // 🎨 MOBİL UYUMLU STİLLER
 const headerWrapper = { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, gap: 10 };
 const cardBase = { background: "#111827", borderRadius: "20px", padding: "15px 20px", border: "1px solid #1f2937", position: "relative" as const, overflow: "hidden" };
-const cardHeader = { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, borderBottom: "1px solid #1e293b", paddingBottom: 8 };
+const cardHeader = { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, borderBottom: "1px solid var(--line)", paddingBottom: 8 };
 const cardTitle = { fontWeight: 800, color: "#f1f5f9", textTransform: "uppercase" as const };
 const statusBadge = (done: boolean) => ({ fontSize: "0.9rem" });
 const metricsList = { display: "flex", flexDirection: "column" as const, gap: 12 };
@@ -181,7 +181,7 @@ const mLabel = { fontSize: "0.6rem", fontWeight: 800, color: "#64748b", letterSp
 const mValue = { fontSize: "0.95rem", fontWeight: 800 };
 const mTarget = { fontSize: "0.7rem", color: "#475569", fontWeight: 400 };
 const barContainer = { display: "flex", alignItems: "center", gap: 8 };
-const barBase = { flex: 1, height: 5, background: "#1e293b", borderRadius: 10, overflow: "hidden" };
+const barBase = { flex: 1, height: 5, background: "var(--line)", borderRadius: 10, overflow: "hidden" };
 const barFill = { height: "100%", transition: "width 1s ease-in-out" };
 const pctText = { fontSize: "0.7rem", fontWeight: 800, minWidth: "28px", textAlign: "right" as const };
 const selStyle = { background: "#111827", border: "1px solid #1f2937", color: "white", padding: "6px 12px", borderRadius: "10px", fontSize: "0.8rem", fontWeight: 700 };

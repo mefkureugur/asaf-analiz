@@ -1,30 +1,36 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../store/AuthContext";
-import { updatePassword } from "firebase/auth"; 
-import { auth } from "../firebase"; 
+import { updatePassword } from "firebase/auth";
+import { auth } from "../firebase";
+import Sheet from "./ui/Sheet";
+import Modal from "./ui/Modal";
 
 interface MobileProps {
   isAdmin?: boolean;
 }
 
+const NAV_HEIGHT = 60;
+
 export default function TopNavMobile({ isAdmin }: MobileProps) {
   const [open, setOpen] = useState(false);
   const { user, logout } = useAuth();
-  
+
   const [clickCount, setClickCount] = useState(0);
   const [showPassModal, setShowPassModal] = useState(false);
-  const [pass1, setPass1] = useState(""); 
-  const [pass2, setPass2] = useState(""); 
+  const [pass1, setPass1] = useState("");
+  const [pass2, setPass2] = useState("");
+  const [passError, setPassError] = useState("");
+  const [passBusy, setPassBusy] = useState(false);
 
-  const closeMenu = () => {
+  const closeMenu = useCallback(() => {
     setOpen(false);
     setClickCount(0);
-  };
+  }, []);
 
   const handleLogoClick = () => {
     const newCount = clickCount + 1;
-    if (newCount === 5) { 
+    if (newCount === 5) {
       setShowPassModal(true);
       setClickCount(0);
     } else {
@@ -34,169 +40,234 @@ export default function TopNavMobile({ isAdmin }: MobileProps) {
   };
 
   const handleUpdatePassword = async () => {
-    if (pass1 !== pass2) return alert("Şifreler birbiriyle eşleşmiyor!"); 
-    if (pass1.length < 6) return alert("Şifre en az 6 karakter olmalı!");
-    
+    // Doğrulama satır içinde ve anında (§16) — gönderimde alert ile değil.
+    if (pass1 !== pass2) { setPassError("Şifreler birbiriyle eşleşmiyor."); return; }
+    if (pass1.length < 6) { setPassError("Şifre en az 6 karakter olmalı."); return; }
+
+    setPassBusy(true);
+    setPassError("");
     try {
       if (auth.currentUser) {
         await updatePassword(auth.currentUser, pass1);
-        alert("Şifre Başarıyla Mühürlendi!");
         setShowPassModal(false);
         setPass1(""); setPass2("");
       }
-    } catch (error: any) {
-      alert("Güvenlik Hatası: Lütfen çıkış yapıp tekrar girerek deneyin.");
+    } catch {
+      setPassError("Güvenlik doğrulaması gerekli. Çıkış yapıp tekrar girin.");
+    } finally {
+      setPassBusy(false);
     }
   };
 
-  const showAdminMenu = isAdmin || user?.role === 'admin' || user?.email === 'ugur@asaf.com';
-  const isMefkureManager = (user?.branchId || "").toLocaleLowerCase('tr-TR').includes("mefkure");
+  const showAdminMenu = isAdmin || user?.role === "admin" || user?.email === "ugur@asaf.com";
+  const isMefkureManager = (user?.branchId || "").toLocaleLowerCase("tr-TR").includes("mefkure");
 
   return (
-    <div className="mobileNavWrapper" style={wrapperStyle}>
-      <div className="mobileTopBar" style={topBarStyle}>
-        <div 
-          className="mobileLogo" 
-          onClick={handleLogoClick} 
-          style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", userSelect: "none" }}
+    <div style={wrapperStyle}>
+      <div className="material-nav" style={topBarStyle}>
+        <div
+          className="mobileLogo press"
+          onClick={handleLogoClick}
+          style={{ display: "flex", alignItems: "center", gap: "var(--sp-3)", cursor: "pointer", userSelect: "none" }}
         >
-          <img 
-            src="/logo512.png" 
-            alt="ASAF" 
-            style={{ height: "30px", width: "30px", borderRadius: "6px", objectFit: "cover" }} 
-          />
-          <div style={{ fontWeight: 900, color: "#f8fafc", fontSize: "1.1rem", letterSpacing: "1px" }}>
-            ASAF <span style={{ color: "#38bdf8" }}>ANALİZ</span>
-          </div>
+          <img src="/logo512.png" alt="" style={{ height: 30, width: 30, borderRadius: 7, objectFit: "cover" }} />
+          <div>ASAF <span>ANALİZ</span></div>
         </div>
 
         <button
-          className="hamburgerBtn"
-          aria-label="Menü"
+          className="press"
+          aria-label={open ? "Menüyü kapat" : "Menüyü aç"}
+          aria-expanded={open}
           onClick={() => setOpen((v) => !v)}
-          style={buttonStyle}
+          style={hamburgerStyle}
         >
-          {open ? "✕" : "☰"} <span style={{ marginLeft: 6, fontSize: "0.85rem", fontWeight: 600 }}>Menü</span>
+          {/* İkon değil, durum: çizgiler X'e dönüşürken aynı yoldan gider (§7) */}
+          <span style={{ position: "relative", width: 16, height: 12, display: "inline-block" }}>
+            {[0, 1, 2].map((i) => (
+              <span
+                key={i}
+                style={{
+                  position: "absolute",
+                  left: 0,
+                  width: 16,
+                  height: 2,
+                  borderRadius: 2,
+                  background: "var(--text)",
+                  transition: "transform var(--dur-med) var(--ease-out), opacity var(--dur-fast) var(--ease-out)",
+                  top: open ? 5 : i * 5,
+                  transform: open
+                    ? i === 0 ? "rotate(45deg)" : i === 2 ? "rotate(-45deg)" : "none"
+                    : "none",
+                  opacity: open && i === 1 ? 0 : 1,
+                }}
+              />
+            ))}
+          </span>
+          <span style={{ fontSize: "0.8rem", fontWeight: 600 }}>Menü</span>
         </button>
       </div>
 
-      {open && (
-        <nav className="mobileMenu" style={menuStyle}>
-          <NavLink to="/dashboard" onClick={closeMenu} style={({ isActive }) => isActive ? activeNavLinkStyle : navLinkStyle}>
-            🏠 Ana Sayfa
-          </NavLink>
-          
-          <NavLink to="/compare" onClick={closeMenu} style={({ isActive }) => isActive ? activeNavLinkStyle : navLinkStyle}>
-            ⚖️ Karşılaştırma
-          </NavLink>
+      <Sheet open={open} onClose={closeMenu} topOffset={NAV_HEIGHT}>
+        <SheetLink to="/dashboard" onClick={closeMenu}>🏠 Ana Sayfa</SheetLink>
+        <SheetLink to="/compare" onClick={closeMenu}>⚖️ Karşılaştırma</SheetLink>
 
-          {showAdminMenu ? (
-            <NavLink to="/targets" onClick={closeMenu} style={({ isActive }) => isActive ? activeNavLinkStyle : navLinkStyle}>
-              🎯 Hedef Yönetimi
-            </NavLink>
-          ) : (
-            <NavLink to="/performans" onClick={closeMenu} style={({ isActive }) => isActive ? activeNavLinkStyle : navLinkStyle}>
-              🚀 Performans İzleme
-            </NavLink>
-          )}
+        {showAdminMenu ? (
+          <SheetLink to="/targets" onClick={closeMenu}>🎯 Hedef Yönetimi</SheetLink>
+        ) : (
+          <SheetLink to="/performans" onClick={closeMenu}>🚀 Performans İzleme</SheetLink>
+        )}
 
-          {!showAdminMenu && (
-            <NavLink to="/ogrenci-listesi" onClick={closeMenu} style={({ isActive }) => isActive ? activeNavLinkStyle : navLinkStyle}>
-              ✍️ Kayıt Listesi (Yönetim)
-            </NavLink>
-          )}
+        {!showAdminMenu && (
+          <SheetLink to="/ogrenci-listesi" onClick={closeMenu}>✍️ Kayıt Listesi</SheetLink>
+        )}
 
-          {/* 🏫 Okul Sayıları SADECE Mefkure (LGS/VİP/PLUS) şubelerinde görünür; admin/kurucu menüsünde yok */}
-          {isMefkureManager && (
-            <NavLink to="/reports/okul-sayilari" onClick={closeMenu} style={({ isActive }) => isActive ? activeNavLinkStyle : navLinkStyle}>
-              🏫 Okul Sayıları
-            </NavLink>
-          )}
+        {isMefkureManager && (
+          <SheetLink to="/reports/okul-sayilari" onClick={closeMenu}>🏫 Okul Sayıları</SheetLink>
+        )}
 
-          {showAdminMenu && (
-            <NavLink to="/finance/view" onClick={closeMenu} style={({ isActive }) => isActive ? activeNavLinkStyle : navLinkStyle}>
-              💰 Finans Analizi
-            </NavLink>
-          )}
+        {showAdminMenu && <SheetLink to="/finance/view" onClick={closeMenu}>💰 Finans Analizi</SheetLink>}
+        {showAdminMenu && <SheetLink to="/scenarios" onClick={closeMenu}>📊 Senaryo Hesap</SheetLink>}
 
-          {showAdminMenu && (
-            <NavLink to="/scenarios" onClick={closeMenu} style={({ isActive }) => isActive ? activeNavLinkStyle : navLinkStyle}>
-              📊 Senaryo Hesap
-            </NavLink>
-          )}
+        {showAdminMenu && (
+          <>
+            <Divider />
+            <SheetLink to="/user-management" onClick={closeMenu} accent>🛡️ Yetki Yönetimi</SheetLink>
+          </>
+        )}
 
-          {showAdminMenu && (
-            <>
-              <div style={{ height: "1px", background: "#1e293b", margin: "8px 12px" }} />
-              <NavLink to="/user-management" onClick={closeMenu} style={({ isActive }) => isActive ? { ...activeNavLinkStyle, color: "#38bdf8" } : { ...navLinkStyle, color: "#38bdf8" }}>
-                🛡️ Yetki Yönetimi
-              </NavLink>
-            </>
-          )}
+        <Divider />
+        <SheetLink to="/daily" onClick={closeMenu}>✍️ Günlük Giriş</SheetLink>
+        <SheetLink to="/reports/daily" onClick={closeMenu}>📋 Günlük Rapor</SheetLink>
 
-          {/* 🚀 OPERASYONEL BUTONLAR: Mobil Menünün En Altına Taşındı */}
-          <div style={{ height: "1px", background: "#1e293b", margin: "8px 12px" }} />
-          
-          <NavLink to="/daily" onClick={closeMenu} style={({ isActive }) => isActive ? activeNavLinkStyle : navLinkStyle}>
-            ✍️ Günlük Giriş
-          </NavLink>
-          
-          <NavLink to="/reports/daily" onClick={closeMenu} style={({ isActive }) => isActive ? activeNavLinkStyle : navLinkStyle}>
-            📋 Günlük Rapor
-          </NavLink>
-
-          <div style={{ height: "1px", background: "#1e293b", margin: "8px 12px" }} />
-          
-          <div style={{ padding: "12px 16px", fontSize: "0.75rem", color: "#64748b", display: "flex", justifyContent: "space-between" }}>
-              <span>{user?.displayName}</span>
-              <span style={{ color: "#38bdf8" }}>{user?.branchId}</span>
-          </div>
-
-          <div onClick={() => { logout(); closeMenu(); }} style={{ ...navLinkStyle, color: "#f87171", borderBottom: "none" }}>
-            🚪 Çıkış Yap
-          </div>
-        </nav>
-      )}
-
-      {showPassModal && (
-        <div style={modalOverlay}>
-          <div style={modalContent}>
-            <h4 style={{ color: "white", marginBottom: 15, fontSize: "0.9rem" }}>Gizli Şifre Paneli</h4>
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              <input 
-                type="text" 
-                placeholder="Yeni Şifre" 
-                value={pass1}
-                onChange={(e) => setPass1(e.target.value)}
-                style={modalInput}
-              />
-              <input 
-                type="text" 
-                placeholder="Yeni Şifre (Tekrar)" 
-                value={pass2}
-                onChange={(e) => setPass2(e.target.value)}
-                style={modalInput}
-              />
-            </div>
-            <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
-              <button onClick={handleUpdatePassword} style={modalBtnSave}>Mühürle</button>
-              <button onClick={() => { setShowPassModal(false); setPass1(""); setPass2(""); }} style={modalBtnCancel}>Kapat</button>
-            </div>
-          </div>
+        <Divider />
+        <div style={{ padding: "var(--sp-3) var(--sp-5)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span className="caption">{user?.displayName}</span>
+          <span className="caption" style={{ color: "var(--accent)" }}>{user?.branchId}</span>
         </div>
-      )}
+
+        <button
+          className="press"
+          onClick={() => { logout(); closeMenu(); }}
+          style={{
+            ...sheetItemBase,
+            color: "var(--danger)",
+            background: "none",
+            border: "none",
+            width: "100%",
+            textAlign: "left",
+            font: "inherit",
+          }}
+        >
+          🚪 Çıkış Yap
+        </button>
+      </Sheet>
+
+      <Modal
+        open={showPassModal}
+        onClose={() => { setShowPassModal(false); setPass1(""); setPass2(""); setPassError(""); }}
+        title="Şifre Değiştir"
+        footer={
+          <>
+            <button className="press" onClick={handleUpdatePassword} disabled={passBusy} style={btnPrimary}>
+              {passBusy ? "Kaydediliyor…" : "Kaydet"}
+            </button>
+            <button className="press" onClick={() => { setShowPassModal(false); setPass1(""); setPass2(""); setPassError(""); }} style={btnGhost}>
+              Vazgeç
+            </button>
+          </>
+        }
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: "var(--sp-3)" }}>
+          <input type="password" placeholder="Yeni şifre" value={pass1}
+            onChange={(e) => { setPass1(e.target.value); setPassError(""); }} />
+          <input type="password" placeholder="Yeni şifre (tekrar)" value={pass2}
+            onChange={(e) => { setPass2(e.target.value); setPassError(""); }} />
+          {passError && (
+            <div role="alert" style={{ color: "var(--danger)", fontSize: "var(--t-caption-size)" }}>
+              {passError}
+            </div>
+          )}
+        </div>
+      </Modal>
     </div>
   );
 }
 
-const modalOverlay: React.CSSProperties = { position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(0,0,0,0.9)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 9999 };
-const modalContent: React.CSSProperties = { background: "#0f172a", padding: "20px", borderRadius: "12px", border: "1px solid #1e293b", width: "80%", maxWidth: "300px" };
-const modalInput: React.CSSProperties = { width: "100%", padding: "10px", borderRadius: "8px", background: "#1e293b", border: "1px solid #334155", color: "white", outline: "none" };
-const modalBtnSave: React.CSSProperties = { flex: 1, padding: "10px", borderRadius: "8px", background: "#38bdf8", color: "#020617", fontWeight: 800, border: "none" };
-const modalBtnCancel: React.CSSProperties = { flex: 1, padding: "10px", borderRadius: "8px", background: "#1e293b", color: "#64748b", border: "none" };
-const wrapperStyle: React.CSSProperties = { position: "sticky", top: 0, zIndex: 1000, background: "#020617" };
-const topBarStyle: React.CSSProperties = { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 16px", borderBottom: "1px solid #1e293b", height: "60px" };
-const buttonStyle: React.CSSProperties = { background: "#111827", border: "1px solid #1f2937", color: "white", padding: "8px 14px", borderRadius: 10, cursor: "pointer", display: "flex", alignItems: "center" };
-const menuStyle: React.CSSProperties = { display: "flex", flexDirection: "column", background: "#020617", padding: "10px 0", borderBottom: "2px solid #38bdf8", position: "absolute", width: "100%", boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.7)", maxHeight: "80vh", overflowY: "auto" };
-const navLinkStyle: React.CSSProperties = { padding: "16px 20px", textDecoration: "none", color: "#94a3b8", fontSize: "0.95rem", borderBottom: "1px solid #0f172a", transition: "all 0.2s" };
-const activeNavLinkStyle: React.CSSProperties = { ...navLinkStyle, color: "white", background: "#0f172a", borderLeft: "4px solid #38bdf8" };
+/* ---- Sheet içi bağlantı ---- */
+function SheetLink({ to, onClick, children, accent }: { to: string; onClick: () => void; children: React.ReactNode; accent?: boolean }) {
+  return (
+    <NavLink
+      to={to}
+      onClick={onClick}
+      className="press"
+      style={({ isActive }) => ({
+        ...sheetItemBase,
+        color: accent ? "var(--accent)" : isActive ? "var(--text)" : "var(--text-2)",
+        background: isActive ? "var(--surface-raised)" : "transparent",
+        // Aktif olan sola dayalı bir işaretle vurgulanır; renk tek başına
+        // ayırt edici değildir (renk körlüğü)
+        boxShadow: isActive ? "inset 3px 0 0 var(--accent)" : "none",
+        fontWeight: isActive ? 600 : 500,
+      })}
+    >
+      {children}
+    </NavLink>
+  );
+}
+
+function Divider() {
+  return <div style={{ height: 1, background: "var(--line)", margin: "var(--sp-2) var(--sp-5)" }} />;
+}
+
+const sheetItemBase: React.CSSProperties = {
+  display: "block",
+  padding: "var(--sp-4) var(--sp-5)",
+  textDecoration: "none",
+  fontSize: "var(--t-body-size)",
+  cursor: "pointer",
+};
+
+const wrapperStyle: React.CSSProperties = {
+  position: "sticky",
+  top: 0,
+  zIndex: 1000,
+};
+
+const topBarStyle: React.CSSProperties = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  padding: "0 var(--sp-4)",
+  height: NAV_HEIGHT,
+};
+
+const hamburgerStyle: React.CSSProperties = {
+  background: "var(--surface)",
+  border: "1px solid var(--line-strong)",
+  color: "var(--text)",
+  padding: "var(--sp-2) var(--sp-4)",
+  borderRadius: "var(--r-md)",
+  display: "flex",
+  alignItems: "center",
+  gap: "var(--sp-2)",
+};
+
+const btnPrimary: React.CSSProperties = {
+  flex: 1,
+  padding: "var(--sp-3)",
+  borderRadius: "var(--r-sm)",
+  background: "var(--accent)",
+  color: "var(--accent-ink)",
+  fontWeight: 700,
+  border: "none",
+};
+
+const btnGhost: React.CSSProperties = {
+  flex: 1,
+  padding: "var(--sp-3)",
+  borderRadius: "var(--r-sm)",
+  background: "var(--surface-raised)",
+  color: "var(--text-2)",
+  border: "1px solid var(--line)",
+  fontWeight: 600,
+};

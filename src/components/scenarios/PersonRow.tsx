@@ -121,7 +121,7 @@ export default function PersonRow({ person, kidemOn, onChange, onRemove }: Props
 }
 
 const card: React.CSSProperties = {
-  background: '#020617', border: '1px solid #1e293b', borderRadius: 10,
+  background: 'var(--bg)', border: '1px solid var(--line)', borderRadius: 10,
   padding: '14px', display: 'flex', flexDirection: 'column', gap: 10
 };
 const topRow: React.CSSProperties = { display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' };

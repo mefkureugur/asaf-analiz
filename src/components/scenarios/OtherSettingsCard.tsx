@@ -42,7 +42,7 @@ export default function OtherSettingsCard({ digerGider, kidemKarsiligiOn, onChan
   );
 }
 
-const card: React.CSSProperties = { background: '#0f172a', border: '1px solid #1e293b', borderRadius: 12, padding: '20px' };
+const card: React.CSSProperties = { background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 12, padding: '20px' };
 const cardTitle: React.CSSProperties = { color: '#94a3b8', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em', marginBottom: 16 };
 const lbl: React.CSSProperties = { color: '#64748b', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.04em' };
 const row: React.CSSProperties = { marginBottom: 16 };
@@ -52,12 +52,12 @@ const numInp: React.CSSProperties = {
 };
 const toggleRow: React.CSSProperties = {
   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-  background: '#020617', border: '1px solid #1e293b', borderRadius: 8,
+  background: 'var(--bg)', border: '1px solid var(--line)', borderRadius: 8,
   padding: '12px 14px', cursor: 'pointer', userSelect: 'none'
 };
 const toggleTrack = (on: boolean): React.CSSProperties => ({
   width: 40, height: 22, borderRadius: 11, flexShrink: 0,
-  background: on ? '#38bdf8' : '#334155', position: 'relative', transition: 'background 0.2s'
+  background: on ? 'var(--accent)' : 'var(--line-strong)', position: 'relative', transition: 'background 0.2s'
 });
 const toggleThumb = (on: boolean): React.CSSProperties => ({
   width: 16, height: 16, borderRadius: '50%', background: 'white',

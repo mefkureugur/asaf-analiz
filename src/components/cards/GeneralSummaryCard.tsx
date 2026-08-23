@@ -14,16 +14,16 @@ export default function GeneralSummaryCard({
 }: GeneralSummaryCardProps) {
   
   const getColor = (val: string) => {
-    if (val.startsWith("+")) return "#22c55e"; 
-    if (val.startsWith("-")) return "#ef4444"; 
-    return "#94a3b8"; 
+    if (val.startsWith("+")) return "var(--success)"; 
+    if (val.startsWith("-")) return "var(--danger)"; 
+    return "var(--text-2)"; 
   };
 
   return (
     <div
       style={{
-        background: "#020617",
-        border: "1px solid #1e293b",
+        background: "var(--bg)",
+        border: "1px solid var(--line)",
         borderRadius: 12,
         padding: 16,
         marginTop: 16,
@@ -52,7 +52,7 @@ export default function GeneralSummaryCard({
       <div style={{ 
         marginTop: 12, 
         paddingTop: 8, 
-        borderTop: "1px solid #1e293b", 
+        borderTop: "1px solid var(--line)", 
         fontSize: "0.75rem", 
         color: "#64748b",
         textAlign: "center"

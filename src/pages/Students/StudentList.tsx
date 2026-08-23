@@ -159,7 +159,7 @@ export default function StudentList() {
 
   return (
     <div style={{ padding: "15px", color: "white", maxWidth: "800px", margin: "0 auto" }}>
-      <header style={{ marginBottom: "20px", borderLeft: "4px solid #38bdf8", paddingLeft: "15px" }}>
+      <header style={{ marginBottom: "20px", borderLeft: "4px solid var(--accent)", paddingLeft: "15px" }}>
         <h2 style={{ fontSize: "1.3rem", fontWeight: 800 }}>✍️ Manüel Kayıt Yönetimi</h2>
       </header>
 
@@ -286,7 +286,7 @@ const dateBadge: any = { background: "rgba(56, 189, 248, 0.1)", color: "#38bdf8"
 const btnEdit: any = { background: "#3b82f6", color: "white", border: "none", padding: "8px 14px", borderRadius: "8px", cursor: "pointer", fontWeight: 600 };
 const btnDel: any = { background: "rgba(239, 68, 68, 0.1)", color: "#ef4444", border: "1px solid #ef4444", padding: "8px 14px", borderRadius: "8px", cursor: "pointer" };
 const modalOverlay: any = { position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(2, 6, 23, 0.95)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000, backdropFilter: "blur(4px)" };
-const modalContent: any = { background: "#0f172a", padding: "25px", borderRadius: "20px", width: "95%", maxWidth: "450px", border: "1px solid #1e293b" };
+const modalContent: any = { background: "var(--surface)", padding: "25px", borderRadius: "20px", width: "95%", maxWidth: "450px", border: "1px solid var(--line)" };
 const inputStyle: any = { width: "100%", padding: "12px", background: "#1e293b", border: "1px solid #334155", color: "white", borderRadius: "10px", marginBottom: "12px", boxSizing: "border-box" };
 const labelStyle: any = { fontSize: "0.7rem", color: "#64748b", marginBottom: "5px", display: "block" };
 const saveBtn: any = { flex: 1, background: "#22c55e", color: "white", border: "none", padding: "14px", borderRadius: "10px", fontWeight: 700 };

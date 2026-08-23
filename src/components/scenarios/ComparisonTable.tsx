@@ -73,7 +73,7 @@ export default function ComparisonTable({ activeScenarios }: Props) {
             ))}
 
             {totals && (
-              <tr style={{ ...tr, borderTop: '2px solid #334155' }}>
+              <tr style={{ ...tr, borderTop: '2px solid var(--line-strong)' }}>
                 <td style={{ ...td, fontWeight: 800, color: '#f8fafc' }}>TOPLAM</td>
                 <td style={{ ...td, fontWeight: 700 }}>{totals.kisi}</td>
                 <td style={{ ...td, fontWeight: 700 }}>{fmt(totals.ciro)}</td>
@@ -95,7 +95,7 @@ export default function ComparisonTable({ activeScenarios }: Props) {
   );
 }
 
-const card: React.CSSProperties = { background: '#0f172a', border: '1px solid #1e293b', borderRadius: 12, padding: '20px' };
+const card: React.CSSProperties = { background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 12, padding: '20px' };
 const cardTitle: React.CSSProperties = { color: '#94a3b8', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em', marginBottom: 14 };
 const tbl: React.CSSProperties = { width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' };
 const th: React.CSSProperties = { color: '#64748b', fontWeight: 700, fontSize: '0.65rem', letterSpacing: '0.04em', padding: '8px 12px', textAlign: 'left', borderBottom: '1px solid #1e293b' };

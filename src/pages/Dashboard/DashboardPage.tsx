@@ -3,7 +3,8 @@ import { collection, onSnapshot, query } from "firebase/firestore";
 import { db } from "../../firebase"; 
 import { useAuth } from "../../store/AuthContext";
 import FilterBar from "../../components/FilterBar";
-import asafRecordsRaw from "../../data/excel2json-1769487741734.json"; 
+import asafRecordsRaw from "../../data/excel2json-1769487741734.json";
+import { useIsMobile } from "../../hooks/useMediaQuery";
 
 // 🛡️ Zırh 1: Normalizasyon fonksiyonunu memoize ederek işlemci yükünü azaltıyoruz
 const normalize = (s: any): string => {
@@ -125,71 +126,118 @@ export default function DashboardPage() {
   const data2025 = useMemo(() => getYearlyData(2025), [getYearlyData]);
   const data2026 = useMemo(() => getYearlyData(2026), [getYearlyData]);
 
+  // window.innerWidth'i render sırasında okumak yerine izliyoruz:
+  // cihaz döndürüldüğünde düzen artık gerçekten güncelleniyor.
+  const isMobile = useIsMobile();
+
   return (
-    <div style={{ padding: "10px 15px", color: "white", maxWidth: 1200, margin: "0 auto", fontFamily: "sans-serif" }}>
-      <div style={{ 
-        display: "flex", 
-        flexDirection: window.innerWidth < 768 ? "column" : "row", 
-        gap: 10, 
-        marginBottom: 20, 
-        alignItems: "stretch" 
-      }}>
-        <div style={{ display: "flex", gap: 10, flex: 1 }}>
-          <select value={year} onChange={(e) => setYear(Number(e.target.value))} style={{...mainSel, flex: 1}}>
+    <div className="page">
+      {/* Filtre çubuğu: içerik altından akan, üstte duran materyal katman (§12) */}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: isMobile ? "column" : "row",
+          gap: "var(--sp-3)",
+          marginBottom: "var(--sp-5)",
+          alignItems: "stretch",
+        }}
+      >
+        <div style={{ display: "flex", gap: "var(--sp-3)", flex: 1 }}>
+          <select value={year} onChange={(e) => setYear(Number(e.target.value))} style={{ flex: 1 }}>
             <option value={2025}>2025 Dönemi</option>
             <option value={2026}>2026 Dönemi</option>
           </select>
-          <select value={viewMode} onChange={(e) => setViewMode(e.target.value as any)} style={{...mainSel, flex: 1}}>
-            <option value="today">Bugün ({targetDay} {new Intl.DateTimeFormat('tr-TR', {month: 'short'}).format(now)})</option>
+          <select value={viewMode} onChange={(e) => setViewMode(e.target.value as any)} style={{ flex: 1 }}>
+            <option value="today">Bugün ({targetDay} {new Intl.DateTimeFormat("tr-TR", { month: "short" }).format(now)})</option>
             <option value="all">Tüm Yıl</option>
           </select>
         </div>
         <div style={{ flex: 2 }}>
-          <FilterBar 
-            branch={branch} setBranch={setBranch} 
-            classTypes={classTypes} setClassTypes={setClassTypes} 
-            allowedBranches={myAllowedNames} 
+          <FilterBar
+            branch={branch} setBranch={setBranch}
+            classTypes={classTypes} setClassTypes={setClassTypes}
+            allowedBranches={myAllowedNames}
           />
         </div>
       </div>
 
-      <div style={{ 
-        display: "grid", 
-        gridTemplateColumns: window.innerWidth < 768 ? "1fr" : "repeat(auto-fit, minmax(320px, 1fr))", 
-        gap: 15 
-      }}>
-        <SmartCard title="ÖĞRENCİ SAYISI" value={stats.cC} compareValue={stats.lC} diff={stats.countDiff} showCompare={year === 2026} />
-        <SmartCard title="TOPLAM CİRO" value={`₺${stats.cT.toLocaleString("tr-TR")}`} compareValue={`₺${stats.lT.toLocaleString("tr-TR")}`} diff={stats.totalDiff} showCompare={year === 2026} />
-        <SmartCard title="ORTALAMA KAYIT" value={`₺${Math.round(stats.cC > 0 ? stats.cT / stats.cC : 0).toLocaleString("tr-TR")}`} compareValue={`₺${Math.round(stats.lC > 0 ? stats.lT / stats.lC : 0).toLocaleString("tr-TR")}`} diff={stats.avgDiff} showCompare={year === 2026} />
+      {/* Kartlar kademeli girer: göz yukarıdan aşağı taşınır, hiyerarşi
+          hareketle de anlatılır */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fit, minmax(300px, 1fr))",
+          gap: "var(--sp-4)",
+        }}
+      >
+        <SmartCard className="rise rise-1" title="ÖĞRENCİ SAYISI" value={stats.cC} compareValue={stats.lC} diff={stats.countDiff} showCompare={year === 2026} />
+        <SmartCard className="rise rise-2" title="TOPLAM CİRO" value={`₺${stats.cT.toLocaleString("tr-TR")}`} compareValue={`₺${stats.lT.toLocaleString("tr-TR")}`} diff={stats.totalDiff} showCompare={year === 2026} />
+        <SmartCard className="rise rise-3" title="ORTALAMA KAYIT" value={`₺${Math.round(stats.cC > 0 ? stats.cT / stats.cC : 0).toLocaleString("tr-TR")}`} compareValue={`₺${Math.round(stats.lC > 0 ? stats.lT / stats.lC : 0).toLocaleString("tr-TR")}`} diff={stats.avgDiff} showCompare={year === 2026} />
       </div>
 
-      <div style={{ marginTop: 25 }}>
-        <MonthGrid title="2025 AY DETAYLARI" data={data2025} compareData={data2026} is2026={false} />
-        <div style={{ height: 20 }} />
-        <MonthGrid title="2026 AY DETAYLARI" data={data2026} compareData={data2025} is2026={true} />
+      <div className="rise rise-4" style={{ marginTop: "var(--sp-6)", display: "flex", flexDirection: "column", gap: "var(--sp-5)" }}>
+        <MonthGrid title="2025 AY DETAYLARI" data={data2025} compareData={data2026} is2026={false} isMobile={isMobile} />
+        <MonthGrid title="2026 AY DETAYLARI" data={data2026} compareData={data2025} is2026={true} isMobile={isMobile} />
       </div>
 
-      <div style={{ marginTop: 30, padding: 10, background: "#1e293b", borderRadius: 8, fontSize: "0.65rem", opacity: 0.5, wordBreak: "break-all" }}>
+      <div className="caption" style={{ marginTop: "var(--sp-6)", padding: "var(--sp-3)", background: "var(--surface)", borderRadius: "var(--r-sm)", border: "1px solid var(--line)", opacity: 0.6, wordBreak: "break-all" }}>
         Yetki: {user?.branchId} | Süzülen: {myAllowedNames?.join(", ") || "Tümü"}
       </div>
     </div>
   );
 }
 
-// Alt bileşenler (SmartCard, MonthGrid) senin kodundaki haliyle korunmuştur...
-function SmartCard({ title, value, compareValue, diff, showCompare }: any) {
+/* =====================================================================
+   KPI KARTI
+   Değer en büyük ve en parlak öğe; etiket ve kıyas ondan bir kademe geride.
+   Hiyerarşi boyut + ağırlık + renk ile birlikte kuruluyor (§15).
+   ===================================================================== */
+function SmartCard({ title, value, compareValue, diff, showCompare, className }: any) {
   const isDown = diff < 0;
-  const statusColor = isDown ? "#ef4444" : "#22c55e"; 
+  const statusColor = isDown ? "var(--danger)" : "var(--success)";
+
   return (
-    <div style={{ background: "#0f172a", border: `1px solid ${statusColor}30`, borderLeft: `4px solid ${statusColor}`, borderRadius: 12, padding: "15px 20px" }}>
-      <div style={{ color: "#94a3b8", fontSize: "0.7rem", fontWeight: 700, marginBottom: 8, letterSpacing: "0.05em" }}>{title}</div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-        <div style={{ fontSize: "1.5rem", fontWeight: 800, color: "#f8fafc" }}>{value}</div>
+    <div
+      className={`card ${className || ""}`}
+      style={{
+        padding: "var(--sp-4) var(--sp-5)",
+        // Durum rengi yalnızca ince bir kenar olarak: kart zemini sakin kalır,
+        // gözü asıl değere bırakır
+        borderLeft: `3px solid ${statusColor}`,
+      }}
+    >
+      <div className="label" style={{ marginBottom: "var(--sp-2)" }}>{title}</div>
+
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: "var(--sp-3)" }}>
+        <div
+          className="num"
+          style={{
+            fontSize: "1.6rem",
+            fontWeight: 800,
+            color: "var(--text)",
+            letterSpacing: "-0.02em",
+            lineHeight: 1.1,
+          }}
+        >
+          {value}
+        </div>
+
         {showCompare && (
-          <div style={{ background: `${statusColor}10`, border: `1px solid ${statusColor}20`, padding: "4px 8px", borderRadius: "8px", textAlign: "right" }}>
-            <div style={{ fontSize: "0.55rem", color: "#94a3b8" }}>GEÇEN YIL</div>
-            <div style={{ fontSize: "0.8rem", fontWeight: 700, color: statusColor }}>{isDown ? "📉" : "📈"} %{Math.abs(diff).toFixed(1)}</div>
-            <div style={{ fontSize: "0.6rem", color: "#64748b" }}>{compareValue}</div>
+          <div
+            style={{
+              background: "var(--surface-raised)",
+              border: `1px solid ${statusColor}`,
+              padding: "var(--sp-1) var(--sp-2)",
+              borderRadius: "var(--r-sm)",
+              textAlign: "right",
+              flexShrink: 0,
+            }}
+          >
+            <div className="caption" style={{ fontSize: "0.55rem" }}>GEÇEN YIL</div>
+            <div className="num" style={{ fontSize: "0.82rem", fontWeight: 700, color: statusColor }}>
+              {isDown ? "▼" : "▲"} %{Math.abs(diff).toFixed(1)}
+            </div>
+            <div className="caption num" style={{ fontSize: "0.6rem" }}>{compareValue}</div>
           </div>
         )}
       </div>
@@ -197,42 +245,48 @@ function SmartCard({ title, value, compareValue, diff, showCompare }: any) {
   );
 }
 
-function MonthGrid({ title, data, compareData, is2026 }: any) {
+/* =====================================================================
+   AY IZGARASI
+   ===================================================================== */
+function MonthGrid({ title, data, compareData, is2026, isMobile }: any) {
   const names = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"];
-  const isMobile = window.innerWidth < 768;
 
   return (
     <div>
-      <div style={{ fontSize: "0.7rem", color: "#64748b", marginBottom: 8, fontWeight: 700 }}>{title}</div>
-      <div style={{ 
-        display: "grid", 
-        gridTemplateColumns: isMobile ? "repeat(6, 1fr)" : "repeat(12, 1fr)", 
-        gap: 4 
-      }}>
+      <div className="label" style={{ marginBottom: "var(--sp-2)", color: "var(--text-3)" }}>{title}</div>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: isMobile ? "repeat(6, 1fr)" : "repeat(12, 1fr)",
+          gap: "var(--sp-1)",
+        }}
+      >
         {names.map((n, i) => {
           const val = data[i];
           const otherVal = compareData ? compareData[i] : 0;
-          let textColor = "#334155";
+          const isEmpty = is2026 && i > 0 && val === 0;
+
+          let textColor = "var(--text-3)";
           if (val > 0) {
-            if (is2026) {
-              textColor = val >= otherVal ? "#22c55e" : "#ef4444";
-            } else {
-              textColor = "white";
-            }
+            if (is2026) textColor = val >= otherVal ? "var(--success)" : "var(--danger)";
+            else textColor = "var(--text)";
           }
 
           return (
-            <div key={n} style={{ 
-              padding: "6px 2px", 
-              borderRadius: 6, 
-              border: "1px solid #1e2937", 
-              textAlign: "center", 
-              background: (is2026 && i > 0 && val === 0) ? "transparent" : "#020617",
-              opacity: (is2026 && i > 0 && val === 0) ? 0.3 : 1
-            }}>
-              <div style={{ fontSize: "0.5rem", color: "#64748b" }}>{n}</div>
-              <div style={{ fontSize: "0.75rem", fontWeight: 800, color: textColor }}>
-                {(is2026 && i > 0 && val === 0) ? "-" : val}
+            <div
+              key={n}
+              style={{
+                padding: "var(--sp-2) var(--sp-1)",
+                borderRadius: "var(--r-sm)",
+                border: "1px solid var(--line)",
+                textAlign: "center",
+                background: isEmpty ? "transparent" : "var(--surface)",
+                opacity: isEmpty ? 0.35 : 1,
+              }}
+            >
+              <div className="caption" style={{ fontSize: "0.55rem" }}>{n}</div>
+              <div className="num" style={{ fontSize: "0.8rem", fontWeight: 700, color: textColor }}>
+                {isEmpty ? "–" : val}
               </div>
             </div>
           );
@@ -241,5 +295,3 @@ function MonthGrid({ title, data, compareData, is2026 }: any) {
     </div>
   );
 }
-
-const mainSel = { background: "#020617", border: "1px solid #1e2937", color: "white", padding: "10px", borderRadius: 10, fontSize: "0.8rem", cursor: "pointer", outline: 'none' };

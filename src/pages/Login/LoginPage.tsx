@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../store/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { useIsMobile } from '../../hooks/useMediaQuery';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -11,13 +12,7 @@ export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  // 📱 MOBİL GÖZLEMCİ (Orantı bozulmaması için)
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  const isMobile = useIsMobile();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +32,7 @@ export default function LoginPage() {
 
   return (
     <div style={containerStyle}>
-      <div style={{
+      <div className="rise" style={{
         ...cardStyle,
         width: isMobile ? '90%' : '100%', // Mobilde sağa sola yapışmaz
         padding: isMobile ? '30px 20px' : '40px'
@@ -62,7 +57,7 @@ export default function LoginPage() {
           <p style={subtitleStyle}>Kurumsal Yönetim Paneli</p>
         </div>
 
-        {error && <div style={errorBoxStyle}>{error}</div>}
+        {error && <div role="alert" style={errorBoxStyle}>{error}</div>}
 
         <form onSubmit={handleSubmit} style={formStyle}>
           <div style={inputGroupStyle}>
@@ -91,6 +86,7 @@ export default function LoginPage() {
 
           <button 
             type="submit" 
+            className="press"
             disabled={isSubmitting} 
             style={{...buttonStyle, opacity: isSubmitting ? 0.7 : 1}}
           >
@@ -104,15 +100,16 @@ export default function LoginPage() {
   );
 }
 
-// STİLLER (ASAF Dark Theme - Orijinal yapı bozulmadı)
-const containerStyle: React.CSSProperties = { height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#020617', fontFamily: 'sans-serif' };
-const cardStyle: React.CSSProperties = { backgroundColor: '#0f172a', borderRadius: '24px', maxWidth: '400px', textAlign: 'center', border: '1px solid #1e293b', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)', boxSizing: 'border-box' };
-const logoStyle: React.CSSProperties = { color: '#38bdf8', fontSize: '1.8rem', fontWeight: '900', margin: 0, letterSpacing: '1px' };
-const subtitleStyle: React.CSSProperties = { color: '#64748b', fontSize: '0.85rem', marginTop: '5px' };
-const formStyle: React.CSSProperties = { display: 'flex', flexDirection: 'column', gap: '15px' };
+// STİLLER — tümü tasarım tokenlarından okur
+const containerStyle: React.CSSProperties = { minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg)', padding: 'var(--sp-4)' };
+const cardStyle: React.CSSProperties = { backgroundColor: 'var(--surface)', borderRadius: 'var(--r-xl)', maxWidth: '400px', textAlign: 'center', border: '1px solid var(--line)', boxShadow: 'var(--shadow-lg), inset 0 1px 0 var(--material-edge)', boxSizing: 'border-box' };
+// Marka adı büyük: tracking negatife çekilir, yoksa harfler dağılmış okunur (§15)
+const logoStyle: React.CSSProperties = { color: 'var(--accent)', fontSize: '1.75rem', fontWeight: 800, margin: 0, letterSpacing: '-0.02em', lineHeight: 1.1 };
+const subtitleStyle: React.CSSProperties = { color: 'var(--text-3)', fontSize: 'var(--t-label-size)', letterSpacing: 'var(--t-label-ls)', marginTop: 'var(--sp-2)', textTransform: 'uppercase', fontWeight: 600 };
+const formStyle: React.CSSProperties = { display: 'flex', flexDirection: 'column', gap: 'var(--sp-4)' };
 const inputGroupStyle: React.CSSProperties = { textAlign: 'left' };
-const labelStyle: React.CSSProperties = { display: 'block', color: '#94a3b8', fontSize: '0.8rem', marginBottom: '6px', marginLeft: '4px', fontWeight: 600 };
-const inputStyle: React.CSSProperties = { width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #334155', backgroundColor: '#1e293b', color: 'white', fontSize: '1rem', outline: 'none', boxSizing: 'border-box' };
-const buttonStyle: React.CSSProperties = { width: '100%', padding: '14px', backgroundColor: '#38bdf8', color: '#020617', border: 'none', borderRadius: '12px', fontWeight: '800', fontSize: '1rem', cursor: 'pointer', transition: 'all 0.2s ease', marginTop: '10px' };
-const errorBoxStyle: React.CSSProperties = { backgroundColor: '#450a0a', color: '#fca5a5', padding: '12px', borderRadius: '8px', marginBottom: '20px', fontSize: '0.9rem', border: '1px solid #7f1d1d' };
-const footerStyle: React.CSSProperties = { marginTop: '30px', color: '#334155', fontSize: '0.75rem', fontWeight: 600 };
+const labelStyle: React.CSSProperties = { display: 'block', color: 'var(--text-2)', fontSize: '0.8rem', marginBottom: 'var(--sp-2)', fontWeight: 600 };
+const inputStyle: React.CSSProperties = { padding: 'var(--sp-4)', borderRadius: 'var(--r-md)', fontSize: '1rem' };
+const buttonStyle: React.CSSProperties = { width: '100%', padding: 'var(--sp-4)', backgroundColor: 'var(--accent)', color: 'var(--accent-ink)', border: 'none', borderRadius: 'var(--r-md)', fontWeight: 700, fontSize: '1rem', cursor: 'pointer', marginTop: 'var(--sp-2)' };
+const errorBoxStyle: React.CSSProperties = { backgroundColor: 'rgba(239, 68, 68, 0.12)', color: '#fca5a5', padding: 'var(--sp-3)', borderRadius: 'var(--r-sm)', marginBottom: 'var(--sp-4)', fontSize: '0.875rem', border: '1px solid rgba(239, 68, 68, 0.35)', textAlign: 'left' };
+const footerStyle: React.CSSProperties = { marginTop: 'var(--sp-6)', color: 'var(--text-3)', fontSize: 'var(--t-caption-size)', fontWeight: 500 };

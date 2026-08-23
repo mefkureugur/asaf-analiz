@@ -132,15 +132,15 @@ export default function FinanceComparisonPage({ selectedKurum }: { selectedKurum
         <div style={{ height: isMobile ? 550 : 400 }}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={comparison.chart} layout={isMobile ? "vertical" : "horizontal"} margin={{ top: 5, right: isMobile ? 65 : 10, left: isMobile ? 15 : -25, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" horizontal={!isMobile} vertical={isMobile} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" horizontal={!isMobile} vertical={isMobile} />
               {isMobile ? (
-                <><XAxis type="number" hide /><YAxis dataKey="name" type="category" stroke="#64748b" fontSize={11} width={50} tickLine={false} axisLine={false} /></>
+                <><XAxis type="number" hide /><YAxis dataKey="name" type="category" stroke="var(--text-3)" fontSize={11} width={50} tickLine={false} axisLine={false} /></>
               ) : (
-                <><XAxis dataKey="name" stroke="#64748b" fontSize={11} tickLine={false} /><YAxis hide /></>
+                <><XAxis dataKey="name" stroke="var(--text-3)" fontSize={11} tickLine={false} /><YAxis hide /></>
               )}
               <Tooltip cursor={{fill: '#1e293b', opacity: 0.4}} contentStyle={tooltipStyle} itemStyle={{ color: '#f8fafc', fontSize: '12px', fontWeight: 600 }} formatter={(v: any) => [formatCurrency(v), "Tutar"]} />
               <Legend verticalAlign="top" align="right" iconType="circle" wrapperStyle={{ paddingBottom: 20, fontSize: isMobile ? '10px' : '11px' }} />
-              <Bar name="2025" dataKey="2025" fill="#334155" radius={isMobile ? [0, 4, 4, 0] : [4, 4, 0, 0]} barSize={isMobile ? 12 : 20} />
+              <Bar name="2025" dataKey="2025" fill="var(--line-strong)" radius={isMobile ? [0, 4, 4, 0] : [4, 4, 0, 0]} barSize={isMobile ? 12 : 20} />
               <Bar name="2026" dataKey="2026" fill="#3b82f6" radius={isMobile ? [0, 4, 4, 0] : [4, 4, 0, 0]} barSize={isMobile ? 12 : 20}>
                 <LabelList dataKey="2026" position={isMobile ? "right" : "top"} content={(props) => <CustomLabel {...props} isMobile={isMobile} layout={isMobile ? "vertical" : "horizontal"} />} />
               </Bar>
@@ -156,7 +156,7 @@ function CustomLabel({ x, y, value, width, height, isMobile, layout }: any) {
   if (!value || value === 0) return null;
   const isVertical = layout === "vertical";
   return (
-    <text x={isVertical ? x + width + 5 : x + width / 2} y={isVertical ? y + height / 2 + 4 : y - 8} fill="#94a3b8" fontSize={isMobile ? 8 : 10} fontWeight={800} textAnchor={isVertical ? "start" : "middle"}>
+    <text x={isVertical ? x + width + 5 : x + width / 2} y={isVertical ? y + height / 2 + 4 : y - 8} fill="var(--text-2)" fontSize={isMobile ? 8 : 10} fontWeight={800} textAnchor={isVertical ? "start" : "middle"}>
       {`₺${(value / 1000000).toFixed(1)}M`}
     </text>
   );
@@ -186,11 +186,11 @@ const summaryDivider = { width: 1, height: 25, background: '#1e2937' };
 const miniBadge = { padding: '4px 8px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 900, display: 'flex', alignItems: 'center', gap: 3 };
 const selectStyle = { background: "#1e293b", border: "1px solid #334155", color: "#3b82f6", padding: "10px 40px 10px 15px", borderRadius: "10px", appearance: "none" as const, fontSize: "0.75rem", fontWeight: 800, cursor: "pointer", width: "100%", outline: "none" };
 const chevronStyle = { position: "absolute" as const, right: 15, top: "50%", transform: "translateY(-50%)", color: "#3b82f6", pointerEvents: "none" as const };
-const chartWrapper = { background: "#0f172a", border: "1px solid #1e2937", borderRadius: 16 };
+const chartWrapper = { background: "var(--surface)", border: "1px solid #1e2937", borderRadius: 16 };
 const headerStyle = { fontSize: "0.75rem", fontWeight: 800, color: "#64748b", letterSpacing: "0.05em" };
-const tooltipStyle = { background: "#020617", border: "1px solid #1e2937", borderRadius: "8px" };
+const tooltipStyle = { background: "var(--bg)", border: "1px solid #1e2937", borderRadius: "8px" };
 const grid3 = { display: "grid", gap: 20, marginBottom: 25 };
-const cardStyle = { background: "#0f172a", border: "1px solid #1e2937", borderRadius: 16, display: "flex", flexDirection: "column" as const, gap: 12 };
+const cardStyle = { background: "var(--surface)", border: "1px solid #1e2937", borderRadius: 16, display: "flex", flexDirection: "column" as const, gap: 12 };
 const cardHeader = { fontSize: "0.65rem", fontWeight: 800, color: "#64748b", display: "flex", alignItems: "center", gap: 8 };
 const valRow = { display: "flex", justifyContent: "space-between", alignItems: "center" };
 const oldVal = { fontSize: "0.95rem", color: "#475569", fontWeight: 600, display: "flex", flexDirection: "column" as const };

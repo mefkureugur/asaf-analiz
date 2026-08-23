@@ -1,0 +1,126 @@
+/* =====================================================================
+   ASAF ANALİZ — TASARIM TOKENLARI
+   Tek kaynak. Renk, ölçü, tipografi ve hareket burada tanımlanır;
+   bileşenler sabit değer yazmaz, buradan okur.
+   ===================================================================== */
+
+:root {
+  /* ---------- ZEMİN & YÜZEYLER ----------
+     Derinlik sırası: bg (en arka) → surface → raised → overlay (en ön) */
+  --bg:            #020617;
+  --surface:       #0f172a;
+  --surface-raised:#131f38;
+  --line:          #1e293b;
+  --line-strong:   #334155;
+
+  /* ---------- MARKA & DURUM ---------- */
+  --accent:        #38bdf8;
+  --accent-ink:    #020617;  /* accent üzerine yazılan metin */
+  --gold:          #fbbf24;
+  --success:       #22c55e;
+  --danger:        #ef4444;
+  --warning:       #f59e0b;
+
+  /* ---------- METİN ----------
+     Üç kademe: birincil (başlık/değer), ikincil (etiket), üçüncül (dipnot) */
+  --text:          #f8fafc;
+  --text-2:        #94a3b8;
+  --text-3:        #64748b;
+
+  /* ---------- MATERYAL (§12) ----------
+     Yarı saydam katmanlar. İçerik altından akar, chrome üstte yüzer. */
+  --material-blur:      20px;
+  --material-saturate:  180%;
+  --material-nav:       rgba(2, 6, 23, 0.72);
+  --material-sheet:     rgba(15, 23, 42, 0.82);
+  --material-edge:      rgba(148, 163, 184, 0.14); /* ışığı yakalayan üst kenar */
+  --scrim:              rgba(2, 6, 23, 0.6);
+
+  /* ---------- YÜKSELTİ ----------
+     Büyük yüzey = daha derin gölge (§12: büyük yüzey daha kalın okunur) */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.4);
+  --shadow-md: 0 8px 20px -6px rgba(0,0,0,.55);
+  --shadow-lg: 0 24px 48px -12px rgba(0,0,0,.7);
+
+  /* ---------- ÖLÇÜ ----------
+     rem tabanlı: kullanıcı yazı boyutunu büyütünce düzen de büyür (§15) */
+  --sp-1: 0.25rem;  --sp-2: 0.5rem;   --sp-3: 0.75rem;
+  --sp-4: 1rem;     --sp-5: 1.5rem;   --sp-6: 2rem;    --sp-7: 3rem;
+
+  --r-sm: 8px;   --r-md: 12px;   --r-lg: 16px;   --r-xl: 22px;   --r-full: 999px;
+
+  /* ---------- TİPOGRAFİ (§15) ----------
+     Tracking boyuta özgü: büyük metin negatif, küçük metin hafif pozitif.
+     Leading boyutla ters: başlık sıkı, gövde ferah. */
+  --font: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-num: 'Inter', ui-monospace, SFMono-Regular, monospace;
+
+  --t-display-size: clamp(1.75rem, 4vw, 2.5rem);
+  --t-display-lh:   1.06;
+  --t-display-ls:   -0.025em;
+
+  --t-title-size:   1.25rem;
+  --t-title-lh:     1.2;
+  --t-title-ls:     -0.018em;
+
+  --t-body-size:    0.95rem;
+  --t-body-lh:      1.5;
+  --t-body-ls:      0;
+
+  --t-label-size:   0.72rem;
+  --t-label-lh:     1.35;
+  --t-label-ls:     0.045em;   /* küçük metin: pozitif tracking okunurluk için */
+
+  --t-caption-size: 0.65rem;
+  --t-caption-lh:   1.3;
+  --t-caption-ls:   0.03em;
+
+  /* ---------- HAREKET (§4) ----------
+     Yay parametreleri: damping (aşma) + response (hız, saniye).
+     Varsayılan kritik sönümlü (aşma yok). Bounce yalnız momentumlu jestte. */
+  --spring-damping:        1.0;
+  --spring-response:       0.35;
+  --spring-damping-bouncy: 0.8;
+  --spring-response-sheet: 0.3;
+
+  /* Jest içermeyen basit geçişler için eğriler (§7: ters eğri = simetrik yol) */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in:  cubic-bezier(0.64, 0, 0.78, 0);
+  --dur-fast: 120ms;
+  --dur-med:  240ms;
+}
+
+/* =====================================================================
+   ERİŞİLEBİLİRLİK (§14) — üç sinyal, birbirinden bağımsız
+   ===================================================================== */
+
+/* Hareket azaltma: kayma/yay yerine kısa çapraz geçiş. Geri bildirim kalır. */
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur-fast: 1ms; --dur-med: 100ms; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Saydamlık azaltma: materyal donuklaşır, blur kalkar. */
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --material-nav:   #020617;
+    --material-sheet: #0f172a;
+    --material-blur:  0px;
+  }
+}
+
+/* Yüksek kontrast: neredeyse opak zemin + belirgin kenar. */
+@media (prefers-contrast: more) {
+  :root {
+    --material-nav:   #020617;
+    --material-sheet: #0f172a;
+    --line:           #475569;
+    --line-strong:    #64748b;
+    --text-2:         #cbd5e1;
+    --text-3:         #94a3b8;
+  }
+}

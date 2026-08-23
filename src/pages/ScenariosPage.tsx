@@ -265,7 +265,7 @@ export default function ScenariosPage() {
   );
 }
 
-const nameCard: React.CSSProperties = { background: '#0f172a', border: '1px solid #1e293b', borderRadius: 12, padding: '20px' };
+const nameCard: React.CSSProperties = { background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 12, padding: '20px' };
 const nameLbl: React.CSSProperties = { color: '#94a3b8', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em', marginBottom: 10, display: 'block' };
 const nameInp: React.CSSProperties = {
   background: '#1e293b', border: '1px solid #334155', color: 'white',

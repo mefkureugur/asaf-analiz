@@ -70,9 +70,9 @@ export default function DailyEntryPage() {
         icon: 'warning',
         title: 'Eksik Alan!',
         text: 'Lütfen tüm alanları doldurun.',
-        background: '#0f172a',
+        background: 'var(--surface)',
         color: '#fff',
-        confirmButtonColor: '#38bdf8'
+        confirmButtonColor: 'var(--accent)'
       });
       return;
     }
@@ -103,7 +103,7 @@ export default function DailyEntryPage() {
         spread: 70,
         origin: { y: 0.6 },
         zIndex: 9999,
-        colors: ['#38bdf8', '#22c55e', '#ffffff']
+        colors: ['var(--accent)', 'var(--success)', '#ffffff']
       });
 
       const audio = new Audio('/sounds/alkis.mp3');
@@ -115,9 +115,9 @@ export default function DailyEntryPage() {
         title: 'Kayıt Başarılı!',
         text: 'Kayıt mermi gibi eklendi! 🚀',
         icon: 'success',
-        background: '#0f172a',
+        background: 'var(--surface)',
         color: '#ffffff',
-        confirmButtonColor: '#22c55e',
+        confirmButtonColor: 'var(--success)',
         confirmButtonText: 'Tamam',
         timer: 3500, // 3.5 saniye sonra kendi kapanır
         timerProgressBar: true
@@ -134,7 +134,7 @@ export default function DailyEntryPage() {
         icon: 'error',
         title: 'Hata!',
         text: 'Kayıt sırasında bir hata oluştu: ' + err.message,
-        background: '#0f172a',
+        background: 'var(--surface)',
         color: '#ffffff'
       });
     } finally {
@@ -184,7 +184,7 @@ export default function DailyEntryPage() {
           <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Tutar girin" style={inputStyle} />
         </label>
 
-        <button type="submit" disabled={saving} style={{ ...buttonStyle, background: saving ? "#1e40af" : "#22c55e" }}>
+        <button type="submit" disabled={saving} style={{ ...buttonStyle, background: saving ? "#1e40af" : "var(--success)" }}>
           {saving ? "Kaydediliyor..." : "Kaydı Onayla"}
         </button>
       </form>
@@ -193,8 +193,8 @@ export default function DailyEntryPage() {
 }
 
 // Stil Nesneleri
-const infoBoxStyle: React.CSSProperties = { background: "rgba(30, 41, 59, 0.5)", padding: "10px 15px", borderRadius: "8px", marginBottom: "15px", fontSize: "0.85rem", border: "1px solid #1e293b" };
-const formContainerStyle: React.CSSProperties = { display: "grid", gap: 16, background: "#0f172a", padding: 20, borderRadius: 12, border: "1px solid #1e293b", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" };
+const infoBoxStyle: React.CSSProperties = { background: "rgba(30, 41, 59, 0.5)", padding: "10px 15px", borderRadius: "8px", marginBottom: "15px", fontSize: "0.85rem", border: "1px solid var(--line)" };
+const formContainerStyle: React.CSSProperties = { display: "grid", gap: 16, background: "var(--surface)", padding: 20, borderRadius: 12, border: "1px solid var(--line)", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" };
 const labelStyle: React.CSSProperties = { display: "flex", flexDirection: "column", gap: 4, fontSize: "0.9rem", color: "#94a3b8" };
 const inputStyle: React.CSSProperties = { width: "100%", padding: "10px 12px", background: "#020617", border: "1px solid #334155", borderRadius: 8, color: "white", fontSize: "1rem", outline: "none" };
 const buttonStyle: React.CSSProperties = { marginTop: 10, padding: "12px", color: "white", border: "none", borderRadius: 8, cursor: "pointer", fontWeight: 600 };

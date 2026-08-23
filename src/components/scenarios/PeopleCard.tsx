@@ -56,7 +56,7 @@ export default function PeopleCard({ people, kidemOn, onChange }: Props) {
   );
 }
 
-const card: React.CSSProperties = { background: '#0f172a', border: '1px solid #1e293b', borderRadius: 12, padding: '20px' };
+const card: React.CSSProperties = { background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 12, padding: '20px' };
 const header: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 };
 const title: React.CSSProperties = { color: '#94a3b8', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em' };
 const badge: React.CSSProperties = { background: '#1e293b', color: '#94a3b8', fontSize: '0.65rem', padding: '2px 8px', borderRadius: 4 };

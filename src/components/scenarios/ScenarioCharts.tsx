@@ -37,7 +37,7 @@ export default function ScenarioCharts({ result, people, kidemOn }: Props) {
     }).filter(d => d.value > 0);
   }, [people, kidemOn]);
 
-  const tooltipStyle = { background: '#020617', border: '1px solid #1e293b', borderRadius: 8, fontSize: '0.75rem' };
+  const tooltipStyle = { background: 'var(--bg)', border: '1px solid var(--line)', borderRadius: 8, fontSize: '0.75rem' };
 
   return (
     <div style={card}>
@@ -72,8 +72,8 @@ export default function ScenarioCharts({ result, people, kidemOn }: Props) {
           <div style={{ height: 160 }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={barData} margin={{ top: 10, right: 10, left: 0, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-                <XAxis dataKey="name" stroke="#64748b" fontSize={10} tickLine={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" vertical={false} />
+                <XAxis dataKey="name" stroke="var(--text-3)" fontSize={10} tickLine={false} />
                 <YAxis hide />
                 <Tooltip
                   contentStyle={tooltipStyle}
@@ -81,7 +81,7 @@ export default function ScenarioCharts({ result, people, kidemOn }: Props) {
                 />
                 <Bar dataKey="value" radius={[4, 4, 0, 0]} fill="#3b82f6">
                   {barData.map((_, i) => (
-                    <Cell key={i} fill={['#3b82f6', '#38bdf8', '#22c55e', '#f59e0b'][i % 4]} />
+                    <Cell key={i} fill={['#3b82f6', 'var(--accent)', 'var(--success)', 'var(--warning)'][i % 4]} />
                   ))}
                 </Bar>
               </BarChart>
@@ -93,5 +93,5 @@ export default function ScenarioCharts({ result, people, kidemOn }: Props) {
   );
 }
 
-const card: React.CSSProperties = { background: '#0f172a', border: '1px solid #1e293b', borderRadius: 12, padding: '20px' };
+const card: React.CSSProperties = { background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 12, padding: '20px' };
 const cardTitle: React.CSSProperties = { color: '#94a3b8', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em', marginBottom: 10 };

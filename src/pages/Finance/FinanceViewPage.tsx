@@ -191,14 +191,14 @@ export default function FinanceViewPage() {
             <div style={{ height: isMobile ? 450 : 500 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData} layout="vertical" margin={{ top: 5, right: isMobile ? 60 : 85, left: isMobile ? 20 : 40, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" vertical={false} />
                   <XAxis type="number" hide />
-                  <YAxis dataKey="name" type="category" stroke="#94a3b8" fontSize={isMobile ? 10 : 12} width={isMobile ? 70 : 85} tickLine={false} axisLine={false} />
+                  <YAxis dataKey="name" type="category" stroke="var(--text-2)" fontSize={isMobile ? 10 : 12} width={isMobile ? 70 : 85} tickLine={false} axisLine={false} />
                   <Tooltip cursor={{fill: '#1e293b', opacity: 0.4}} contentStyle={{ background: '#020617', border: '1px solid #1e2937', borderRadius: '8px' }} itemStyle={{ color: '#f8fafc', fontSize: '12px' }} formatter={(value: any) => [formatCurrency(value), "Tutar"]} />
                   <Bar dataKey="tutar" radius={[0, 4, 4, 0]} barSize={isMobile ? 18 : 22}>
-                    <LabelList dataKey="label" position="right" fill="#f8fafc" fontSize={isMobile ? 9 : 10} fontWeight={800} offset={12} />
+                    <LabelList dataKey="label" position="right" fill="var(--text)" fontSize={isMobile ? 9 : 10} fontWeight={800} offset={12} />
                     {chartData.map((entry, index) => (
-                      <Cell key={index} fill={entry.tutar === 0 ? "#1e293b" : (entry.tutar <= avgGider ? "#22c55e" : "#ef4444")} />
+                      <Cell key={index} fill={entry.tutar === 0 ? "var(--line)" : (entry.tutar <= avgGider ? "var(--success)" : "var(--danger)")} />
                     ))}
                   </Bar>
                 </BarChart>
@@ -213,7 +213,7 @@ export default function FinanceViewPage() {
 
 function SmartCard({ title, value, icon, color, isMobile, extra }: any) {
   return (
-    <div style={{ background: "#0f172a", border: `1px solid ${color}30`, borderLeft: `4px solid ${color}`, borderRadius: 12, padding: isMobile ? "12px 15px" : "18px 22px" }}>
+    <div style={{ background: "var(--surface)", border: `1px solid ${color}30`, borderLeft: `4px solid ${color}`, borderRadius: 12, padding: isMobile ? "12px 15px" : "18px 22px" }}>
       <div style={{ color: "#94a3b8", fontSize: isMobile ? "0.55rem" : "0.6rem", fontWeight: 700, marginBottom: 8, letterSpacing: "0.1em", display: "flex", justifyContent: "space-between" }}>{title} <span>{icon}</span></div>
       <div style={{ fontSize: isMobile ? "1rem" : "1.7rem", fontWeight: 900, color: "#f8fafc" }}>{value}</div>
       {extra && Array.isArray(extra) && (
@@ -232,7 +232,7 @@ const categorySel = { background: "#1e293b", border: "1px solid #334155", color:
 const chevronPos = { position: "absolute" as const, right: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" as const, display: "flex", alignItems: "center" };
 const veriGirisStyle = { background: "#0f172a", border: "1px solid #1e2937", color: "#94a3b8", padding: "8px 15px", borderRadius: 8, fontSize: "0.75rem", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 };
 const headerStyle = { fontSize: "0.75rem", fontWeight: 800, color: "white", display: "flex", alignItems: "center", gap: 8 };
-const containerStyle = { background: "#0f172a", border: "1px solid #1e2937", borderRadius: 12, padding: "20px" };
+const containerStyle = { background: "var(--surface)", border: "1px solid #1e2937", borderRadius: 12, padding: "20px" };
 
 function NavButton({ id, active, onClick, icon, label, isMobile }: any) {
   const isActive = active === id;

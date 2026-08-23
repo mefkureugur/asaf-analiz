@@ -208,5 +208,5 @@ const inputGroup = { display: "flex", flexDirection: "column" as const, gap: 15,
 const row = { display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "0.95rem" };
 const inp = { background: "#1f2937", border: "1px solid #374151", color: "white", padding: "10px", borderRadius: 10, width: "120px", textAlign: "right" as const, outline: "none" };
 const autoVal = { fontWeight: 700, color: "#38bdf8" };
-const resBox = { background: "rgba(0,0,0,0.3)", padding: 20, borderRadius: 20, borderLeft: "4px solid #22c55e" };
+const resBox = { background: "rgba(0,0,0,0.3)", padding: 20, borderRadius: 20, borderLeft: "4px solid var(--success)" };
 const saveButtonStyle = { background: "#38bdf8", color: "#0f172a", border: "none", padding: "10px 20px", borderRadius: 12, fontWeight: 700, cursor: "pointer" };

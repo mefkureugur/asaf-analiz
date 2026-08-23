@@ -1,136 +1,222 @@
+@import "./styles/tokens.css";
+@import "./styles/motion.css";
+
 /* =========================
-   GLOBAL RESET (MOBİL-ÖNCELİKLİ)
+   RESET
 ========================= */
 * {
   box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent; /* Mobil tıklama efektini temizler */
+  -webkit-tap-highlight-color: transparent;
 }
 
-html,
-body {
+html, body {
   margin: 0;
   padding: 0;
-  overflow-x: hidden; 
-  background-color: #020617; /* Daha derin kurumsal lacivert */
+  overflow-x: hidden;
+  background-color: var(--bg);
 }
 
 /* =========================
-   BASE TYPO & THEME
+   TİPOGRAFİ TEMELİ (§15)
+   Gövde: sistem ölçeğine saygılı, ferah satır aralığı.
 ========================= */
 body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  color: #f8fafc;
-  line-height: 1.5;
+  font-family: var(--font);
+  color: var(--text);
+  font-size: var(--t-body-size);
+  line-height: var(--t-body-lh);
+  letter-spacing: var(--t-body-ls);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-optical-sizing: auto;
 }
 
-/* =========================
-   PAGE CONTAINER
-========================= */
-.page {
-  width: 100%;
-  padding: 16px;
-  min-height: calc(100vh - 60px);
-}
-
-/* =========================
-   TYPOGRAPHY
-========================= */
-h1, h2, h3 {
-  letter-spacing: -0.02em;
-  color: #f8fafc;
+/* Başlıklar: büyüdükçe tracking negatife, leading sıkıya gider.
+   Tek bir letter-spacing değeri her boyutta yanlış olurdu. */
+h1 {
+  font-size: var(--t-display-size);
+  line-height: var(--t-display-lh);
+  letter-spacing: var(--t-display-ls);
+  font-weight: 800;
+  color: var(--text);
+  margin: 0 0 var(--sp-4);
 }
 
 h2 {
-  font-size: 1.5rem;
+  font-size: var(--t-title-size);
+  line-height: var(--t-title-lh);
+  letter-spacing: var(--t-title-ls);
   font-weight: 700;
-  margin-bottom: 12px;
+  color: var(--text);
+  margin: 0 0 var(--sp-3);
+}
+
+h3 {
+  font-size: 1.05rem;
+  line-height: 1.3;
+  letter-spacing: -0.012em;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 var(--sp-2);
 }
 
 p {
-  font-size: 0.95rem;
-  color: #94a3b8; /* Slate-400 rengi (daha okunaklı) */
+  font-size: var(--t-body-size);
+  line-height: var(--t-body-lh);
+  color: var(--text-2);
+  margin: 0 0 var(--sp-3);
+}
+
+/* Küçük etiketler: pozitif tracking, çünkü küçük metin sıkışık okunur */
+.label {
+  font-size: var(--t-label-size);
+  line-height: var(--t-label-lh);
+  letter-spacing: var(--t-label-ls);
+  font-weight: 700;
+  color: var(--text-2);
+  text-transform: uppercase;
+}
+
+.caption {
+  font-size: var(--t-caption-size);
+  line-height: var(--t-caption-lh);
+  letter-spacing: var(--t-caption-ls);
+  color: var(--text-3);
+}
+
+/* Sayılar: tablo rakamı hizalaması — sütunlar kaymaz, değerler
+   güncellenince rakam genişliği değişip zıplamaz */
+.num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
 }
 
 /* =========================
-   DESKTOP LAYOUT (Tablet ve Üstü)
+   SAYFA KAPSAYICISI
+   Boşluklar rem: kullanıcı yazıyı büyütünce düzen birlikte büyür (§15)
 ========================= */
+.page {
+  width: 100%;
+  padding: var(--sp-4);
+  min-height: calc(100vh - 60px);
+}
+
 @media (min-width: 900px) {
   .page {
     max-width: 1280px;
     margin: 0 auto;
-    padding: 32px;
+    padding: var(--sp-6);
   }
 }
 
 /* =========================
-   MOBILE NAV & BRANDING
+   FORM ÖĞELERİ
+   Tek yerde tanımlı: her sayfada elle stil yazılmasın
 ========================= */
-.mobileNavWrapper {
+input, select, textarea {
+  font-family: var(--font);
+  font-size: var(--t-body-size);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  color: var(--text);
+  padding: var(--sp-3);
+  border-radius: var(--r-sm);
+  outline: none;
   width: 100%;
-  border-bottom: 1px solid #1e293b;
+  transition: border-color var(--dur-fast) var(--ease-out),
+              box-shadow var(--dur-fast) var(--ease-out);
 }
 
-.mobileTopBar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 20px;
-  background-color: #020617;
+input:focus, select:focus, textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
 }
 
-.mobileLogo {
-  font-weight: 800;
-  font-size: 1.1rem;
-  letter-spacing: 0.5px;
-  color: #f8fafc;
-}
+input::placeholder { color: var(--text-3); }
 
-.mobileLogo span {
-  color: #38bdf8; /* ASAF Açık Mavi */
-}
-
-.hamburgerBtn {
-  background: #1e293b;
-  border: 1px solid #334155;
-  color: #f8fafc;
-  border-radius: 8px;
-  padding: 6px 12px;
-  font-size: 1.1rem;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+button {
+  font-family: var(--font);
+  cursor: pointer;
 }
 
 /* =========================
-   MOBILE MENU LINKS
+   MOBİL NAV MARKA
 ========================= */
-.mobileMenu {
+.mobileLogo {
+  font-weight: 800;
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+.mobileLogo span { color: var(--accent); }
+
+/* =========================
+   KART
+   Yüzey hiyerarşisi: zeminden bir kademe yukarıda, üst kenarı ışık yakalar.
+   (Daha önce App.css'teydi; o dosya hiçbir yerden import edilmiyordu.)
+========================= */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: var(--sp-5);
+  box-shadow: var(--shadow-sm), inset 0 1px 0 var(--material-edge);
+  transition: transform var(--dur-med) var(--ease-out),
+              box-shadow var(--dur-med) var(--ease-out),
+              border-color var(--dur-med) var(--ease-out);
+}
+
+/* Hover yalnızca hassas işaretçili cihazlarda: dokunmatikte yapışkan
+   hover durumu bırakmasın */
+@media (hover: hover) and (pointer: fine) {
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md), inset 0 1px 0 var(--material-edge);
+    border-color: var(--line-strong);
+  }
+}
+
+/* =========================
+   VERİ SATIRI & DURUM RENKLERİ
+========================= */
+.data-row {
   display: flex;
-  flex-direction: column;
-  padding: 8px;
-  background-color: #020617;
-  border-bottom: 2px solid #38bdf8;
-  animation: slideDown 0.2s ease-out;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--sp-3) 0;
+  border-bottom: 1px solid var(--line);
+}
+.data-row:last-child { border-bottom: none; }
+
+.text-success { color: var(--success); }
+.text-danger  { color: var(--danger); }
+.text-warning { color: var(--warning); }
+.text-info    { color: var(--accent); }
+
+/* =========================
+   GENEL BASMA GERİ BİLDİRİMİ (§1)
+   Her butona tek yerden: tepki bırakma anında değil, BASMA anında.
+   JSX'e sınıf eklemeye gerek kalmadan tüm uygulamayı kapsar.
+========================= */
+button {
+  transition: transform var(--dur-fast) var(--ease-out),
+              background-color var(--dur-fast) var(--ease-out),
+              border-color var(--dur-fast) var(--ease-out),
+              opacity var(--dur-fast) var(--ease-out);
 }
 
-.mobileMenu a {
-  color: #cbd5e1;
-  text-decoration: none;
-  font-size: 1rem;
-  font-weight: 500;
-  padding: 14px 16px;
-  border-radius: 8px;
-  transition: background 0.2s;
+button:not(:disabled):active {
+  transform: scale(0.97);
 }
 
-.mobileMenu a:active {
-  background-color: #1e293b;
-  color: #38bdf8;
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 
-/* Animasyonlar */
-@keyframes slideDown {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+/* Hareket azaltmada ölçek yerine yüzey tonu değişir: geri bildirim kalır,
+   vestibüler hareket kalkar (§14) */
+@media (prefers-reduced-motion: reduce) {
+  button:not(:disabled):active { transform: none; filter: brightness(1.25); }
 }

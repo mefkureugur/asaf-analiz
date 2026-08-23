@@ -58,9 +58,9 @@ function Row({ label, value, color, bold, large, printClass }: {
 }
 
 function Divider() {
-  return <div style={{ height: 1, background: '#1e293b', margin: '4px 0' }} />;
+  return <div style={{ height: 1, background: 'var(--line)', margin: '4px 0' }} />;
 }
 
-const card: React.CSSProperties = { background: '#0f172a', border: '1px solid #1e293b', borderRadius: 12, padding: '20px' };
+const card: React.CSSProperties = { background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 12, padding: '20px' };
 const cardTitle: React.CSSProperties = { color: '#94a3b8', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.05em', marginBottom: 14 };
 const table: React.CSSProperties = { display: 'flex', flexDirection: 'column' };

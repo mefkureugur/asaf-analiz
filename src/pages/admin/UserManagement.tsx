@@ -101,7 +101,7 @@ export default function UserManagement() {
           </thead>
           <tbody>
             {users.map(u => (
-              <tr key={u.id} style={{ borderBottom: '1px solid #1e293b' }}>
+              <tr key={u.id} style={{ borderBottom: '1px solid var(--line)' }}>
                 <td style={paddingStyle}>{u.email}</td>
                 <td style={paddingStyle}>
                   <select defaultValue={u.role} id={`role-${u.id}`} style={selectStyle}>
@@ -146,10 +146,10 @@ export default function UserManagement() {
   );
 }
 
-const formCardStyle = { backgroundColor: '#0f172a', padding: '25px', borderRadius: '12px', border: '1px solid #1e293b', marginBottom: '30px' };
+const formCardStyle = { backgroundColor: 'var(--surface)', padding: '25px', borderRadius: '12px', border: '1px solid var(--line)', marginBottom: '30px' };
 const inputStyle = { backgroundColor: '#1e293b', border: '1px solid #334155', color: 'white', padding: '12px', borderRadius: '8px', flex: 1 };
 const addBtnStyle = { backgroundColor: '#10b981', color: 'white', border: 'none', padding: '12px 25px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' as const };
-const tableWrapperStyle = { backgroundColor: '#0f172a', borderRadius: '12px', border: '1px solid #1e293b', overflow: 'hidden' };
+const tableWrapperStyle = { backgroundColor: 'var(--surface)', borderRadius: '12px', border: '1px solid var(--line)', overflow: 'hidden' };
 const selectStyle = { backgroundColor: '#1e293b', color: 'white', border: '1px solid #334155', padding: '10px', borderRadius: '8px', width: '100%' };
 const saveBtnStyle = { backgroundColor: '#38bdf8', color: '#020617', border: 'none', padding: '10px 12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' as const };
 const paddingStyle = { padding: '15px' };

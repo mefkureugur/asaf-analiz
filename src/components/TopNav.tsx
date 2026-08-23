@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../store/AuthContext";
-import { updatePassword } from "firebase/auth"; 
-import { auth } from "../firebase"; 
+import { updatePassword } from "firebase/auth";
+import { auth } from "../firebase";
+import Modal from "./ui/Modal";
 
 interface TopNavProps {
   isAdmin?: boolean;
@@ -14,8 +15,10 @@ export default function TopNav({ isAdmin }: TopNavProps) {
 
   const [clickCount, setClickCount] = useState(0);
   const [showPassModal, setShowPassModal] = useState(false);
-  const [pass1, setPass1] = useState(""); 
-  const [pass2, setPass2] = useState(""); 
+  const [pass1, setPass1] = useState("");
+  const [pass2, setPass2] = useState("");
+  const [passError, setPassError] = useState("");
+  const [passBusy, setPassBusy] = useState(false);
 
   const handleLogoClick = () => {
     const newCount = clickCount + 1;
@@ -24,171 +27,187 @@ export default function TopNav({ isAdmin }: TopNavProps) {
       setClickCount(0);
     } else {
       setClickCount(newCount);
-      setTimeout(() => setClickCount(0), 2500); 
+      setTimeout(() => setClickCount(0), 2500);
     }
   };
 
   const handleUpdatePassword = async () => {
-    if (pass1 !== pass2) return alert("Şifreler birbiriyle eşleşmiyor!");
-    if (pass1.length < 6) return alert("Şifre en az 6 karakter olmalı!");
-    
+    if (pass1 !== pass2) { setPassError("Şifreler birbiriyle eşleşmiyor."); return; }
+    if (pass1.length < 6) { setPassError("Şifre en az 6 karakter olmalı."); return; }
+
+    setPassBusy(true);
+    setPassError("");
     try {
       if (auth.currentUser) {
         await updatePassword(auth.currentUser, pass1);
-        alert("Şifre Başarıyla Mühürlendi!");
         setShowPassModal(false);
         setPass1(""); setPass2("");
       }
-    } catch (error: any) {
-      alert("Güvenlik Hatası: Lütfen çıkış yapıp tekrar girerek deneyin.");
+    } catch {
+      setPassError("Güvenlik doğrulaması gerekli. Çıkış yapıp tekrar girin.");
+    } finally {
+      setPassBusy(false);
     }
   };
 
   const linkStyle = (path: string): React.CSSProperties => {
     const isActive = pathname === path || pathname.startsWith(path + "/");
     return {
-      padding: "8px 12px",
-      borderRadius: 8,
+      padding: "var(--sp-2) var(--sp-3)",
+      borderRadius: "var(--r-sm)",
       textDecoration: "none",
-      color: "#fff",
-      background: isActive ? "#334155" : "transparent",
+      color: isActive ? "var(--text)" : "var(--text-2)",
+      background: isActive ? "var(--surface-raised)" : "transparent",
       fontWeight: isActive ? 600 : 500,
+      fontSize: "0.88rem",
       whiteSpace: "nowrap",
-      transition: "all 0.15s ease",
-      border: isActive ? "1px solid #475569" : "1px solid transparent",
+      border: isActive ? "1px solid var(--line-strong)" : "1px solid transparent",
     };
   };
 
-  const showAdminMenu = isAdmin || user?.role === 'admin' || user?.email === 'ugur@asaf.com';
-  const isMefkureManager = (user?.branchId || "").toLocaleLowerCase('tr-TR').includes("mefkure");
+  const showAdminMenu = isAdmin || user?.role === "admin" || user?.email === "ugur@asaf.com";
+  const isMefkureManager = (user?.branchId || "").toLocaleLowerCase("tr-TR").includes("mefkure");
 
   return (
     <nav
+      className="material-nav"
       style={{
         display: "flex",
         alignItems: "center",
-        padding: "12px 20px",
-        background: "#020617",
-        borderBottom: "1px solid #1e293b",
-        overflowX: "auto",
-        scrollbarWidth: "none",
-        position: "relative" 
+        padding: "var(--sp-3) var(--sp-5)",
+        position: "sticky",
+        top: 0,
+        zIndex: 1000,
+        gap: "var(--sp-5)",
       }}
     >
-      {/* 🚀 LOGO VE İSİM BÖLÜMÜ */}
-      <div 
+      {/* Marka */}
+      <div
         onClick={handleLogoClick}
-        style={{ 
-          display: "flex", 
-          alignItems: "center", 
-          gap: "12px", 
-          marginRight: 24, 
-          cursor: "pointer", 
-          userSelect: "none" 
-        }}
+        className="press"
+        style={{ display: "flex", alignItems: "center", gap: "var(--sp-3)", cursor: "pointer", userSelect: "none", flexShrink: 0 }}
       >
-        <img 
-          src="/logo512.png" 
-          alt="ASAF" 
-          style={{ height: "35px", width: "35px", borderRadius: "8px", objectFit: "cover" }} 
-        />
-        <div style={{ fontWeight: 800, color: "#f8fafc", fontSize: "1.1rem", letterSpacing: "0.5px" }}>
-          ASAF <span style={{ color: "#38bdf8" }}>ANALİZ</span>
+        <img src="/logo512.png" alt="" style={{ height: 34, width: 34, borderRadius: "var(--r-sm)", objectFit: "cover" }} />
+        <div style={{ fontWeight: 800, color: "var(--text)", fontSize: "1.05rem", letterSpacing: "-0.01em" }}>
+          ASAF <span style={{ color: "var(--accent)" }}>ANALİZ</span>
         </div>
       </div>
 
-      <div style={{ display: "flex", gap: 8, flex: 1 }}>
-        <Link to="/dashboard" style={linkStyle("/dashboard")}>🏠 Ana Sayfa</Link>
-        <Link to="/compare" style={linkStyle("/compare")}>⚖️ Karşılaştırma</Link>
-        
+      {/* Gezinme — kenarları yumuşak maskeli yatay kaydırma (§12) */}
+      <div className="scroll-x" style={{ display: "flex", gap: "var(--sp-2)", flex: 1, alignItems: "center" }}>
+        <Link to="/dashboard" className="press" style={linkStyle("/dashboard")}>🏠 Ana Sayfa</Link>
+        <Link to="/compare" className="press" style={linkStyle("/compare")}>⚖️ Karşılaştırma</Link>
+
         {showAdminMenu ? (
-          <Link to="/targets" style={linkStyle("/targets")}>🎯 Hedef Girişi</Link>
+          <Link to="/targets" className="press" style={linkStyle("/targets")}>🎯 Hedef Girişi</Link>
         ) : (
-          <Link to="/performans" style={linkStyle("/performans")}>🚀 Performans İzleme</Link>
+          <Link to="/performans" className="press" style={linkStyle("/performans")}>🚀 Performans İzleme</Link>
         )}
 
         {!showAdminMenu && (
-          <Link to="/ogrenci-listesi" style={linkStyle("/ogrenci-listesi")}>✍️ Kayıt Listesi</Link>
+          <Link to="/ogrenci-listesi" className="press" style={linkStyle("/ogrenci-listesi")}>✍️ Kayıt Listesi</Link>
         )}
 
-        {/* 🏫 Okul Sayıları SADECE Mefkure (LGS/VİP/PLUS) şubelerinde görünür; admin/kurucu menüsünde yok */}
         {isMefkureManager && (
-          <Link to="/reports/okul-sayilari" style={linkStyle("/reports/okul-sayilari")}>🏫 Okul Sayıları</Link>
-        )}
-        
-        {showAdminMenu && (
-          <Link to="/finance/view" style={linkStyle("/finance")}>💰 Finans</Link>
+          <Link to="/reports/okul-sayilari" className="press" style={linkStyle("/reports/okul-sayilari")}>🏫 Okul Sayıları</Link>
         )}
 
         {showAdminMenu && (
-          <Link to="/scenarios" style={linkStyle("/scenarios")}>📊 Senaryo Hesap</Link>
+          <Link to="/finance/view" className="press" style={linkStyle("/finance")}>💰 Finans</Link>
         )}
-        
+
         {showAdminMenu && (
-          <Link to="/user-management" style={{ 
-              ...linkStyle("/user-management"), 
-              color: "#38bdf8", 
-              border: pathname === "/user-management" ? "1px solid #38bdf8" : "1px solid transparent" 
-            }}>
+          <Link to="/scenarios" className="press" style={linkStyle("/scenarios")}>📊 Senaryo Hesap</Link>
+        )}
+
+        {showAdminMenu && (
+          <Link
+            to="/user-management"
+            className="press"
+            style={{ ...linkStyle("/user-management"), color: "var(--accent)" }}
+          >
             🛡️ Yetki Yönetimi
           </Link>
         )}
 
-        {/* 🚀 EN SAĞA TAŞINAN OPERASYONEL BUTONLAR */}
-        <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
-          <Link to="/daily" style={linkStyle("/daily")}>✍️ Günlük Giriş</Link>
-          <Link to="/reports/daily" style={linkStyle("/reports/daily")}>📋 Günlük Rapor</Link>
+        {/* Operasyonel butonlar sağa yaslı */}
+        <div style={{ marginLeft: "auto", display: "flex", gap: "var(--sp-2)" }}>
+          <Link to="/daily" className="press" style={linkStyle("/daily")}>✍️ Günlük Giriş</Link>
+          <Link to="/reports/daily" className="press" style={linkStyle("/reports/daily")}>📋 Günlük Rapor</Link>
         </div>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 15, marginLeft: 15 }}>
-        <div style={{ textAlign: "right", marginRight: 10 }}>
-          <div style={{ fontSize: "0.85rem", fontWeight: 600, color: "white" }}>{user?.displayName}</div>
-          <div style={{ fontSize: "0.7rem", color: "#94a3b8" }}>{user?.branchId}</div>
+      {/* Kullanıcı */}
+      <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-4)", flexShrink: 0 }}>
+        <div style={{ textAlign: "right" }}>
+          <div style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--text)" }}>{user?.displayName}</div>
+          <div className="caption">{user?.branchId}</div>
         </div>
-        <button 
+        <button
           onClick={logout}
-          style={{ background: "none", border: "1px solid #334155", color: "#f87171", padding: "8px 12px", borderRadius: "8px", cursor: "pointer", fontWeight: 600, whiteSpace: "nowrap" }}
+          className="press"
+          style={{
+            background: "transparent",
+            border: "1px solid var(--line-strong)",
+            color: "var(--danger)",
+            padding: "var(--sp-2) var(--sp-3)",
+            borderRadius: "var(--r-sm)",
+            fontWeight: 600,
+            fontSize: "0.85rem",
+            whiteSpace: "nowrap",
+          }}
         >
           🚪 Çıkış
         </button>
       </div>
 
-      {showPassModal && (
-        <div style={modalOverlay}>
-          <div style={modalContent}>
-            <h4 style={{ color: "white", marginBottom: 15, fontSize: "0.9rem" }}>Gizli Şifre Paneli</h4>
-            
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              <input 
-                type="text" 
-                placeholder="Yeni Şifre" 
-                value={pass1}
-                onChange={(e) => setPass1(e.target.value)}
-                style={modalInput}
-              />
-              <input 
-                type="text" 
-                placeholder="Yeni Şifre (Tekrar)" 
-                value={pass2}
-                onChange={(e) => setPass2(e.target.value)}
-                style={modalInput}
-              />
+      <Modal
+        open={showPassModal}
+        onClose={() => { setShowPassModal(false); setPass1(""); setPass2(""); setPassError(""); }}
+        title="Şifre Değiştir"
+        footer={
+          <>
+            <button className="press" onClick={handleUpdatePassword} disabled={passBusy} style={btnPrimary}>
+              {passBusy ? "Kaydediliyor…" : "Kaydet"}
+            </button>
+            <button className="press" onClick={() => { setShowPassModal(false); setPass1(""); setPass2(""); setPassError(""); }} style={btnGhost}>
+              Vazgeç
+            </button>
+          </>
+        }
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: "var(--sp-3)" }}>
+          <input type="password" placeholder="Yeni şifre" value={pass1}
+            onChange={(e) => { setPass1(e.target.value); setPassError(""); }} />
+          <input type="password" placeholder="Yeni şifre (tekrar)" value={pass2}
+            onChange={(e) => { setPass2(e.target.value); setPassError(""); }} />
+          {passError && (
+            <div role="alert" style={{ color: "var(--danger)", fontSize: "var(--t-caption-size)" }}>
+              {passError}
             </div>
-
-            <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
-              <button onClick={handleUpdatePassword} style={modalBtnSave}>Mühürle</button>
-              <button onClick={() => { setShowPassModal(false); setPass1(""); setPass2(""); }} style={modalBtnCancel}>Kapat</button>
-            </div>
-          </div>
+          )}
         </div>
-      )}
+      </Modal>
     </nav>
   );
 }
 
-const modalOverlay: React.CSSProperties = { position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(0,0,0,0.8)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 9999 };
-const modalContent: React.CSSProperties = { background: "#0f172a", padding: "25px", borderRadius: "16px", border: "1px solid #1e293b", width: "350px" };
-const modalInput: React.CSSProperties = { width: "100%", padding: "10px", borderRadius: "8px", background: "#1e293b", border: "1px solid #334155", color: "white", outline: "none" };
-const modalBtnSave: React.CSSProperties = { flex: 1, padding: "10px", borderRadius: "8px", background: "#38bdf8", color: "#020617", fontWeight: 800, border: "none", cursor: "pointer" };
-const modalBtnCancel: React.CSSProperties = { flex: 1, padding: "10px", borderRadius: "8px", background: "#1e293b", color: "#64748b", border: "none", cursor: "pointer" };
+const btnPrimary: React.CSSProperties = {
+  flex: 1,
+  padding: "var(--sp-3)",
+  borderRadius: "var(--r-sm)",
+  background: "var(--accent)",
+  color: "var(--accent-ink)",
+  fontWeight: 700,
+  border: "none",
+};
+
+const btnGhost: React.CSSProperties = {
+  flex: 1,
+  padding: "var(--sp-3)",
+  borderRadius: "var(--r-sm)",
+  background: "var(--surface-raised)",
+  color: "var(--text-2)",
+  border: "1px solid var(--line)",
+  fontWeight: 600,
+};

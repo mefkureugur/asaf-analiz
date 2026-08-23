@@ -157,7 +157,7 @@ function ResultCard({ title, curr, prev, format }: any) {
   const diff = prev > 0 ? ((curr - prev) / prev) * 100 : 0;
   const isUp = diff >= 0;
   return (
-    <div style={{ background: "linear-gradient(145deg, #0f172a, #020617)", border: "1px solid #1e293b", borderRadius: 16, padding: 25 }}>
+    <div style={{ background: "linear-gradient(145deg, var(--surface), var(--bg))", border: "1px solid var(--line)", borderRadius: 16, padding: 25 }}>
       <div style={{ color: "#94a3b8", fontSize: "0.75rem", fontWeight: 700, marginBottom: 20, letterSpacing: 1 }}>{title}</div>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
         <span style={{ color: "#64748b" }}>2025:</span>
@@ -174,7 +174,7 @@ function ResultCard({ title, curr, prev, format }: any) {
   );
 }
 
-const filterBox = { background: "#0f172a", padding: "10px 15px", borderRadius: 12, border: "1px solid #1e293b", minWidth: "160px" };
+const filterBox = { background: "var(--surface)", padding: "10px 15px", borderRadius: 12, border: "1px solid var(--line)", minWidth: "160px" };
 const labelStyle = { fontSize: "0.7rem", color: "#94a3b8", display: "block", marginBottom: 5, fontWeight: 700 };
 const selectStyle = { background: "transparent", border: "none", color: "white", outline: "none", cursor: "pointer", fontSize: "0.9rem", width: "100%", colorScheme: "dark" };
 const optStyle = { background: "#0f172a", color: "white" };

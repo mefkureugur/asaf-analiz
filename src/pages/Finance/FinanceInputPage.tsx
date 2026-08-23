@@ -242,7 +242,7 @@ export default function FinanceInputPage() {
           </div>
           
           <div style={{ display: "flex", gap: 12, flexDirection: isMobile ? "column" : "row" }}>
-            <button onClick={() => handleAction(expenseBranch, currentExpenseEntry, expenseType)} disabled={saving} style={{ ...saveBtnStyle, flex: 2, background: "#ef4444" }}>
+            <button onClick={() => handleAction(expenseBranch, currentExpenseEntry, expenseType)} disabled={saving} style={{ ...saveBtnStyle, flex: 2, background: "var(--danger)" }}>
               <Database size={16}/> GİDERLERİ KAYDET
             </button>
             <button onClick={() => handleAction(expenseBranch, currentExpenseEntry, expenseType, true)} disabled={saving} style={{ ...revizeBtnStyle, padding: "14px" }}>
@@ -301,7 +301,7 @@ export default function FinanceInputPage() {
   );
 }
 
-const cardStyle = { background: "#0f172a", border: "1px solid #1e2937", borderRadius: 16, boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.4)" };
+const cardStyle = { background: "var(--surface)", border: "1px solid #1e2937", borderRadius: 16, boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.4)" };
 const inputStyle = { background: "#020617", border: "1px solid #334155", borderRadius: 10, padding: "12px", color: "white", outline: "none", fontSize: "0.9rem" };
 const mainSel = { background: "#020617", border: "1px solid #1e2937", color: "white", padding: "10px 35px 10px 15px", borderRadius: 10, outline: 'none', appearance: 'none' as const, WebkitAppearance: 'none' as const, fontWeight: 700, width: '100%', fontSize: "0.8rem", cursor: "pointer" };
 const typeSel = { background: "#1e293b", border: "1px solid #334155", color: "#3b82f6", padding: "10px 40px 10px 15px", borderRadius: 10, outline: 'none', appearance: 'none' as const, WebkitAppearance: 'none' as const, fontWeight: 800, fontSize: "0.75rem", cursor: "pointer", width: '100%' };
