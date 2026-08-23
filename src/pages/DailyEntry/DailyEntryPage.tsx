@@ -168,9 +168,31 @@ export default function DailyEntryPage() {
       </div>
 
       <form onSubmit={handleSubmit} style={formContainerStyle}>
-        <label style={labelStyle}>Sözleşme Tarihi
-          <input type="date" value={date} onChange={(e) => setDate(e.target.value)} style={inputStyle} />
-        </label>
+        <div style={{ display: "flex", gap: "var(--sp-3)" }}>
+          <label style={{ ...labelStyle, flex: 1 }}>Dönem
+            <select
+              value={secilenDonem}
+              onChange={(e) => donemDegistir(Number(e.target.value))}
+              style={inputStyle}
+            >
+              {donemSecenekleri.map((y) => (
+                <option key={y} value={y}>
+                  {y}{y === aktifDonem() ? " (bu yıl)" : ""}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label style={{ ...labelStyle, flex: 1.4 }}>Sözleşme Tarihi
+            <input type="date" value={date} onChange={(e) => setDate(e.target.value)} style={inputStyle} />
+          </label>
+        </div>
+
+        {secilenDonem !== aktifDonem() && (
+          <div style={donemUyarisi}>
+            Bu kayıt <strong>{secilenDonem} dönemine</strong> yazılacak.
+          </div>
+        )}
 
         <label style={labelStyle}>Öğrenci Adı Soyadı
           <input value={studentName} onChange={(e) => setStudentName(e.target.value)} placeholder="Ad Soyad" style={inputStyle} />
