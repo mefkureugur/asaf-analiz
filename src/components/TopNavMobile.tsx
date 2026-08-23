@@ -10,8 +10,6 @@ interface MobileProps {
   isAdmin?: boolean;
 }
 
-const NAV_HEIGHT = 60;
-
 export default function TopNavMobile({ isAdmin }: MobileProps) {
   const [open, setOpen] = useState(false);
   const { user, logout } = useAuth();
@@ -107,7 +105,7 @@ export default function TopNavMobile({ isAdmin }: MobileProps) {
         </button>
       </div>
 
-      <Sheet open={open} onClose={closeMenu} topOffset={NAV_HEIGHT}>
+      <Sheet open={open} onClose={closeMenu}>
         <SheetLink to="/dashboard" onClick={closeMenu}>🏠 Ana Sayfa</SheetLink>
         <SheetLink to="/compare" onClick={closeMenu}>⚖️ Karşılaştırma</SheetLink>
 
@@ -237,8 +235,14 @@ const topBarStyle: React.CSSProperties = {
   display: "flex",
   justifyContent: "space-between",
   alignItems: "center",
-  padding: "0 var(--sp-4)",
-  height: NAV_HEIGHT,
+  // Yatay boşluk güvenli alandan az olamaz (yatay modda çentik yanda kalır).
+  paddingLeft: "max(var(--sp-4), var(--safe-left))",
+  paddingRight: "max(var(--sp-4), var(--safe-right))",
+  // Yükseklik güvenli alanı DA kapsar: materyal durum çubuğunun arkasına
+  // uzanır, içerik ise onun altında ortalanır.
+  height: "var(--nav-total)",
+  paddingTop: "var(--safe-top)",
+  boxSizing: "border-box",
 };
 
 const hamburgerStyle: React.CSSProperties = {

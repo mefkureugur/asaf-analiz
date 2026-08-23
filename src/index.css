@@ -97,8 +97,12 @@ p {
 ========================= */
 .page {
   width: 100%;
+  /* Yatayda çentik/kavisli köşe, altta ana ekran çubuğu için pay bırakılır */
   padding: var(--sp-4);
-  min-height: calc(100vh - 60px);
+  padding-left: max(var(--sp-4), var(--safe-left));
+  padding-right: max(var(--sp-4), var(--safe-right));
+  padding-bottom: calc(var(--sp-4) + var(--safe-bottom));
+  min-height: calc(100dvh - var(--nav-total));
 }
 
 @media (min-width: 900px) {
@@ -106,6 +110,9 @@ p {
     max-width: 1280px;
     margin: 0 auto;
     padding: var(--sp-6);
+    padding-left: max(var(--sp-6), var(--safe-left));
+    padding-right: max(var(--sp-6), var(--safe-right));
+    padding-bottom: calc(var(--sp-6) + var(--safe-bottom));
   }
 }
 

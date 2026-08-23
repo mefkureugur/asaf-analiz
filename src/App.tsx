@@ -114,12 +114,13 @@ export default function App() {
 }
 
 const mainContentStyle: React.CSSProperties = {
-  minHeight: "calc(100vh - 70px)",
-  paddingBottom: "40px",
+  minHeight: "calc(100dvh - var(--nav-total))",
+  // Altta ana ekran çubuğunun (home indicator) üstünü kapatmasın
+  paddingBottom: "calc(var(--sp-6) + var(--safe-bottom))",
 };
 
 const loaderStyle: React.CSSProperties = {
-  height: '100vh', 
+  height: '100dvh', 
   display: 'flex', 
   alignItems: 'center', 
   justifyContent: 'center', 

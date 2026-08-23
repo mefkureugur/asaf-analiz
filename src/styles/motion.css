@@ -97,6 +97,12 @@
    Nav opak bir şerit değil; içerik altından akan yarı saydam katman.
    --------------------------------------------------------------------- */
 .material-nav {
+  /* Materyal durum çubuğunun/çentiğin ARKASINA kadar uzanır (kenarsız
+     görünüm), ama içeriği güvenli alanın altından başlar — saat ve pil
+     simgeleriyle çakışmaz. */
+  padding-top: var(--safe-top);
+  padding-left: var(--safe-left);
+  padding-right: var(--safe-right);
   background: var(--material-nav);
   backdrop-filter: blur(var(--material-blur)) saturate(var(--material-saturate));
   -webkit-backdrop-filter: blur(var(--material-blur)) saturate(var(--material-saturate));

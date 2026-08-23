@@ -20,12 +20,16 @@ interface SheetProps {
   open: boolean;
   onClose: () => void;
   children: ReactNode;
-  /** Panelin üstten itibaren başlayacağı ofset (nav çubuğunun altı). */
-  topOffset?: number;
+  /**
+   * Panelin üstten itibaren başlayacağı ofset — CSS ölçüsü.
+   * Sayı değil string, çünkü güvenli alan (çentik/durum çubuğu) yalnızca
+   * CSS env() ile bilinir: calc(60px + env(safe-area-inset-top)).
+   */
+  topOffset?: string;
   labelledBy?: string;
 }
 
-export default function Sheet({ open, onClose, children, topOffset = 60, labelledBy }: SheetProps) {
+export default function Sheet({ open, onClose, children, topOffset = "var(--nav-total)", labelledBy }: SheetProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const scrimRef = useRef<HTMLDivElement>(null);
   const springRef = useRef<SpringHandle | null>(null);
@@ -206,7 +210,7 @@ export default function Sheet({ open, onClose, children, topOffset = 60, labelle
         aria-hidden="true"
         style={{
           position: "fixed",
-          inset: `${topOffset}px 0 0 0`,
+          inset: `${topOffset} 0 0 0`,
           background: "var(--scrim)",
           opacity: 0,
           zIndex: 900,
@@ -236,7 +240,7 @@ export default function Sheet({ open, onClose, children, topOffset = 60, labelle
           borderBottom: "1px solid var(--line)",
           boxShadow: "var(--shadow-lg), inset 0 1px 0 var(--material-edge)",
           borderRadius: "0 0 var(--r-xl) var(--r-xl)",
-          maxHeight: `calc(85vh - ${topOffset}px)`,
+          maxHeight: `calc(85dvh - ${topOffset})`,
           overflow: "hidden",
           touchAction: "none",
           visibility: "hidden",

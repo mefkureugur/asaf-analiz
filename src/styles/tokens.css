@@ -49,6 +49,21 @@
 
   --r-sm: 8px;   --r-md: 12px;   --r-lg: 16px;   --r-xl: 22px;   --r-full: 999px;
 
+  /* ---------- GÜVENLİ ALAN ----------
+     viewport-fit=cover ile sayfa ekranın tamamına yayılır; çentik, durum
+     çubuğu ve ana ekran çubuğu bu alanların üstünde durur. Materyal katman
+     oraya kadar UZANIR (kenarsız görünüm için), ama İÇERİK bu boşluklardan
+     sonra başlar — yoksa saat/pil ile çakışır. */
+  --safe-top:    env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left:   env(safe-area-inset-left, 0px);
+  --safe-right:  env(safe-area-inset-right, 0px);
+
+  /* Nav çubuğunun içerik yüksekliği (güvenli alan hariç) */
+  --nav-h: 60px;
+  /* Nav'ın ekranda kapladığı toplam yükseklik — Sheet bunun altından başlar */
+  --nav-total: calc(var(--nav-h) + var(--safe-top));
+
   /* ---------- TİPOGRAFİ (§15) ----------
      Tracking boyuta özgü: büyük metin negatif, küçük metin hafif pozitif.
      Leading boyutla ters: başlık sıkı, gövde ferah. */
