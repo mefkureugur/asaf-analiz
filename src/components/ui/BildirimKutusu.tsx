@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../../store/AuthContext";
 import { useBildirim } from "../../hooks/useBildirim";
+import Modal from "./Modal";
 
 /* =====================================================================
    BİLDİRİM İZNİ KUTUSU
@@ -11,6 +12,19 @@ import { useBildirim } from "../../hooks/useBildirim";
 
 const ERTELENDI = "asaf-bildirim-ertelendi";
 
+/**
+ * Görünen adı hitap için düzenler.
+ * Bazı hesaplarda ad e-postadan türetildiği için küçük harfli olabiliyor
+ * ("ugur"), bazılarında tam ad yazılı ("Uğur Yılmaz"). Hitapta yalnızca
+ * ilk isim kullanılır ve Türkçe kurallarına göre büyütülür.
+ */
+function hitapAdi(gorunenAd: unknown, eposta: unknown): string {
+  const ham = String(gorunenAd || "").trim() || String(eposta || "").split("@")[0] || "";
+  const ilk = ham.split(/\s+/)[0] || "";
+  if (!ilk) return "";
+  return ilk.charAt(0).toLocaleUpperCase("tr-TR") + ilk.slice(1).toLocaleLowerCase("tr-TR");
+}
+
 export default function BildirimKutusu() {
   const { user } = useAuth();
   const kurucu = user?.role?.trim().toLowerCase() === "admin";
@@ -18,6 +32,13 @@ export default function BildirimKutusu() {
   const [ertelendi, setErtelendi] = useState(() => {
     try { return localStorage.getItem(ERTELENDI) === "1"; } catch { return false; }
   });
+
+  const ad = hitapAdi(user?.displayName, user?.email);
+
+  const erteleVeKapat = () => {
+    try { localStorage.setItem(ERTELENDI, "1"); } catch { /* yoksay */ }
+    setErtelendi(true);
+  };
 
   if (!kurucu) return null;
 
@@ -40,53 +61,59 @@ export default function BildirimKutusu() {
         </div>
       )}
 
-      {/* İzin daveti.
-          NOT: sarmalayıcıda .page sınıfı KULLANILMAZ — o sınıf min-height:100dvh
-          taşıyor ve altındaki sayfayı ekran dışına iterdi. */}
-      {!ertelendi && (durum === "sorulmadi" || durum === "ana-ekran-gerekli" || durum === "desteklenmiyor") && (
-        <div style={sarmalayici}>
-          <div style={kutuStil}>
-            <div style={{ flex: 1, minWidth: 220 }}>
-              <div style={{ fontWeight: 700, marginBottom: "var(--sp-1)" }}>
-                Yeni kayıtlardan haberdar ol
-              </div>
-              <div className="caption" style={{ lineHeight: 1.6 }}>
-                {durum === "ana-ekran-gerekli" &&
-                  "Bildirim alabilmek için uygulamayı ana ekrana ekleyip oradan açman gerekiyor. Safari sekmesinde iPhone bildirim göndermiyor."}
-                {durum === "desteklenmiyor" &&
-                  "Bu cihaz bildirim desteklemiyor. iPhone'da iOS 16.4 ve üzeri gerekiyor; ayrıca uygulamanın ana ekrandan açılması şart."}
-                {durum === "sorulmadi" &&
-                  "Bir şubeye yeni kayıt girildiğinde telefonuna anında bildirim gelsin."}
-              </div>
-
-              {/* Sorun yaşanırsa nedeni görünsün — sessizce kaybolmasın */}
-              {durum !== "sorulmadi" && (
-                <div className="caption" style={{ marginTop: "var(--sp-2)", color: "var(--text-3)" }}>
-                  Durum: {durum} · {teshis}
-                </div>
-              )}
-            </div>
-
-            <div style={{ display: "flex", gap: "var(--sp-2)", flexShrink: 0 }}>
-              {durum === "sorulmadi" && (
-                <button className="press" onClick={izinIste} style={btnAc}>
-                  Bildirimleri Aç
-                </button>
-              )}
-              <button
-                className="press"
-                onClick={() => {
-                  try { localStorage.setItem(ERTELENDI, "1"); } catch { /* yoksay */ }
-                  setErtelendi(true);
-                }}
-                style={btnSonra}
-              >
-                Şimdi değil
+      {/* İzin daveti — kurucu uygulamayı ilk açtığında büyük ve net çıkar */}
+      <Modal
+        open={!ertelendi && (durum === "sorulmadi" || durum === "ana-ekran-gerekli" || durum === "desteklenmiyor")}
+        onClose={erteleVeKapat}
+        title={ad ? `${ad} Bey, Selamün Aleyküm` : "Selamün Aleyküm"}
+        genis
+        footer={
+          <>
+            {durum === "sorulmadi" && (
+              <button className="press" onClick={izinIste} style={btnAc}>
+                Bildirimleri Aç
               </button>
-            </div>
+            )}
+            <button className="press" onClick={erteleVeKapat} style={btnSonra}>
+              Şimdi değil
+            </button>
+          </>
+        }
+      >
+        <p style={{ fontSize: "1rem", lineHeight: 1.7, color: "var(--text-2)", margin: 0 }}>
+          {durum === "sorulmadi" && (
+            <>
+              Bildirim izni verip bildirimlerinizi açarsanız <strong style={{ color: "var(--text)" }}>her
+              kayıtta</strong> size bildirim gelecek.
+              <br /><br />
+              Teşekkürler.
+            </>
+          )}
+          {durum === "ana-ekran-gerekli" && (
+            <>
+              Bildirim alabilmeniz için uygulamayı <strong style={{ color: "var(--text)" }}>ana ekrana
+              ekleyip</strong> oradan açmanız gerekiyor. Safari sekmesinde iPhone bildirim göndermiyor.
+              <br /><br />
+              Teşekkürler.
+            </>
+          )}
+          {durum === "desteklenmiyor" && (
+            <>
+              Bu cihaz bildirim desteklemiyor. iPhone'da <strong style={{ color: "var(--text)" }}>iOS 16.4
+              ve üzeri</strong> gerekiyor; ayrıca uygulamanın ana ekrandan açılması şart.
+              <br /><br />
+              Teşekkürler.
+            </>
+          )}
+        </p>
+
+        {durum !== "sorulmadi" && (
+          <div className="caption" style={{ marginTop: "var(--sp-4)", color: "var(--text-3)" }}>
+            Durum: {durum} · {teshis}
           </div>
-        </div>
-      )}
+        )}
+      </Modal>
+
     </>
   );
 }
@@ -127,27 +154,7 @@ const seritStil: React.CSSProperties = {
   animation: "asaf-rise 300ms var(--ease-out) both",
 };
 
-const sarmalayici: React.CSSProperties = {
-  width: "100%",
-  maxWidth: 1280,
-  marginInline: "auto",
-  paddingLeft: "max(var(--sp-4), var(--safe-left))",
-  paddingRight: "max(var(--sp-4), var(--safe-right))",
-};
 
-const kutuStil: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: "var(--sp-4)",
-  flexWrap: "wrap",
-  background: "var(--surface)",
-  border: "1px solid var(--line)",
-  borderLeft: "3px solid var(--accent)",
-  borderRadius: "var(--r-md)",
-  padding: "var(--sp-4)",
-  marginTop: "var(--sp-4)",
-  boxShadow: "var(--shadow-sm)",
-};
 
 const btnAc: React.CSSProperties = {
   background: "var(--accent)",

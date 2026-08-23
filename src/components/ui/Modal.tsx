@@ -16,9 +16,11 @@ interface ModalProps {
   title: string;
   children: ReactNode;
   footer?: ReactNode;
+  /** Dikkat çekmesi gereken duyurular için daha geniş pencere. */
+  genis?: boolean;
 }
 
-export default function Modal({ open, onClose, title, children, footer }: ModalProps) {
+export default function Modal({ open, onClose, title, children, footer, genis = false }: ModalProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
 
@@ -88,7 +90,7 @@ export default function Modal({ open, onClose, title, children, footer }: ModalP
         aria-label={title}
         style={{
           width: "100%",
-          maxWidth: 380,
+          maxWidth: genis ? 560 : 380,
           background: "var(--surface)",
           border: "1px solid var(--line)",
           borderRadius: "var(--r-lg)",
@@ -100,7 +102,7 @@ export default function Modal({ open, onClose, title, children, footer }: ModalP
         <h2 style={{
           margin: 0,
           marginBottom: "var(--sp-4)",
-          fontSize: "var(--t-title-size)",
+          fontSize: genis ? "1.6rem" : "var(--t-title-size)",
           lineHeight: "var(--t-title-lh)",
           letterSpacing: "var(--t-title-ls)",
           color: "var(--text)",
