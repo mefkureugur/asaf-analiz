@@ -135,9 +135,7 @@ export default function DashboardPage() {
         <div style={{ display: "flex", gap: "var(--sp-3)", flex: 1 }}>
           <select value={year} onChange={(e) => setYear(Number(e.target.value))} style={{ flex: 1 }}>
             {donemler.map((d) => (
-              <option key={d} value={d}>
-                {d} Dönemi{d === aktifDonem() ? " (bu yıl)" : ""}
-              </option>
+              <option key={d} value={d}>{d} Dönemi</option>
             ))}
           </select>
           <select value={viewMode} onChange={(e) => setViewMode(e.target.value as any)} style={{ flex: 1 }}>

@@ -176,9 +176,7 @@ export default function DailyEntryPage() {
               style={inputStyle}
             >
               {donemSecenekleri.map((y) => (
-                <option key={y} value={y}>
-                  {y}{y === aktifDonem() ? " (bu yıl)" : ""}
-                </option>
+                <option key={y} value={y}>{y}</option>
               ))}
             </select>
           </label>
