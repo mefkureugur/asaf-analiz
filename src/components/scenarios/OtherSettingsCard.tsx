@@ -1,3 +1,5 @@
+import SayiGirdisi from "../ui/SayiGirdisi";
+
 interface Props {
   digerGider: number;
   kidemKarsiligiOn: boolean;
@@ -13,12 +15,10 @@ export default function OtherSettingsCard({ digerGider, kidemKarsiligiOn, onChan
         <label style={lbl}>Diğer Giderler (Yıllık Tutar)</label>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 8 }}>
           <span style={{ color: 'var(--text-3)', fontSize: '0.9rem', flexShrink: 0 }}>₺</span>
-          <input
-            type="number"
+          <SayiGirdisi
+            deger={digerGider}
             min={0}
-            step={5000}
-            value={digerGider}
-            onChange={e => onChange({ digerGider: Math.max(0, Number(e.target.value)) })}
+            degistir={n => onChange({ digerGider: n })}
             style={{ ...numInp, flex: 1 }}
           />
         </div>

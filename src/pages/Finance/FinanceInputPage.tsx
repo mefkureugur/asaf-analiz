@@ -6,6 +6,7 @@ import { TrendingUp, Calculator, ChevronDown, Save, ArrowLeft, Database, Edit3, 
 import { saveFinanceSnapshot } from "../../services/financeSnapshot.service";
 import { egitimYili, egitimYiliListesi } from "../../constants/donem";
 import { loadFinance, saveFinance } from "../../store/FinanceStore";
+import SayiGirdisi from "../../components/ui/SayiGirdisi";
 
 interface FinanceInput {
   income: { student: number; food: number; other: number; }; 
@@ -182,13 +183,13 @@ export default function FinanceInputPage() {
 
           <div style={{ marginBottom: 25 }}>
             <div style={labelStyle}>NET CİRO GİRİŞİ ({formatCurrency(currentIncomeEntry.income.student)})</div>
-            <input 
-              type="number" 
-              value={currentIncomeEntry.income.student} 
-              onChange={e => setFinance(prev => ({
-                  ...prev, [incomeBranch]: { ...(prev[incomeBranch] || {}), ["Ciro"]: { ...currentIncomeEntry, income: { ...currentIncomeEntry.income, student: +e.target.value } } }
-              }))} 
-              style={{ ...inputStyle, width: "100%", boxSizing: "border-box" }} 
+            <SayiGirdisi
+              deger={currentIncomeEntry.income.student}
+              min={0}
+              degistir={n => setFinance(prev => ({
+                  ...prev, [incomeBranch]: { ...(prev[incomeBranch] || {}), ["Ciro"]: { ...currentIncomeEntry, income: { ...currentIncomeEntry.income, student: n } } }
+              }))}
+              style={{ ...inputStyle, width: "100%", boxSizing: "border-box" }}
             />
           </div>
           

@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 
 /* =====================================================================
    MODAL — engelleyici görev katmanı
@@ -24,13 +25,20 @@ export default function Modal({ open, onClose, title, children, footer, genis = 
   const panelRef = useRef<HTMLDivElement>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
 
+  // onClose çağıran tarafta çoğunlukla satır içi ok fonksiyonu; her render'da
+  // kimliği değişir. Efektin bağımlılığında durursa, formdaki her tuş vuruşu
+  // odak kurulumunu baştan çalıştırır ve imleç ilk alana kaçar. Ref'te tutup
+  // efekti yalnızca açılış/kapanışa bağlıyoruz.
+  const onCloseRef = useRef(onClose);
+  useEffect(() => { onCloseRef.current = onClose; });
+
   useEffect(() => {
     if (!open) return;
 
     restoreFocusRef.current = document.activeElement as HTMLElement;
 
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") { onClose(); return; }
+      if (e.key === "Escape") { onCloseRef.current(); return; }
       if (e.key !== "Tab") return;
 
       // Odak tuzağı: Tab döngüsü panelin dışına çıkmaz.
@@ -61,11 +69,16 @@ export default function Modal({ open, onClose, title, children, footer, genis = 
       window.clearTimeout(t);
       restoreFocusRef.current?.focus?.();
     };
-  }, [open, onClose]);
+  }, [open]);
 
   if (!open) return null;
 
-  return (
+  // Modalı çağıran sayfanın içinde bırakmak, üst atalardan biri `transform`
+  // taşıdığında `position: fixed` davranışını bozar. Örneğin `.rise` animasyonlu
+  // uzun Kayıt Listesi'nde panel görünüm alanı yerine sayfanın ortasına gidiyordu;
+  // kullanıcı ekranda yalnızca bulanık scrim'i görüyordu. Body portalı modalı
+  // her zaman gerçek görünüm alanına ve en üst katmana bağlar.
+  return createPortal(
     <div
       role="presentation"
       onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}
@@ -119,6 +132,7 @@ export default function Modal({ open, onClose, title, children, footer, genis = 
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

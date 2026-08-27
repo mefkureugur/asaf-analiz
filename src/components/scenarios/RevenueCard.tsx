@@ -1,3 +1,5 @@
+import SayiGirdisi from "../ui/SayiGirdisi";
+
 interface Props {
   ogrenciSayisi: number;
   yillikOgrenciUcreti: number;
@@ -15,17 +17,17 @@ export default function RevenueCard({ ogrenciSayisi, yillikOgrenciUcreti, onChan
       <div style={grid}>
         <div style={fieldWrap}>
           <label style={lbl}>Öğrenci Sayısı</label>
-          <input
-            type="number" min={0} value={ogrenciSayisi}
-            onChange={e => onChange({ ogrenciSayisi: Math.max(0, Number(e.target.value)) })}
+          <SayiGirdisi
+            deger={ogrenciSayisi} min={0}
+            degistir={n => onChange({ ogrenciSayisi: n })}
             style={inp}
           />
         </div>
         <div style={fieldWrap}>
           <label style={lbl}>Yıllık Ortalama Ücret (₺)</label>
-          <input
-            type="number" min={0} value={yillikOgrenciUcreti}
-            onChange={e => onChange({ yillikOgrenciUcreti: Math.max(0, Number(e.target.value)) })}
+          <SayiGirdisi
+            deger={yillikOgrenciUcreti} min={0}
+            degistir={n => onChange({ yillikOgrenciUcreti: n })}
             style={inp}
           />
         </div>

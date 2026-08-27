@@ -1,4 +1,5 @@
 import type { Person, PaymentMode, PersonRole } from '../../types/scenario';
+import SayiGirdisi from '../ui/SayiGirdisi';
 import { personYearlyCost } from '../../utils/scenarioCalculations';
 
 interface Props {
@@ -46,20 +47,20 @@ export default function PersonRow({ person, kidemOn, onChange, onRemove }: Props
     onChange({ ...person, ...reset });
   };
 
-  const numInput = (label: string, value: number | undefined, field: keyof Person, opts?: { min?: number; max?: number }) => (
+  const numInput = (
+    label: string,
+    value: number | undefined,
+    field: keyof Person,
+    opts?: { min?: number; max?: number; ondalikli?: boolean }
+  ) => (
     <div style={fieldWrap}>
       <div style={fieldLabel}>{label}</div>
-      <input
-        type="number"
-        value={value ?? ''}
+      <SayiGirdisi
+        deger={value}
         min={opts?.min ?? 0}
         max={opts?.max}
-        onChange={e => {
-          let v = Number(e.target.value);
-          if (opts?.min !== undefined) v = Math.max(opts.min, v);
-          if (opts?.max !== undefined) v = Math.min(opts.max, v);
-          update({ [field]: v } as Partial<Person>);
-        }}
+        ondalikli={opts?.ondalikli}
+        degistir={v => update({ [field]: v } as Partial<Person>)}
         style={inp}
       />
     </div>
@@ -103,8 +104,8 @@ export default function PersonRow({ person, kidemOn, onChange, onRemove }: Props
         )}
         {isSaatlik && (
           <>
-            {numInput('Saatlik ücret (₺)', person.hourlyRate, 'hourlyRate', { min: 0 })}
-            {numInput('Haftalık saat', person.weeklyHours, 'weeklyHours', { min: 0 })}
+            {numInput('Saatlik ücret (₺)', person.hourlyRate, 'hourlyRate', { min: 0, ondalikli: true })}
+            {numInput('Haftalık saat', person.weeklyHours, 'weeklyHours', { min: 0, ondalikli: true })}
           </>
         )}
       </div>
