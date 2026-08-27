@@ -62,6 +62,13 @@ export default function StudentList() {
   const [durumSuzgeci, setDurumSuzgeci] = useState<DurumSuzgeci>("aktif");
   const [kaynakSuzgeci, setKaynakSuzgeci] = useState<KaynakSuzgeci>("hepsi");
   const [islemde, setIslemde] = useState<string | null>(null);
+  // Düzenleme penceresindeki doğrulama uyarısı. Pencere zaten en üst katmanda
+  // olduğu için uyarı da pencerenin İÇİNDE gösterilir; üstüne ikinci bir
+  // katman açmak kullanıcıyı iki kez engellerdi.
+  const [duzenlemeHatasi, setDuzenlemeHatasi] = useState<string | null>(null);
+  // Sıfır tutar %100 burslu öğrencide gerçek bir değer. Bu yüzden yasaklamıyor,
+  // yalnızca bir kez soruyoruz: uyarıdan sonraki Kaydet geçer.
+  const [sifirOnayli, setSifirOnayli] = useState(false);
 
   const isAdmin = user?.role?.trim().toLowerCase() === "admin" || user?.email === "ugur@asaf.com";
 
@@ -132,6 +139,22 @@ export default function StudentList() {
 
   const handleUpdate = async (e: any) => {
     e.preventDefault();
+
+    // Tutar boş bırakılırsa Number("") sessizce 0 döner ve kayıt ciroyu
+    // sıfırlayarak güncellenir. Sessiz veri kaybı yerine burada duruyoruz.
+    const ham = String(editingStudent.SonTutar ?? "").trim();
+    const tutar = Number(ham);
+    if (ham === "" || !Number.isFinite(tutar) || tutar < 0) {
+      setDuzenlemeHatasi("Tutar boş veya geçersiz olamaz. Geçerli bir tutar girin.");
+      return;
+    }
+    if (tutar === 0 && !sifirOnayli) {
+      setDuzenlemeHatasi("Tutar 0 olarak kaydedilecek ve ciroya sıfır yazılacak. Doğruysa Kaydet'e tekrar basın.");
+      setSifirOnayli(true);
+      return;
+    }
+    setDuzenlemeHatasi(null);
+
     setIslemde(editingStudent.id);
     try {
       const isMefkure = (editingStudent.Okul || "").toLocaleLowerCase('tr-TR').includes("mefkure");
@@ -140,10 +163,11 @@ export default function StudentList() {
         SözleşmeTarihi: toStoredDate(editingStudent.SözleşmeTarihi),
         Okul: editingStudent.Okul,
         Sınıf: editingStudent.Sınıf,
-        SonTutar: Number(editingStudent.SonTutar),
+        SonTutar: tutar,
         ...(isMefkure ? { GittigiOkul: editingStudent.GittigiOkul || "" } : {})
       });
       setEditingStudent(null);
+      setSifirOnayli(false);
     } catch {
       alert("Kayıt güncellenemedi.");
     } finally {
@@ -416,14 +440,14 @@ export default function StudentList() {
       {/* Düzenleme */}
       <Modal
         open={!!editingStudent}
-        onClose={() => setEditingStudent(null)}
+        onClose={() => { setEditingStudent(null); setDuzenlemeHatasi(null); setSifirOnayli(false); }}
         title="Kaydı Düzenle"
         footer={
           <>
             <button onClick={handleUpdate} disabled={!!islemde} style={btnKaydet}>
               {islemde ? "Kaydediliyor…" : "Kaydet"}
             </button>
-            <button onClick={() => setEditingStudent(null)} style={btnVazgec}>Vazgeç</button>
+            <button onClick={() => { setEditingStudent(null); setDuzenlemeHatasi(null); setSifirOnayli(false); }} style={btnVazgec}>Vazgeç</button>
           </>
         }
       >
@@ -459,9 +483,31 @@ export default function StudentList() {
                 <input type="date" value={editingStudent.SözleşmeTarihi || ""} onChange={e => setEditingStudent({ ...editingStudent, SözleşmeTarihi: e.target.value })} />
               </Alan>
               <Alan etiket="Tutar (TL)" style={{ flex: 1 }}>
-                <input type="number" value={editingStudent.SonTutar || ""} onChange={e => setEditingStudent({ ...editingStudent, SonTutar: e.target.value })} />
+                <input
+                  type="number"
+                  value={editingStudent.SonTutar || ""}
+                  onChange={e => { setEditingStudent({ ...editingStudent, SonTutar: e.target.value }); setDuzenlemeHatasi(null); setSifirOnayli(false); }}
+                  aria-invalid={!!duzenlemeHatasi}
+                  style={duzenlemeHatasi ? { borderColor: "var(--danger)" } : undefined}
+                />
               </Alan>
             </div>
+
+            {duzenlemeHatasi && (
+              <div
+                role="alert"
+                style={{
+                  color: "var(--danger)",
+                  fontSize: "0.85rem",
+                  background: "color-mix(in srgb, var(--danger) 12%, transparent)",
+                  border: "1px solid color-mix(in srgb, var(--danger) 35%, transparent)",
+                  borderRadius: "var(--r-sm)",
+                  padding: "var(--sp-2) var(--sp-3)",
+                }}
+              >
+                {duzenlemeHatasi}
+              </div>
+            )}
           </div>
         )}
       </Modal>
