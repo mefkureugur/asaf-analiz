@@ -119,6 +119,10 @@ interface HatOzeti {
   karMarjHedefi: number;
   basabasOgrenci: number;
   karHedefiOgrenci: number;
+  /** Eşikler bu ortalamaya bölünerek bulundu — ekranda gösterilir. */
+  olcuOrtalama: number;
+  /** Kâr marjı hedefine ulaştıran ciro. */
+  karHedefiCiro: number;
   hedefKar: number;
   hedefMarj: number;
 }
@@ -204,6 +208,8 @@ function hattiOzetle(
     // kayıt sayısına girmediği için önce ciro hedefinden düşülür —
     // Kâr Hesabı'nın "gereken = hedef ciro − gerçekleşen − ek" satırının
     // aynısı.
+    olcuOrtalama: olcuOrt,
+    karHedefiCiro: karHedefiCirosu(gider, karMarjHedefi),
     basabasOgrenci: Math.max(0, Math.ceil((gider - ekKaynak) / olcuOrt)),
     karHedefiOgrenci: Math.max(0, Math.ceil((karHedefiCirosu(gider, karMarjHedefi) - ekKaynak) / olcuOrt)),
     hedefKar: hedef.ciro + ekKaynak - gider,
@@ -516,15 +522,31 @@ function Merdiven({ ozet, isMobile }: { ozet: HatOzeti; isMobile: boolean }) {
 
   // Sıra değere göre: LGS'de %20 kâr eşiği dönem hedefinin üstüne düşebiliyor,
   // sabit sırada yazılsa etiketler çubuktaki çizgilerle ters düşerdi.
+  // Her eşiğin altında hangi hesaptan çıktığı yazılı: kaç kayıt olduğu
+  // kadar neden o kadar olduğu da görünsün.
+  const ek = ozet.ekKaynak > 0 ? ` − ${MN(ozet.ekKaynak)} ek kaynak` : "";
   const esikler = [
-    { n: ozet.basabasOgrenci, ad: "başabaş", renk: "var(--text-3)" },
-    { n: ozet.karHedefiOgrenci, ad: `%${String(ozet.karMarjHedefi).replace(".", ",")} kâr`, renk: "var(--gold)" },
-    { n: ozet.hedef.ogrenci, ad: "dönem hedefi", renk },
+    {
+      n: ozet.basabasOgrenci, ad: "başabaş", renk: "var(--text-3)",
+      hesap: `${MN(ozet.gider)} gider${ek} ÷ ${TL(ozet.olcuOrtalama)} ortalama`,
+    },
+    {
+      n: ozet.karHedefiOgrenci, ad: `%${String(ozet.karMarjHedefi).replace(".", ",")} kâr`, renk: "var(--gold)",
+      hesap: `${MN(ozet.karHedefiCiro)} ciro${ek} ÷ ${TL(ozet.olcuOrtalama)} ortalama`,
+    },
+    {
+      n: ozet.hedef.ogrenci, ad: "dönem hedefi", renk,
+      hesap: `${MN(ozet.hedef.ciro)} ciro · ${TL(ozet.hedefOrtalama)} ortalama`,
+    },
   ].sort((a, b) => a.n - b.n);
 
   return (
     <div style={{ marginTop: "var(--sp-5)" }}>
-      <div className="label" style={{ marginBottom: "var(--sp-2)" }}>KÂR MERDİVENİ</div>
+      <div className="label" style={{ marginBottom: 2 }}>KÂR MERDİVENİ</div>
+      <div className="caption" style={{ marginBottom: "var(--sp-3)" }}>
+        Eşikler, gerçekleşen ortalamayla kaç kayıt gerektiğini gösterir; ortalama
+        değiştikçe eşikler de kayar.
+      </div>
 
       <div style={{ position: "relative", height: 10, borderRadius: "var(--r-full)", background: "var(--surface-raised)", border: "1px solid var(--line)" }}>
         <div
@@ -560,6 +582,7 @@ function Merdiven({ ozet, isMobile }: { ozet: HatOzeti; isMobile: boolean }) {
               <div className="caption" style={{ color: gecildi ? "var(--success)" : "var(--text-3)" }}>
                 {gecildi ? "geçildi ✓" : `${SAYI(e.n - ozet.ogrenci)} kayıt`}
               </div>
+              <div className="caption num" style={{ marginTop: 2, color: "var(--text-3)" }}>{e.hesap}</div>
             </div>
           );
         })}
