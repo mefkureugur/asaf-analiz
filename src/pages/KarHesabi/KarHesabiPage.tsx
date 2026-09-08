@@ -10,7 +10,8 @@ import {
   KOLEKSIYON, ENFLASYON, KAR_HEDEFI, YKS_GIDER, LGS_GIDER,
   YKS_HATLARI, LGS_HATLARI, sadelestir, moodMu,
   VARSAYILAN_ARTIS, giderProjeksiyonu,
-  type Hedefler, type Artislar,
+  ALANLAR, VARSAYILAN,
+  type Hedefler, type Artislar, type Varsayimlar,
 } from "../../services/karHesabiModel";
 import SayiGirdisi from "../../components/ui/SayiGirdisi";
 import { ChevronDown } from "lucide-react";
@@ -44,21 +45,8 @@ const EK_KALEMLER = {
   ],
 } as const;
 
-const ALANLAR = {
-  y: ["ogr", "ort", "mood", "yemek", "diger"],
-  l: ["ogr", "ort", "biders", "ozel", "deneme", "yemek", "diger"],
-} as const;
-
-type Varsayimlar = Record<string, number>;
-
 const TL = (n: number) => n.toLocaleString("tr-TR");
 const TLS = (n: number) => `${TL(Math.round(n))} ₺`;
-
-/** Ekranın (public/kar-hesabi.html) kendi başlangıç değerleri. */
-const VARSAYILAN: Varsayimlar = {
-  y_ogr: 131, y_ort: 200_000, y_mood: 5_000_000, y_yemek: 0, y_diger: 0,
-  l_ogr: 45, l_ort: 170_000, l_biders: 0, l_ozel: 0, l_deneme: 0, l_yemek: 0, l_diger: 0,
-};
 
 
 /** Ekrandaki kutudan sayıyı okur: "5.000.000" → 5000000 */

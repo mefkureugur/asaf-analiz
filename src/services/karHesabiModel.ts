@@ -53,9 +53,46 @@ export const LGS_HATLARI = ["mefkure lgs"];
  */
 export const moodMu = (sinif: unknown): boolean => sadelestir(sinif) === "mood";
 
+/* Kâr Hesabı'ndaki kutular. ogr/ort dışındakiler "ek kaynaklar": ciroya
+   kayıtlardan değil elle eklenen kalemler. Hatlara göre değişirler —
+   MOOD yalnız YKS'de, birebir/özel ders ve deneme yalnız LGS'de. */
+export const ALANLAR = {
+  y: ["ogr", "ort", "mood", "yemek", "diger"],
+  l: ["ogr", "ort", "biders", "ozel", "deneme", "yemek", "diger"],
+} as const;
+
+/** Ek kaynak kalemleri — ciroya eklenir, kayıt sayısına girmez. */
+export const EK_ALANLAR = {
+  y: ["mood", "yemek", "diger"],
+  l: ["biders", "ozel", "deneme", "yemek", "diger"],
+} as const;
+
+export type Varsayimlar = Record<string, number>;
+
+/** Kâr Hesabı ekranının kendi başlangıç değerleri. */
+export const VARSAYILAN: Varsayimlar = {
+  y_ogr: 131, y_ort: 200_000, y_mood: 5_000_000, y_yemek: 0, y_diger: 0,
+  l_ogr: 45, l_ort: 170_000, l_biders: 0, l_ozel: 0, l_deneme: 0, l_yemek: 0, l_diger: 0,
+};
+
+/**
+ * Bir hattın ek kaynak toplamı. Kaydedilmemiş kalem için ekranın kendi
+ * varsayılanı geçerli — Kâr Hesabı da kutuları öyle dolduruyor, iki ekran
+ * aynı MOOD rakamını göstersin.
+ */
+export function ekKaynakToplami(veri: Record<string, unknown> | null, on: "y" | "l"): number {
+  return EK_ALANLAR[on].reduce((toplam, alan) => {
+    const anahtar = `${on}_${alan}`;
+    const deger = veri?.[anahtar];
+    return toplam + (typeof deger === "number" ? deger : (VARSAYILAN[anahtar] ?? 0));
+  }, 0);
+}
+
 export interface KayitliVarsayimlar {
   artis: Artislar;
   karHedefi: Hedefler;
+  /** Hat başına ek kaynak toplamı — Kâr Hesabı bunu ciroya ekler. */
+  ekKaynak: Hedefler;
 }
 
 /** Dönemin kayıtlı varsayımları; belge yoksa varsayılanlar döner. */
@@ -74,6 +111,7 @@ export async function karVarsayimlari(donem: number): Promise<KayitliVarsayimlar
   const eski = typeof d?.karHedefi === "number" ? d.karHedefi : null;
 
   return {
+    ekKaynak: { y: ekKaynakToplami(d, "y"), l: ekKaynakToplami(d, "l") },
     artis: {
       y_ciro: sayi(d?.artis_y_ciro, ENFLASYON),
       y_gider: sayi(d?.artis_y_gider, ENFLASYON),

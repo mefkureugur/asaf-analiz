@@ -7,7 +7,7 @@ import { aktifDonem, egitimYili, kiyasDonem, tarihinYili } from "../../constants
 import { branchIdToKurumId } from "../../constants/kurumYetki";
 import { finansOzetleri } from "../../services/karHesabiGider";
 import {
-  karVarsayimlari, giderProjeksiyonu, karHedefiCirosu,
+  karVarsayimlari, giderProjeksiyonu, karHedefiCirosu, ekKaynakToplami,
   sadelestir, moodMu, YKS_GIDER, LGS_GIDER,
   KAR_HEDEFI, VARSAYILAN_ARTIS,
   type Hedefler, type Artislar,
@@ -110,6 +110,8 @@ interface HatOzeti {
   /* --- Kâr Hesabı köprüsü --- */
   gider: number;
   giderCanli: boolean;
+  /** Kâr Hesabı'nın ciroya eklediği kalemler (MOOD, birebir, deneme…) */
+  ekKaynak: number;
   karMarjHedefi: number;
   basabasOgrenci: number;
   karHedefiOgrenci: number;
@@ -119,7 +121,7 @@ interface HatOzeti {
 
 function hattiOzetle(
   anahtar: KursHatti, hedef: KursHedefi, kayitlar: Kayit[],
-  gider: number, giderCanli: boolean, karMarjHedefi: number,
+  gider: number, giderCanli: boolean, karMarjHedefi: number, ekKaynak: number,
 ): HatOzeti {
   const donem = aktifDonem();
   const bugun = new Date();
@@ -183,11 +185,15 @@ function hattiOzetle(
     kalanCiro: Math.max(0, hedef.ciro - ciro),
     gerekenGunluk: kalan > 0 ? kalanOgrenci / kalan : 0,
     suAnkiGunluk: sonOtuz / 30,
-    gider, giderCanli, karMarjHedefi,
-    basabasOgrenci: Math.ceil(gider / olcuOrt),
-    karHedefiOgrenci: Math.ceil(karHedefiCirosu(gider, karMarjHedefi) / olcuOrt),
-    hedefKar: hedef.ciro - gider,
-    hedefMarj: hedef.ciro > 0 ? (hedef.ciro - gider) / hedef.ciro : 0,
+    gider, giderCanli, ekKaynak, karMarjHedefi,
+    // Eşikler kayıtlardan gelmesi gereken ciroya bakar: ek kaynaklar
+    // kayıt sayısına girmediği için önce ciro hedefinden düşülür —
+    // Kâr Hesabı'nın "gereken = hedef ciro − gerçekleşen − ek" satırının
+    // aynısı.
+    basabasOgrenci: Math.max(0, Math.ceil((gider - ekKaynak) / olcuOrt)),
+    karHedefiOgrenci: Math.max(0, Math.ceil((karHedefiCirosu(gider, karMarjHedefi) - ekKaynak) / olcuOrt)),
+    hedefKar: hedef.ciro + ekKaynak - gider,
+    hedefMarj: hedef.ciro + ekKaynak > 0 ? (hedef.ciro + ekKaynak - gider) / (hedef.ciro + ekKaynak) : 0,
   };
 }
 
@@ -216,16 +222,19 @@ export default function KursHedefleriPage() {
     gider: Record<KursHatti, number>;
     canli: Record<KursHatti, boolean>;
     marj: Hedefler;
+    ek: Hedefler;
   }>({
     gider: { yks: YKS_GIDER, lgs: LGS_GIDER },
     canli: { yks: false, lgs: false },
     marj: KAR_HEDEFI,
+    // Kaydedilmiş varsayım gelene kadar ekranın kendi varsayılanları.
+    ek: { y: ekKaynakToplami(null, "y"), l: ekKaynakToplami(null, "l") },
   });
 
   useEffect(() => {
     let iptal = false;
     Promise.all([finansOzetleri(egitimYili(donem)), karVarsayimlari(donem)])
-      .then(([finans, v]: [Awaited<ReturnType<typeof finansOzetleri>>, { artis: Artislar; karHedefi: Hedefler }]) => {
+      .then(([finans, v]: [Awaited<ReturnType<typeof finansOzetleri>>, Awaited<ReturnType<typeof karVarsayimlari>>]) => {
         if (iptal) return;
         const y = giderProjeksiyonu(finans.yks, v.artis.y_gider, YKS_GIDER);
         const l = giderProjeksiyonu(finans.lgs, v.artis.l_gider, LGS_GIDER);
@@ -233,6 +242,7 @@ export default function KursHedefleriPage() {
           gider: { yks: y.gider, lgs: l.gider },
           canli: { yks: y.veriVar, lgs: l.veriVar },
           marj: v.karHedefi,
+          ek: v.ekKaynak,
         });
       })
       .catch(() => {
@@ -257,6 +267,7 @@ export default function KursHedefleriPage() {
         h, hedefler[h], records,
         para.gider[h], para.canli[h],
         h === "yks" ? para.marj.y : para.marj.l,
+        h === "yks" ? para.ek.y : para.ek.l,
       ),
     );
   }, [hedefler, gorunenHatlar, records, para]);
@@ -343,7 +354,7 @@ function Kahraman({ donem, kalan, ozetler }: { donem: number; kalan: number; oze
             <Kutucuk
               etiket="Hedef tutarsa dönem kârı"
               deger={MN(hedefKar)}
-              alt="Kâr Hesabı'ndaki gidere göre"
+              alt="Kâr Hesabı'ndaki gider ve ek kaynaklara göre"
               vurgu
             />
           </div>
@@ -579,7 +590,7 @@ function Firsat({ ozet }: { ozet: HatOzeti }) {
     satirlar.push(
       `Dönem hedefinin marjı ${YZ(ozet.hedefMarj)}; Kâr Hesabı'ndaki %${marj} eşiği için ` +
       `${SAYI(ozet.karHedefiOgrenci)} kayıt ya da ortalamanın ` +
-      `${TL(karHedefiCirosu(ozet.gider, ozet.karMarjHedefi) / ozet.hedef.ogrenci)} olması gerekir.`
+      `${TL((karHedefiCirosu(ozet.gider, ozet.karMarjHedefi) - ozet.ekKaynak) / ozet.hedef.ogrenci)} olması gerekir.`
     );
   }
 
@@ -608,6 +619,7 @@ function Firsat({ ozet }: { ozet: HatOzeti }) {
       <div className="caption">
         Gider {TL(ozet.gider)}
         {ozet.giderCanli ? " — Finans'tan, Kâr Hesabı'ndaki % artışla" : " — Finans'ta bu dönem verisi yok, Kâr Hesabı'nın varsayımı"}
+        {ozet.ekKaynak > 0 && ` · ek kaynaklar ${TL(ozet.ekKaynak)} ciroya eklendi`}
         {ozet.anahtar === "yks" && " · MOOD kayıtları sayıma girmez"}
       </div>
     </div>
