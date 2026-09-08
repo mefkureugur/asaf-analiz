@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../store/AuthContext";
 import { useRecords, type Kayit } from "../../hooks/useRecords";
@@ -319,6 +319,8 @@ export default function KursHedefleriPage() {
 
       {loading && <div style={{ ...bilgiKutusu, marginBottom: "var(--sp-4)" }}>Kayıtlar yükleniyor…</div>}
 
+      <KalanTablosu ozetler={ozetler} />
+
       <div
         style={{
           display: "grid",
@@ -349,6 +351,8 @@ function Kahraman({ donem, kalan, ozetler }: { donem: number; kalan: number; oze
   const ciro = ozetler.reduce((t, o) => t + o.ciro, 0);
   const kalanOgr = ozetler.reduce((t, o) => t + o.kalanOgrenci, 0);
   const kalanCiro = ozetler.reduce((t, o) => t + o.kalanCiro, 0);
+  const hedefOgr = ozetler.reduce((t, o) => t + o.hedef.ogrenci, 0);
+  const hedefCiro = ozetler.reduce((t, o) => t + o.hedef.ciro, 0);
   const hedefKar = ozetler.reduce((t, o) => t + o.hedefKar, 0);
 
   return (
@@ -370,7 +374,10 @@ function Kahraman({ donem, kalan, ozetler }: { donem: number; kalan: number; oze
         {ozetler.length > 0 && (
           <div style={{ display: "flex", flexWrap: "wrap", gap: "var(--sp-6)" }}>
             <Kutucuk etiket="Bugüne kadar" deger={`${SAYI(ogr)} kayıt`} alt={MN(ciro)} />
-            <Kutucuk etiket="Hedefe kalan" deger={`${SAYI(kalanOgr)} kayıt`} alt={MN(kalanCiro)} />
+            {/* Kalan öğrenci ve kalan ciro ayrı ayrı: biri diğerinin alt
+                satırıyken ciro ikinci sınıf bir bilgi gibi okunuyordu. */}
+            <Kutucuk etiket="Hedefe kalan öğrenci" deger={`${SAYI(kalanOgr)} kayıt`} alt={`hedef ${SAYI(hedefOgr)}`} />
+            <Kutucuk etiket="Hedefe kalan ciro" deger={MN(kalanCiro)} alt={`hedef ${MN(hedefCiro)}`} />
             <Kutucuk
               etiket="Hedef tutarsa dönem kârı"
               deger={MN(hedefKar)}
@@ -381,6 +388,113 @@ function Kahraman({ donem, kalan, ozetler }: { donem: number; kalan: number; oze
         )}
       </div>
     </header>
+  );
+}
+
+/* --------------------------------------------------------- kalan tablosu */
+
+/**
+ * Hedefe kalan miktar: her hat ayrı satır, birden fazla hat varsa altta
+ * genel toplam. Öğrenci ve ciro ayrı sütunlarda — biri diğerinin altında
+ * küçük yazıyken ciro açığı gözden kaçıyordu.
+ */
+function KalanTablosu({ ozetler }: { ozetler: HatOzeti[] }) {
+  if (ozetler.length === 0) return null;
+
+  const toplamOgr = ozetler.reduce((t, o) => t + o.kalanOgrenci, 0);
+  const toplamCiro = ozetler.reduce((t, o) => t + o.kalanCiro, 0);
+  const toplamHedefOgr = ozetler.reduce((t, o) => t + o.hedef.ogrenci, 0);
+  const toplamHedefCiro = ozetler.reduce((t, o) => t + o.hedef.ciro, 0);
+  const toplamKar = ozetler.reduce((t, o) => t + o.hedefKar, 0);
+  const toplamEk = ozetler.reduce((t, o) => t + o.ekKaynak, 0);
+
+  return (
+    <section className="card rise" style={{ marginBottom: "var(--sp-5)" }}>
+      <div className="label" style={{ marginBottom: "var(--sp-3)" }}>HEDEFE KALAN</div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr auto auto auto", gap: "var(--sp-3) var(--sp-5)", alignItems: "baseline" }}>
+        <div className="caption" />
+        <div className="caption" style={baslikHucre}>Öğrenci</div>
+        <div className="caption" style={baslikHucre}>Ciro</div>
+        {/* Kâr, Kâr Hesabı'ndaki modelin verdiği rakam: hedef ciro + ek
+            kaynaklar − gider. Kalan iki sütun "ne lazım", bu sütun
+            "tutarsa ne kazanılır" diyor. */}
+        <div className="caption" style={baslikHucre}>Hedef tutarsa kâr</div>
+
+        {ozetler.map((o) => (
+          <Fragment key={o.anahtar}>
+            <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-2)", minWidth: 0 }}>
+              <span style={{ width: 3, height: "1em", borderRadius: "var(--r-full)", background: o.hedef.renk, flexShrink: 0 }} />
+              <span style={{ fontSize: "0.88rem", fontWeight: 600 }}>{o.hedef.ad}</span>
+            </div>
+            <KalanHucre
+              deger={o.kalanOgrenci > 0 ? `${SAYI(o.kalanOgrenci)} kayıt` : `+${SAYI(o.ogrenci - o.hedef.ogrenci)} aşıldı`}
+              alt={`${SAYI(o.ogrenci)} / ${SAYI(o.hedef.ogrenci)}`}
+              asildi={o.kalanOgrenci === 0}
+            />
+            <KalanHucre
+              deger={o.kalanCiro > 0 ? MN(o.kalanCiro) : `+${MN(o.ciro - o.hedef.ciro)} aşıldı`}
+              alt={`${MN(o.ciro)} / ${MN(o.hedef.ciro)}`}
+              asildi={o.kalanCiro === 0}
+            />
+            <KalanHucre deger={MN(o.hedefKar)} alt={`marj ${YZ(o.hedefMarj)}`} asildi vurgu />
+          </Fragment>
+        ))}
+
+        {/* Genel toplam yalnızca birden fazla hat görünüyorsa — tek hatta
+            aynı satırı iki kez yazmak olurdu. */}
+        {ozetler.length > 1 && (
+          <>
+            <div style={{ ...genelSatir, fontSize: "0.88rem", fontWeight: 800 }}>GENEL</div>
+            <div style={genelSatir}>
+              <KalanHucre
+                deger={toplamOgr > 0 ? `${SAYI(toplamOgr)} kayıt` : "hedef aşıldı"}
+                alt={`${SAYI(toplamHedefOgr - toplamOgr)} / ${SAYI(toplamHedefOgr)}`}
+                asildi={toplamOgr === 0}
+                kalin
+              />
+            </div>
+            <div style={genelSatir}>
+              <KalanHucre
+                deger={toplamCiro > 0 ? MN(toplamCiro) : "hedef aşıldı"}
+                alt={`${MN(toplamHedefCiro - toplamCiro)} / ${MN(toplamHedefCiro)}`}
+                asildi={toplamCiro === 0}
+                kalin
+              />
+            </div>
+            <div style={genelSatir}>
+              <KalanHucre
+                deger={MN(toplamKar)}
+                alt={`marj ${YZ(toplamHedefCiro + toplamEk > 0 ? toplamKar / (toplamHedefCiro + toplamEk) : 0)}`}
+                asildi vurgu kalin
+              />
+            </div>
+          </>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function KalanHucre({ deger, alt, asildi, kalin, vurgu }: {
+  deger: string; alt: string; asildi: boolean; kalin?: boolean; vurgu?: boolean;
+}) {
+  return (
+    <div style={{ textAlign: "right" }}>
+      <div
+        className="num"
+        style={{
+          fontSize: kalin ? "1.1rem" : "1rem",
+          fontWeight: kalin ? 800 : 700,
+          letterSpacing: "-0.015em",
+          color: vurgu || asildi ? "var(--success)" : "var(--text)",
+          whiteSpace: "nowrap",
+        }}
+      >
+        {deger}
+      </div>
+      <div className="caption num">{alt}</div>
+    </div>
   );
 }
 
@@ -789,6 +903,17 @@ const durumRozeti: React.CSSProperties = {
   padding: "var(--sp-1) var(--sp-3)",
   whiteSpace: "nowrap",
   flexShrink: 0,
+};
+
+const baslikHucre: React.CSSProperties = {
+  textAlign: "right",
+  textTransform: "uppercase",
+  letterSpacing: "var(--t-label-ls)",
+};
+
+const genelSatir: React.CSSProperties = {
+  borderTop: "1px solid var(--line-strong)",
+  paddingTop: "var(--sp-3)",
 };
 
 const bilgiKutusu: React.CSSProperties = {
