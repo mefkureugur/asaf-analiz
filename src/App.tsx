@@ -68,11 +68,14 @@ function AppContent() {
       <ScrollToTop />
       {isMobile ? <TopNavMobile isAdmin={isAdmin} /> : <TopNav isAdmin={isAdmin} />}
 
-      {/* Kuruculara bildirim izni daveti ve canlı bildirim şeridi */}
-      <BildirimKutusu />
-      <RozetYoneticisi />
-      
-      <main style={mainContentStyle}>
+      <main className="app-main" style={mainContentStyle}>
+        {/* Kuruculara bildirim izni daveti ve canlı bildirim şeridi.
+            Masaüstünde gezinme sol kenarda sabit durduğu için bunlar da
+            içerik sütununun içinde kalmalı; dışarıda kalsalar çubuğun
+            altına girerlerdi. */}
+        <BildirimKutusu />
+        <RozetYoneticisi />
+
         <Routes>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<DashboardPage />} />

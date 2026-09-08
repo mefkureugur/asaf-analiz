@@ -111,6 +111,15 @@
   box-shadow: inset 0 -1px 0 var(--material-edge);
 }
 
+/* Aynı materyal, dikey duruş: masaüstündeki sol gezinme. Ayırıcı kenar
+   alta değil sağa geçer, ışık kenarı da onunla birlikte döner. */
+.material-nav.side-nav {
+  border-bottom: none;
+  border-right: 1px solid var(--line);
+  box-shadow: inset -1px 0 0 var(--material-edge);
+  padding-right: 0;
+}
+
 /* ---------------------------------------------------------------------
    6. HAREKET AZALTMA (§14)
    Kayma ve ölçek yerine sade çapraz geçiş. Geri bildirim kaybolmaz,

@@ -70,6 +70,8 @@
   --nav-h: 60px;
   /* Nav'ın ekranda kapladığı toplam yükseklik — Sheet bunun altından başlar */
   --nav-total: calc(var(--nav-h) + var(--safe-top));
+  /* Masaüstünde gezinme sol kenarda durur; bu onun genişliği. */
+  --nav-w: 248px;
 
   /* ---------- TİPOGRAFİ (§15) ----------
      Tracking boyuta özgü: büyük metin negatif, küçük metin hafif pozitif.
@@ -110,6 +112,12 @@
   --ease-in:  cubic-bezier(0.64, 0, 0.78, 0);
   --dur-fast: 120ms;
   --dur-med:  240ms;
+}
+
+/* Masaüstünde gezinme sol kenara geçer; üstte şerit kalmaz. Yükseklik
+   sıfırlanmazsa her sayfanın tepesinde 60px'lik boş bir bant kalırdı. */
+@media (min-width: 900px) {
+  :root { --nav-h: 0px; }
 }
 
 /* =====================================================================

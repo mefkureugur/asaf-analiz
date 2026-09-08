@@ -6,6 +6,20 @@ import { auth } from "../firebase";
 import Modal from "./ui/Modal";
 import { TemaIkonu } from "./ui/TemaSecici";
 
+/* =====================================================================
+   MASAÜSTÜ GEZİNMESİ — SOL KENAR ÇUBUĞU
+
+   Menü daha önce üstte yatay bir şeritti ve maskeli kaydırma gerektirdi:
+   ekran genişledikçe bağlantı sayısı arttı, sığmayanlar kaydırmanın
+   arkasında kaldı — bir bağlantının var olduğunu görmek için kaydırmak
+   gerekiyordu.
+
+   Dikey listede hepsi aynı anda görünür ve okuma yönü doğal. Bölümler
+   ayırıcılarla gruplanır: gezinme, operasyon, yönetim.
+
+   Mobilde bu bileşen hiç çizilmez; orada TopNavMobile ve Sheet var.
+   ===================================================================== */
+
 interface TopNavProps {
   isAdmin?: boolean;
 }
@@ -51,133 +65,85 @@ export default function TopNav({ isAdmin }: TopNavProps) {
     }
   };
 
-  const linkStyle = (path: string): React.CSSProperties => {
-    const isActive = pathname === path || pathname.startsWith(path + "/");
-    return {
-      padding: "var(--sp-2) var(--sp-3)",
-      borderRadius: "var(--r-sm)",
-      textDecoration: "none",
-      color: isActive ? "var(--text)" : "var(--text-2)",
-      background: isActive ? "var(--surface-raised)" : "transparent",
-      fontWeight: isActive ? 600 : 500,
-      fontSize: "0.88rem",
-      whiteSpace: "nowrap",
-      border: isActive ? "1px solid var(--line-strong)" : "1px solid transparent",
-    };
-  };
-
   const showAdminMenu = isAdmin || user?.role === "admin" || user?.email === "ugur@asaf.com";
   const isMefkureManager = (user?.branchId || "").toLocaleLowerCase("tr-TR").includes("mefkure");
 
   return (
-    <nav
-      className="material-nav"
-      style={{
-        display: "flex",
-        alignItems: "center",
-        padding: "var(--sp-3) var(--sp-5)",
-        paddingTop: "calc(var(--sp-3) + var(--safe-top))",
-        paddingLeft: "max(var(--sp-5), var(--safe-left))",
-        paddingRight: "max(var(--sp-5), var(--safe-right))",
-        position: "sticky",
-        top: 0,
-        zIndex: 1000,
-        gap: "var(--sp-5)",
-      }}
-    >
-      {/* Marka */}
+    <nav className="material-nav side-nav" style={kenarCubugu} aria-label="Ana gezinme">
+      {/* Marka — beş tık şifre değiştirme kapısını açar */}
       <div
         onClick={handleLogoClick}
         className="press"
-        style={{ display: "flex", alignItems: "center", gap: "var(--sp-3)", cursor: "pointer", userSelect: "none", flexShrink: 0 }}
+        style={marka}
       >
-        <img src="/logo512.png" alt="" style={{ height: 34, width: 34, borderRadius: "var(--r-sm)", objectFit: "cover" }} />
+        <img src="/logo512.png" alt="" style={{ height: 34, width: 34, borderRadius: "var(--r-sm)", objectFit: "cover", flexShrink: 0 }} />
         <div style={{ fontWeight: 800, color: "var(--text)", fontSize: "1.05rem", letterSpacing: "-0.01em" }}>
           ASAF <span style={{ color: "var(--accent)" }}>ANALİZ</span>
         </div>
       </div>
 
-      {/* Gezinme — kenarları yumuşak maskeli yatay kaydırma (§12) */}
-      <div className="scroll-x" style={{ display: "flex", gap: "var(--sp-2)", flex: 1, alignItems: "center" }}>
-        <Link to="/dashboard" className="press" style={linkStyle("/dashboard")}>🏠 Ana Sayfa</Link>
-        <Link to="/compare" className="press" style={linkStyle("/compare")}>⚖️ Karşılaştırma</Link>
+      {/* Bağlantılar — uzun listede kendi içinde kayar, marka ve kullanıcı sabit kalır */}
+      <div style={liste}>
+        <Baglanti to="/dashboard" pathname={pathname}>🏠 Ana Sayfa</Baglanti>
+        <Baglanti to="/compare" pathname={pathname}>⚖️ Karşılaştırma</Baglanti>
 
         {showAdminMenu ? (
-          <Link to="/targets" className="press" style={linkStyle("/targets")}>🎯 Hedef Girişi</Link>
+          <Baglanti to="/targets" pathname={pathname}>🎯 Hedef Girişi</Baglanti>
         ) : (
-          <Link to="/performans" className="press" style={linkStyle("/performans")}>🚀 Performans İzleme</Link>
+          <Baglanti to="/performans" pathname={pathname}>🚀 Performans İzleme</Baglanti>
         )}
 
         {/* Kayıt Listesi yalnızca kurum müdürlerinde */}
         {!showAdminMenu && (
-          <Link to="/ogrenci-listesi" className="press" style={linkStyle("/ogrenci-listesi")}>✍️ Kayıt Listesi</Link>
+          <Baglanti to="/ogrenci-listesi" pathname={pathname}>✍️ Kayıt Listesi</Baglanti>
         )}
 
         {isMefkureManager && (
-          <Link to="/reports/okul-sayilari" className="press" style={linkStyle("/reports/okul-sayilari")}>🏫 Okul Sayıları</Link>
+          <Baglanti to="/reports/okul-sayilari" pathname={pathname}>🏫 Okul Sayıları</Baglanti>
         )}
 
         {showAdminMenu && (
-          <Link to="/finance/view" className="press" style={linkStyle("/finance")}>💰 Finans</Link>
+          <Baglanti to="/finance/view" eslesen="/finance" pathname={pathname}>💰 Finans</Baglanti>
         )}
 
         {/* Senaryo modülü herkese açık; müdür yalnızca kendi kurumunu görür */}
-        <Link to="/scenarios" className="press" style={linkStyle("/scenarios")}>📊 Senaryo Hesap</Link>
+        <Baglanti to="/scenarios" pathname={pathname}>📊 Senaryo Hesap</Baglanti>
 
-        {/* Kâr Hesabı kurucular ve Mefkure müdürleri (YKS / LGS) için */}
+        {/* Kâr Hesabı ve Kurs Hedefleri: kurucular + Mefkure müdürleri (YKS / LGS) */}
         {(showAdminMenu || isMefkureManager) && (
-          <Link to="/kar-hesabi" className="press" style={linkStyle("/kar-hesabi")}>📊 Kâr Hesabı</Link>
+          <>
+            <Baglanti to="/kar-hesabi" pathname={pathname}>📊 Kâr Hesabı</Baglanti>
+            <Baglanti to="/kurs-hedefleri" pathname={pathname}>🏁 Kurs Hedefleri</Baglanti>
+          </>
         )}
 
-        {/* Kurs hedef takibi: aynı kitle — kurucular ve kurs müdürleri */}
-        {(showAdminMenu || isMefkureManager) && (
-          <Link to="/kurs-hedefleri" className="press" style={linkStyle("/kurs-hedefleri")}>🏁 Kurs Hedefleri</Link>
-        )}
+        <Ayirici etiket="Operasyon" />
+        <Baglanti to="/daily" pathname={pathname}>✍️ Günlük Giriş</Baglanti>
+        <Baglanti to="/reports/daily" pathname={pathname}>📋 Günlük Rapor</Baglanti>
 
         {showAdminMenu && (
-          <Link to="/veri-aktarim" className="press" style={linkStyle("/veri-aktarim")}>📥 Veri Aktarımı</Link>
+          <>
+            <Ayirici etiket="Yönetim" />
+            <Baglanti to="/veri-aktarim" pathname={pathname}>📥 Veri Aktarımı</Baglanti>
+            <Baglanti to="/user-management" pathname={pathname} vurgu>🛡️ Yetki Yönetimi</Baglanti>
+          </>
         )}
-
-        {showAdminMenu && (
-          <Link
-            to="/user-management"
-            className="press"
-            style={{ ...linkStyle("/user-management"), color: "var(--accent)" }}
-          >
-            🛡️ Yetki Yönetimi
-          </Link>
-        )}
-
-        {/* Operasyonel butonlar sağa yaslı */}
-        <div style={{ marginLeft: "auto", display: "flex", gap: "var(--sp-2)" }}>
-          <Link to="/daily" className="press" style={linkStyle("/daily")}>✍️ Günlük Giriş</Link>
-          <Link to="/reports/daily" className="press" style={linkStyle("/reports/daily")}>📋 Günlük Rapor</Link>
-        </div>
       </div>
 
-      {/* Kullanıcı */}
-      <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-3)", flexShrink: 0 }}>
-        <TemaIkonu />
-        <div style={{ textAlign: "right" }}>
-          <div style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--text)" }}>{user?.displayName}</div>
-          <div className="caption">{user?.branchId}</div>
+      {/* Kullanıcı — çubuğun dibine yaslı */}
+      <div style={kullaniciAlani}>
+        <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-2)", minWidth: 0 }}>
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <div style={{ fontSize: "0.82rem", fontWeight: 600, color: "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {user?.displayName}
+            </div>
+            <div className="caption" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {user?.branchId}
+            </div>
+          </div>
+          <TemaIkonu />
         </div>
-        <button
-          onClick={logout}
-          className="press"
-          style={{
-            background: "transparent",
-            border: "1px solid var(--line-strong)",
-            color: "var(--danger)",
-            padding: "var(--sp-2) var(--sp-3)",
-            borderRadius: "var(--r-sm)",
-            fontWeight: 600,
-            fontSize: "0.85rem",
-            whiteSpace: "nowrap",
-          }}
-        >
-          🚪 Çıkış
-        </button>
+        <button onClick={logout} className="press" style={cikisBtn}>🚪 Çıkış</button>
       </div>
 
       <Modal
@@ -210,6 +176,124 @@ export default function TopNav({ isAdmin }: TopNavProps) {
     </nav>
   );
 }
+
+/* ------------------------------------------------------------ parçalar */
+
+/**
+ * Bir gezinme bağlantısı. Etkin olan sol kenarındaki çubukla işaretlenir:
+ * dikey listede zemin farkı tek başına zayıf kalıyor, kenar çizgisi göz
+ * listeyi tararken hangi satırda olduğunu bir bakışta veriyor.
+ *
+ * `eslesen`, adresi hedeften farklı olan bağlantılar için: Finans
+ * /finance/view'a gider ama /finance/* altındayken de etkin görünmeli.
+ */
+function Baglanti({
+  to, pathname, children, eslesen, vurgu,
+}: { to: string; pathname: string; children: React.ReactNode; eslesen?: string; vurgu?: boolean }) {
+  const kok = eslesen ?? to;
+  const etkin = pathname === kok || pathname.startsWith(kok + "/");
+
+  return (
+    <Link
+      to={to}
+      className="press"
+      aria-current={etkin ? "page" : undefined}
+      style={{
+        position: "relative",
+        display: "block",
+        padding: "var(--sp-2) var(--sp-3)",
+        paddingLeft: "var(--sp-4)",
+        borderRadius: "var(--r-sm)",
+        textDecoration: "none",
+        color: etkin ? "var(--text)" : vurgu ? "var(--accent)" : "var(--text-2)",
+        background: etkin ? "var(--surface-raised)" : "transparent",
+        fontWeight: etkin ? 700 : 500,
+        fontSize: "0.88rem",
+        border: etkin ? "1px solid var(--line-strong)" : "1px solid transparent",
+        transition: "background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out)",
+      }}
+    >
+      {etkin && (
+        <span
+          aria-hidden
+          style={{
+            position: "absolute", left: 4, top: "50%", transform: "translateY(-50%)",
+            width: 3, height: "1.1em", borderRadius: "var(--r-full)", background: "var(--accent)",
+          }}
+        />
+      )}
+      {children}
+    </Link>
+  );
+}
+
+/** Bölüm ayırıcısı: ince çizgi ve üstünde küçük bir başlık. */
+function Ayirici({ etiket }: { etiket: string }) {
+  return (
+    <div style={{ marginTop: "var(--sp-3)", paddingTop: "var(--sp-3)", borderTop: "1px solid var(--line)" }}>
+      <div className="caption" style={{ textTransform: "uppercase", letterSpacing: "var(--t-label-ls)", paddingLeft: "var(--sp-4)", marginBottom: "var(--sp-1)" }}>
+        {etiket}
+      </div>
+    </div>
+  );
+}
+
+/* --------------------------------------------------------------- stiller */
+
+const kenarCubugu: React.CSSProperties = {
+  position: "fixed",
+  top: 0,
+  bottom: 0,
+  left: 0,
+  width: "var(--nav-w)",
+  zIndex: 1000,
+  display: "flex",
+  flexDirection: "column",
+  // Materyal çentiğin arkasına uzanır; içerik güvenli alandan sonra başlar.
+  paddingLeft: "max(var(--sp-3), var(--safe-left))",
+  paddingRight: "var(--sp-3)",
+  paddingBottom: "calc(var(--sp-3) + var(--safe-bottom))",
+};
+
+const marka: React.CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  gap: "var(--sp-3)",
+  cursor: "pointer",
+  userSelect: "none",
+  padding: "var(--sp-4) var(--sp-2)",
+  flexShrink: 0,
+};
+
+const liste: React.CSSProperties = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 2,
+  flex: 1,
+  minHeight: 0,
+  overflowY: "auto",
+  paddingBottom: "var(--sp-3)",
+};
+
+const kullaniciAlani: React.CSSProperties = {
+  flexShrink: 0,
+  borderTop: "1px solid var(--line)",
+  paddingTop: "var(--sp-3)",
+  display: "flex",
+  flexDirection: "column",
+  gap: "var(--sp-2)",
+};
+
+const cikisBtn: React.CSSProperties = {
+  background: "transparent",
+  border: "1px solid var(--line-strong)",
+  color: "var(--danger)",
+  padding: "var(--sp-2) var(--sp-3)",
+  borderRadius: "var(--r-sm)",
+  fontWeight: 600,
+  fontSize: "0.85rem",
+  width: "100%",
+};
 
 const btnPrimary: React.CSSProperties = {
   flex: 1,
