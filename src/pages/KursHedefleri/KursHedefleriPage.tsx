@@ -101,6 +101,10 @@ interface HatOzeti {
   mevsimPayi: number | null;
   tahminOgrenci: number | null;
   tahminCiro: number | null;
+  /** Geçen dönemde bu tarihten SONRA gelen kayıt ve ciro — erişilebilir kıyas. */
+  gecenSonrasiOgrenci: number;
+  gecenSonrasiCiro: number;
+  gecenVerisiVar: boolean;
   durum: Durum;
   /* --- tempo --- */
   kalanOgrenci: number;
@@ -138,6 +142,13 @@ function hattiOzetle(
   const gecenBugune = gecenTum.filter((k) => {
     const ag = ayGun(k.SözleşmeTarihi);
     return ag !== null && ag <= bugunAyGun;
+  });
+
+  // Geçen dönemin bu tarihten sonraki dilimi: "önümüzdeki 114 günde ne
+  // olabilir" sorusunun gerçekleşmiş cevabı.
+  const gecenSonrasi = gecenTum.filter((k) => {
+    const ag = ayGun(k.SözleşmeTarihi);
+    return ag !== null && ag > bugunAyGun;
   });
 
   const topla = (l: Kayit[]) => l.reduce((t, k) => t + k.SonTutar, 0);
@@ -181,6 +192,9 @@ function hattiOzetle(
     ortalamaOran: hedefOrtalama > 0 ? ortalama / hedefOrtalama : 0,
     kalanOrtalama: Math.max(0, hedefOrtalama - ortalama),
     mevsimPayi, tahminOgrenci, tahminCiro, durum,
+    gecenSonrasiOgrenci: gecenSonrasi.length,
+    gecenSonrasiCiro: topla(gecenSonrasi),
+    gecenVerisiVar: gecenTum.length > 0,
     kalanOgrenci,
     kalanCiro: Math.max(0, hedef.ciro - ciro),
     gerekenGunluk: kalan > 0 ? kalanOgrenci / kalan : 0,
@@ -314,8 +328,8 @@ export default function KursHedefleriPage() {
       <p className="caption" style={{ marginTop: "var(--sp-5)", maxWidth: 720 }}>
         Gider, kâr marjı hedefi ve MOOD ayrımı{" "}
         <Link to="/kar-hesabi" style={{ color: "var(--accent)" }}>Kâr Hesabı</Link>'nın
-        kullandığı modelden okunur; iki ekran aynı rakamı verir. Dönem sonu tahmini
-        geçen dönemin aynı tarihindeki payına dayanır — takvime orantılı bir tempo
+        kullandığı modelden okunur; iki ekran aynı rakamı verir. Kıyas, geçen dönemin
+        aynı takvim penceresinde gerçekleşen kayıtlarıdır — takvime orantılı bir tempo
         kayıt mevsimini görmezden gelirdi. İptal edilen kayıtlar hiçbir toplama girmez.
       </p>
     </div>
@@ -462,20 +476,24 @@ function HatKarti({ ozet, gecikme, isMobile }: { ozet: HatOzeti; gecikme: number
           />
         </div>
 
-        {ozet.tahminOgrenci !== null && ozet.tahminCiro !== null ? (
-          <Satir
-            etiket="Tempo aynı kalırsa dönem sonu"
-            deger={`${SAYI(ozet.tahminOgrenci)} kayıt · ${MN(ozet.tahminCiro)}`}
-            altBilgi={ozet.mevsimPayi !== null ? `geçen dönem bugüne kadar ${YZ(ozet.mevsimPayi)}'i yazılmıştı` : undefined}
-            renk={d.renk}
-          />
-        ) : (
-          <Satir
-            etiket="Tempo aynı kalırsa dönem sonu"
-            deger="Henüz hesaplanamıyor"
-            altBilgi={`${kiyasDonem()} döneminde bu hatta kıyas kaydı yok`}
-          />
-        )}
+        {/* Geçen dönemin aynı takvim penceresi. Buraya bir dönem sonu
+            tahmini yazmak ("333 kayıt") hedefin altını gösteren bir hüküm
+            gibi okunuyordu; aynı veri, gerçekleşmiş ve ulaşılabilir bir
+            kıyasa çevrildi: geçen dönem bu tarihten sonra ne geldiyse o. */}
+        <Satir
+          etiket="Bu tarihten sonra gereken"
+          deger={`${SAYI(ozet.kalanOgrenci)} kayıt · ${MN(ozet.kalanCiro)}`}
+          altBilgi={
+            ozet.gecenVerisiVar
+              ? `geçen dönem aynı pencerede ${SAYI(ozet.gecenSonrasiOgrenci)} kayıt · ${MN(ozet.gecenSonrasiCiro)} gelmişti`
+              : `${kiyasDonem()} döneminde bu hatta kıyas kaydı yok`
+          }
+          renk={
+            ozet.gecenVerisiVar && ozet.kalanOgrenci <= ozet.gecenSonrasiOgrenci
+              ? "var(--success)"
+              : undefined
+          }
+        />
 
         <Firsat ozet={ozet} />
       </div>
