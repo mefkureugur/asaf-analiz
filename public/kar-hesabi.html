@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mefkure · %25 Kâr Hesabı</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background:#f4f5f7;color:#1b1d21;font-size:15px;line-height:1.55;padding:20px}
+.wrap{max-width:940px;margin:0 auto}
+h1{font-size:20px;display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;letter-spacing:-.4px;border-bottom:2.5px solid #1b1d21;padding-bottom:10px;margin-bottom:18px}
+h1 span{color:#c8102e}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:800px){.cols{grid-template-columns:1fr}}
+.panel{background:#fff;border:1px solid #e3e5e8;border-radius:10px;padding:18px;border-top:4px solid #c8102e}
+.panel h2{font-size:17px;margin-bottom:14px}
+
+.blok{margin-bottom:14px}
+.blok .baslik{font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:#9aa0a6;margin-bottom:6px}
+.satir{display:flex;justify-content:space-between;align-items:center;padding:3px 0}
+.satir span{font-size:14px}
+.sabit{background:#f6f7f8;border-radius:7px;padding:9px 12px}
+.sabit .satir span:last-child{font-weight:600}
+input{font:inherit;font-size:15px;text-align:right;padding:6px 9px;border:1.5px solid #d5d9de;
+  border-radius:6px;background:#fff;width:140px;font-variant-numeric:tabular-nums}
+input:focus{outline:none;border-color:#c8102e}
+.carpim{font-size:12px;color:#9aa0a6;text-align:right;margin-top:3px}
+
+.sonuc{border-radius:9px;padding:15px 16px;margin-top:16px;color:#fff;background:#1b1d21}
+.sonuc.iyi{background:#17803d}
+.sonuc.kotu{background:#c8102e}
+.sonuc .marj{font-size:40px;font-weight:700;letter-spacing:-1.5px;line-height:1}
+.sonuc .marj small{font-size:15px;font-weight:400;opacity:.8;letter-spacing:0}
+.sonuc .satirlar{margin-top:12px;padding-top:11px;border-top:1px solid rgba(255,255,255,.25);font-size:14px}
+.sonuc .satirlar div{display:flex;justify-content:space-between;padding:2px 0}
+.sonuc .satirlar b{font-weight:700}
+.mesaj{font-size:13px;margin-top:11px;padding-top:10px;border-top:1px solid rgba(255,255,255,.25);line-height:1.45}
+
+.kurum{background:#fff;border:1px solid #e3e5e8;border-radius:10px;padding:16px 18px;margin-top:18px}
+.kurum h2{font-size:16px;margin-bottom:8px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font-size:10px;text-transform:uppercase;letter-spacing:.9px;color:#9aa0a6;text-align:right;
+  padding:5px;border-bottom:1px solid #1b1d21;font-weight:600}
+th:first-child,td:first-child{text-align:left}
+td{text-align:right;padding:6px 5px;border-bottom:1px solid #eef0f2}
+tr.son td{font-weight:700;border-top:1.5px solid #1b1d21;border-bottom:none}
+.foot{font-size:12px;color:#9aa0a6;margin-top:20px;padding-top:12px;border-top:1px solid #e3e5e8;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1><span>Mefkure</span> <span id="hedef_yazi">· %25 kâr hesabı</span> <small style="font-size:12px;font-weight:400;color:#9aa0a6;letter-spacing:0">veri: <span id="veri_tarihi">31 Ağustos 2026</span></small></h1>
+
+<div class="cols">
+
+  <div class="panel">
+    <h2>YKS</h2>
+
+    <div class="blok">
+      <div class="baslik">Gerçekleşen · 31 Ağustos</div>
+      <div class="sabit">
+        <div class="satir"><span>Öğrenci</span><span id="sabit_y_ogr">259</span></div>
+        <div class="satir"><span>Ciro</span><span id="sabit_y_ciro">47.218.000 ₺</span></div>
+      </div>
+    </div>
+
+    <div class="blok">
+      <div class="baslik">Bu saatten sonra</div>
+      <div class="satir"><span>Öğrenci sayısı</span><input type="text" inputmode="numeric" id="y_ogr" value="131" oninput="fmt(this);hesapla()"></div>
+      <div class="satir"><span>Ortalama kayıt</span><input type="text" inputmode="numeric" id="y_ort" value="200.000" oninput="fmt(this);hesapla()"></div>
+      <div class="carpim" id="y_carpim"></div>
+    </div>
+
+    <div class="blok" id="ek_y">
+      <div class="baslik">Ek kaynaklar</div>
+      <div class="satir"><span>MOOD</span><input type="text" inputmode="numeric" id="y_mood" value="5.000.000" oninput="fmt(this);hesapla()"></div>
+      <div class="satir"><span>Yemek</span><input type="text" inputmode="numeric" id="y_yemek" value="0" oninput="fmt(this);hesapla()"></div>
+      <div class="satir"><span>Diğer</span><input type="text" inputmode="numeric" id="y_diger" value="0" oninput="fmt(this);hesapla()"></div>
+    </div>
+
+    <div class="blok">
+      <div class="baslik">Gider</div>
+      <div class="satir"><span>Toplam gider</span><input type="text" inputmode="numeric" id="y_gider" value="58.800.000" oninput="fmt(this);hesapla()"></div>
+    </div>
+
+    <div class="sonuc" id="y_sonuc"></div>
+  </div>
+
+  <div class="panel">
+    <h2>LGS</h2>
+
+    <div class="blok">
+      <div class="baslik">Gerçekleşen · 31 Ağustos</div>
+      <div class="sabit">
+        <div class="satir"><span>Öğrenci</span><span id="sabit_l_ogr">93</span></div>
+        <div class="satir"><span>Ciro</span><span id="sabit_l_ciro">13.713.750 ₺</span></div>
+      </div>
+    </div>
+
+    <div class="blok">
+      <div class="baslik">Bu saatten sonra</div>
+      <div class="satir"><span>Öğrenci sayısı</span><input type="text" inputmode="numeric" id="l_ogr" value="45" oninput="fmt(this);hesapla()"></div>
+      <div class="satir"><span>Ortalama kayıt</span><input type="text" inputmode="numeric" id="l_ort" value="170.000" oninput="fmt(this);hesapla()"></div>
+      <div class="carpim" id="l_carpim"></div>
+    </div>
+
+    <div class="blok" id="ek_l">
+      <div class="baslik">Ek kaynaklar</div>
+      <div class="satir"><span>MOOD</span><input type="text" inputmode="numeric" id="l_mood" value="0" oninput="fmt(this);hesapla()"></div>
+      <div class="satir"><span>Yemek</span><input type="text" inputmode="numeric" id="l_yemek" value="0" oninput="fmt(this);hesapla()"></div>
+      <div class="satir"><span>Diğer</span><input type="text" inputmode="numeric" id="l_diger" value="0" oninput="fmt(this);hesapla()"></div>
+    </div>
+
+    <div class="blok">
+      <div class="baslik">Gider</div>
+      <div class="satir"><span>Toplam gider</span><input type="text" inputmode="numeric" id="l_gider" value="16.000.000" oninput="fmt(this);hesapla()"></div>
+    </div>
+
+    <div class="sonuc" id="l_sonuc"></div>
+  </div>
+
+</div>
+
+<div class="kurum">
+  <h2>Kurum toplamı</h2>
+  <table id="k_tablo"></table>
+</div>
+
+<div class="foot">
+Gerçekleşen rakamlar ASAF panelinin 31 Ağustos 2026 verisidir (YKS'de MOOD hariç) ve sabittir.<br>
+Gider kutuları toplam yıllık gideri temsil eder. Öğrenci sayısını çok artırırsanız kitap, yemek ve etüt gibi
+öğrenci başına maliyetler de artar — kabaca YKS'de öğrenci başına 20.000 ₺, LGS'de 18.000 ₺ — bunu gider kutusuna eklemeyi unutmayın.
+</div>
+
+</div>
+
+<script>
+var g = function(id){
+  var v = String(document.getElementById(id).value).replace(/\./g,'').replace(/[^0-9-]/g,'');
+  return parseFloat(v) || 0;
+};
+function fmt(el){
+  var yer = el.selectionStart;
+  var oncekiRakam = String(el.value).slice(0, yer).replace(/\D/g,'').length;
+  var rakamlar = String(el.value).replace(/\D/g,'');
+  var cikti = rakamlar ? Number(rakamlar).toLocaleString('tr-TR') : '';
+  el.value = cikti;
+  var say = 0, poz = cikti.length;
+  if (oncekiRakam === 0) { poz = 0; }
+  else {
+    for (var i = 0; i < cikti.length; i++) {
+      if (cikti.charCodeAt(i) >= 48 && cikti.charCodeAt(i) <= 57) say++;
+      if (say === oncekiRakam) { poz = i + 1; break; }
+    }
+  }
+  try { el.setSelectionRange(poz, poz); } catch(e){}
+}
+var TL = function(n){ return new Intl.NumberFormat('tr-TR',{maximumFractionDigits:0}).format(Math.round(n))+' \u20BA'; };
+
+/* ============================================================
+   YAPILANDIRMA — canliya alirken yalnizca burasi degistirilir.
+   Sunucu tarafinda uretiliyorsa bu blogu sablonla doldurun,
+   ya da asagidaki VERI_URL'i doldurup JSON'dan cekin.
+   ============================================================ */
+var VERI = {
+  tarih: "31 Agustos 2026",
+  yks: { ogr: 259, ciro: 47218000, gider: 58800000 },
+  lgs: { ogr:  93, ciro: 13713750, gider: 16000000 }
+};
+
+/* Panelden canli beslemek icin bir uc nokta adresi yazin.
+   Beklenen JSON: {"tarih":"...","yks":{"ogr":0,"ciro":0,"gider":0},"lgs":{...}}
+   Bos birakilirsa yukaridaki sabit degerler kullanilir. */
+var VERI_URL = "";
+
+var SABIT = { y: VERI.yks, l: VERI.lgs };
+
+/* Kar hedefi, hat basina. Panelden veriyiYukle({... hedef:{y:25,l:17.7}})
+   ile degistirilebilir; verilmezse ikisi de %25 kalir. */
+var HEDEF = { y: 25, l: 25 };
+var yuzdeYazi = function(h){ return String(h).replace('.', ','); };
+
+function sube(p){
+  var s = SABIT[p];
+  var yeniOgr = g(p+'_ogr'), ort = g(p+'_ort');
+  var yeniCiro = yeniOgr * ort;
+  // Ek kaynak kalemleri hattan hatta degisir; blogun icindeki tum kutular toplanir.
+  var ek = 0;
+  var ekKutulari = document.querySelectorAll('#ek_' + p + ' input');
+  for (var ei = 0; ei < ekKutulari.length; ei++) {
+    var ev = String(ekKutulari[ei].value).replace(/\./g,'').replace(/[^0-9-]/g,'');
+    ek += parseFloat(ev) || 0;
+  }
+  var ciro = s.ciro + yeniCiro + ek;
+  var gider = g(p+'_gider');
+  var kar = ciro - gider;
+  var marj = ciro > 0 ? 100*kar/ciro : 0;
+  var h = HEDEF[p];
+  var hedefCiro = h < 100 ? gider / (1 - h/100) : 0;   // hedef marj icin gereken ciro
+  var fark = hedefCiro - ciro;
+  return {ogr: s.ogr + yeniOgr, yeniOgr:yeniOgr, ort:ort, yeniCiro:yeniCiro, ek:ek,
+          ciro:ciro, gider:gider, kar:kar, marj:marj, hedefCiro:hedefCiro, fark:fark};
+}
+
+function hesapla(){
+  var R = {};
+  ['y','l'].forEach(function(p){
+    var r = sube(p);
+    R[p] = r;
+    document.getElementById(p+'_carpim').textContent =
+      r.yeniOgr + ' \u00D7 ' + TL(r.ort) + ' = ' + TL(r.yeniCiro);
+
+    var box = document.getElementById(p+'_sonuc');
+    box.className = 'sonuc ' + (r.marj >= HEDEF[p] ? 'iyi' : 'kotu');
+
+    var mesaj;
+    if (r.marj >= HEDEF[p]) {
+      mesaj = '%' + yuzdeYazi(HEDEF[p]) + ' hedefinin \u00FCst\u00FCndesiniz. Fazla k\u00E2r: <b>' + TL(r.kar - (HEDEF[p]/100)*r.ciro) + '</b>.';
+    } else {
+      var ekOgr = r.ort > 0 ? Math.ceil(r.fark / r.ort) : 0;
+      mesaj = '%' + yuzdeYazi(HEDEF[p]) + ' i\u00E7in <b>' + TL(r.fark) + '</b> daha ciro laz\u0131m \u2014 ayn\u0131 ortalamayla <b>' +
+              ekOgr + ' \u00F6\u011Frenci</b> daha.';
+    }
+
+    box.innerHTML =
+      '<div class="marj">%' + r.marj.toFixed(1) + ' <small>k\u00E2r marj\u0131</small></div>' +
+      '<div class="satirlar">' +
+        '<div><span>Toplam ciro</span><b>' + TL(r.ciro) + '</b></div>' +
+        '<div><span>Toplam gider</span><b>' + TL(r.gider) + '</b></div>' +
+        '<div><span>K\u00E2r</span><b>' + TL(r.kar) + '</b></div>' +
+        '<div><span>Y\u0131l sonu \u00F6\u011Frenci</span><b>' + r.ogr + '</b></div>' +
+      '</div>' +
+      '<div class="mesaj">' + mesaj + '</div>';
+  });
+
+  var ciro = R.y.ciro + R.l.ciro, gider = R.y.gider + R.l.gider;
+  var kar = ciro - gider, marj = ciro>0 ? 100*kar/ciro : 0;
+  document.getElementById('k_tablo').innerHTML =
+    '<tr><th></th><th>YKS</th><th>LGS</th><th>Kurum</th></tr>' +
+    '<tr><td>Y\u0131l sonu \u00F6\u011Frenci</td><td>'+R.y.ogr+'</td><td>'+R.l.ogr+'</td><td>'+(R.y.ogr+R.l.ogr)+'</td></tr>' +
+    '<tr><td>Ciro</td><td>'+TL(R.y.ciro)+'</td><td>'+TL(R.l.ciro)+'</td><td>'+TL(ciro)+'</td></tr>' +
+    '<tr><td>Gider</td><td>'+TL(R.y.gider)+'</td><td>'+TL(R.l.gider)+'</td><td>'+TL(gider)+'</td></tr>' +
+    '<tr class="son"><td>K\u00E2r</td><td>'+TL(R.y.kar)+'</td><td>'+TL(R.l.kar)+'</td><td>'+TL(kar)+'</td></tr>' +
+    '<tr class="son"><td>Marj</td><td>%'+R.y.marj.toFixed(1)+'</td><td>%'+R.l.marj.toFixed(1)+
+      '</td><td>%'+marj.toFixed(1)+'</td></tr>';
+}
+
+function veriyiYukle(v){
+  VERI = v;
+  SABIT.y = v.yks; SABIT.l = v.lgs;
+  if (v.hedef) {
+    var gecerli = function(x){ return typeof x === 'number' && x > 0 && x < 100; };
+    if (gecerli(v.hedef)) { HEDEF.y = v.hedef; HEDEF.l = v.hedef; }
+    else {
+      if (gecerli(v.hedef.y)) HEDEF.y = v.hedef.y;
+      if (gecerli(v.hedef.l)) HEDEF.l = v.hedef.l;
+    }
+    document.getElementById('hedef_yazi').textContent = HEDEF.y === HEDEF.l
+      ? '\u00B7 %' + yuzdeYazi(HEDEF.y) + ' k\u00E2r hesab\u0131'
+      : '\u00B7 k\u00E2r hesab\u0131';
+  }
+  var nokta = function(n){ return Number(n).toLocaleString('tr-TR'); };
+  document.getElementById('sabit_y_ogr').textContent  = nokta(v.yks.ogr);
+  document.getElementById('sabit_y_ciro').textContent = nokta(v.yks.ciro) + ' \u20BA';
+  document.getElementById('sabit_l_ogr').textContent  = nokta(v.lgs.ogr);
+  document.getElementById('sabit_l_ciro').textContent = nokta(v.lgs.ciro) + ' \u20BA';
+  document.getElementById('y_gider').value = nokta(v.yks.gider);
+  document.getElementById('l_gider').value = nokta(v.lgs.gider);
+  document.getElementById('veri_tarihi').textContent = v.tarih;
+  hesapla();
+}
+
+veriyiYukle(VERI);
+
+if (VERI_URL) {
+  fetch(VERI_URL)
+    .then(function(r){ return r.json(); })
+    .then(function(v){ veriyiYukle(v); })
+    .catch(function(){ /* uc nokta yoksa sabit degerlerle devam */ });
+}
+</script>
+</body>
+</html>

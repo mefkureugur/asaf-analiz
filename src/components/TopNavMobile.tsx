@@ -128,6 +128,12 @@ export default function TopNavMobile({ isAdmin }: MobileProps) {
         {showAdminMenu && <SheetLink to="/finance/view" onClick={closeMenu}>💰 Finans Analizi</SheetLink>}
         {/* Senaryo modülü herkese açık; müdür yalnızca kendi kurumunu görür */}
         <SheetLink to="/scenarios" onClick={closeMenu}>📊 Senaryo Hesap</SheetLink>
+        {(showAdminMenu || isMefkureManager) && (
+          <SheetLink to="/kar-hesabi" onClick={closeMenu}>📊 Kâr Hesabı</SheetLink>
+        )}
+        {(showAdminMenu || isMefkureManager) && (
+          <SheetLink to="/kurs-hedefleri" onClick={closeMenu}>🏁 Kurs Hedefleri</SheetLink>
+        )}
 
         {showAdminMenu && (
           <>

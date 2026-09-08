@@ -22,6 +22,8 @@ import LoginPage from "./pages/Login/LoginPage";
 import UserManagement from "./pages/admin/UserManagement";
 import DataMigration from "./pages/admin/DataMigration";
 import ScenariosPage from "./pages/ScenariosPage";
+import KarHesabiPage from "./pages/KarHesabi/KarHesabiPage";
+import KursHedefleriPage from "./pages/KursHedefleri/KursHedefleriPage";
 
 // COMPONENTS
 import TopNav from "./components/TopNav";
@@ -58,6 +60,8 @@ function AppContent() {
   // 🛡️ Admin ve Uğur Bey yetkisi (Sistemdeki tek yetkili giriş kapısı)
   const isAdmin = user.role?.trim().toLowerCase() === 'admin' || user.email === 'ugur@asaf.com';
   const isUgur = user.email === 'ugur@asaf.com'; // 🔐 Veri girişi sadece Uğur Bey'e
+  // Kâr Hesabı: kurucular + Mefkure YKS/LGS müdürleri
+  const isMefkureManager = (user.branchId || "").toLocaleLowerCase("tr-TR").includes("mefkure");
 
   return (
     <DataProvider>
@@ -96,6 +100,8 @@ function AppContent() {
               <Route path="/finance/input" element={isUgur ? <FinanceInputPage /> : <Navigate to="/finance/view" replace />} />
               <Route path="/finance/view" element={<FinanceViewPage />} />
               <Route path="/scenarios" element={<ScenariosPage />} />
+              <Route path="/kar-hesabi" element={<KarHesabiPage />} />
+              <Route path="/kurs-hedefleri" element={<KursHedefleriPage />} />
             </>
           ) : (
             <>
@@ -104,6 +110,8 @@ function AppContent() {
               <Route path="/ogrenci-listesi" element={<StudentList />} />
               {/* Senaryo: müdür yalnızca kendi kurumunu görür (sayfa içinde kilitli) */}
               <Route path="/scenarios" element={<ScenariosPage />} />
+              <Route path="/kar-hesabi" element={isMefkureManager ? <KarHesabiPage /> : <Navigate to="/dashboard" replace />} />
+              <Route path="/kurs-hedefleri" element={isMefkureManager ? <KursHedefleriPage /> : <Navigate to="/dashboard" replace />} />
               <Route path="/user-management" element={<Navigate to="/dashboard" replace />} />
               {/* 🚫 FİNANS KİLİDİ: Müdürler girmeye çalışırsa Dashboard'a atılır */}
               <Route path="/finance/*" element={<Navigate to="/dashboard" replace />} />

@@ -124,6 +124,16 @@ export default function TopNav({ isAdmin }: TopNavProps) {
         {/* Senaryo modülü herkese açık; müdür yalnızca kendi kurumunu görür */}
         <Link to="/scenarios" className="press" style={linkStyle("/scenarios")}>📊 Senaryo Hesap</Link>
 
+        {/* Kâr Hesabı kurucular ve Mefkure müdürleri (YKS / LGS) için */}
+        {(showAdminMenu || isMefkureManager) && (
+          <Link to="/kar-hesabi" className="press" style={linkStyle("/kar-hesabi")}>📊 Kâr Hesabı</Link>
+        )}
+
+        {/* Kurs hedef takibi: aynı kitle — kurucular ve kurs müdürleri */}
+        {(showAdminMenu || isMefkureManager) && (
+          <Link to="/kurs-hedefleri" className="press" style={linkStyle("/kurs-hedefleri")}>🏁 Kurs Hedefleri</Link>
+        )}
+
         {showAdminMenu && (
           <Link to="/veri-aktarim" className="press" style={linkStyle("/veri-aktarim")}>📥 Veri Aktarımı</Link>
         )}
