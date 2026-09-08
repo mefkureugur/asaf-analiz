@@ -20,12 +20,46 @@ setGlobalOptions({ region: "europe-west1", maxInstances: 10 });
      çalıştığından, aktarım sırasında 1806 bildirim gönderilirdi. Bu yüzden
      yalnızca source === "manual" olan kayıtlar bildirim üretir.
    ===================================================================== */
+/* =====================================================================
+   OKUL İŞLETİM SİSTEMİ KÖPRÜSÜ
+
+   Kayıt girildiğinde işletim sistemine "bir şey oldu, gidip bak" der.
+   Gövde göndermez: oradaki kapı sayıyı bu istekten değil, doğrudan
+   Firestore'dan okur. Böylece buradan yanlış bir sayı geçemez.
+
+   Adres ve anahtar functions/.env dosyasından gelir. İkisi de tanımlı
+   değilse köprü sessizce atlanır — bu fonksiyonun asıl işi bildirim
+   göndermektir; köprü onun üstüne eklenmiş bir haberdir ve hiçbir
+   koşulda bildirimi engellememelidir.
+   ===================================================================== */
+async function oisHaberVer(): Promise<void> {
+  const adres = process.env.OIS_KOPRU_URL;
+  const anahtar = process.env.OIS_KOPRU_ANAHTARI;
+  if (!adres || !anahtar) return;
+  try {
+    const yanit = await fetch(adres, {
+      method: "POST",
+      headers: { "x-kopru-anahtari": anahtar },
+      signal: AbortSignal.timeout(8000),
+    });
+    console.log(`OIS köprüsü: ${yanit.status}`);
+  } catch (e) {
+    // İşletim sistemi kapalıysa kayıt yine de girilmiş olmalı. Köprü
+    // koparsa oradaki özet on beş dakikalık emniyet ağıyla tazelenir.
+    console.warn("OIS köprüsüne ulaşılamadı:", e);
+  }
+}
+
 export const yeniKayitBildirimi = onDocumentCreated("records/{kayitId}", async (event) => {
   const veri = event.data?.data();
   if (!veri) return;
 
   // Toplu aktarım bildirim üretmez
   if (veri.source !== "manual") return;
+
+  // Köprü bildirimden ÖNCE: bildirim tarafında bir hata çıksa bile işletim
+  // sistemi haberi almış olur.
+  await oisHaberVer();
 
   const okul = String(veri.Okul || "Bilinmeyen şube");
   const ogrenci = String(veri.studentName || "").trim();
