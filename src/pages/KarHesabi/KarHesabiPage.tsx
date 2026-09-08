@@ -5,6 +5,13 @@ import { useAuth } from "../../store/AuthContext";
 import { useRecords } from "../../hooks/useRecords";
 import { aktifDonem, donemListesi, egitimYili, kiyasDonem } from "../../constants/donem";
 import { finansOzetleri, type FinansOzetleri } from "../../services/karHesabiGider";
+// Model iki ekranda ortak: Kurs Hedefleri de aynı gider ve kâr eşiklerini okur.
+import {
+  KOLEKSIYON, ENFLASYON, KAR_HEDEFI, YKS_GIDER, LGS_GIDER,
+  YKS_HATLARI, LGS_HATLARI, sadelestir, moodMu,
+  VARSAYILAN_ARTIS, giderProjeksiyonu,
+  type Hedefler, type Artislar,
+} from "../../services/karHesabiModel";
 import SayiGirdisi from "../../components/ui/SayiGirdisi";
 import { ChevronDown } from "lucide-react";
 
@@ -24,28 +31,6 @@ import { ChevronDown } from "lucide-react";
    hedefi) dönem bazında Firestore'da saklanır.
    ===================================================================== */
 
-const KOLEKSIYON = "karHesabiVarsayimlari";
-
-/** TÜİK Temmuz 2026 yıllık TÜFE. Kutudan değiştirilebilir. */
-const ENFLASYON = 31.75;
-
-/** Kâr hedefi hat başına ayrı tutulabilir; varsayılan ikisinde de %20. */
-type Hedefler = { y: number; l: number };
-const KAR_HEDEFI: Hedefler = { y: 20, l: 20 };
-
-/** Finans'ta o döneme ait gider yoksa ekranın kendi varsayılanları. */
-const YKS_GIDER = 58_800_000;
-const LGS_GIDER = 16_000_000;
-
-// Okul adı veride farklı yazımlarla geçiyor ("Mefkure Plus", "MEFKURE Vip",
-// "Mefkure Vip"). Karşılaştırma Ana Sayfa'daki gibi sadeleştirilmiş metinle.
-const sadelestir = (s: unknown): string =>
-  String(s ?? "").toLocaleLowerCase("tr-TR").trim()
-    .replace(/ı/g, "i").replace(/ğ/g, "g").replace(/ü/g, "u")
-    .replace(/ş/g, "s").replace(/ö/g, "o").replace(/ç/g, "c");
-
-const YKS_HATLARI = ["mefkure plus", "mefkure vip"];
-const LGS_HATLARI = ["mefkure lgs"];
 
 /* Ekranda kullanıcının doldurduğu kutular — gider hariç, o türetiliyor.
    Ek kaynak kalemleri hatlara göre farklı: YKS'de MOOD var, LGS'de
@@ -66,9 +51,6 @@ const ALANLAR = {
 
 type Varsayimlar = Record<string, number>;
 
-/** Finans rakamlarını önümüzdeki döneme taşıyan yüzdeler. */
-type Artislar = { y_ciro: number; y_gider: number; l_ciro: number; l_gider: number };
-
 const TL = (n: number) => n.toLocaleString("tr-TR");
 const TLS = (n: number) => `${TL(Math.round(n))} ₺`;
 
@@ -78,9 +60,6 @@ const VARSAYILAN: Varsayimlar = {
   l_ogr: 45, l_ort: 170_000, l_biders: 0, l_ozel: 0, l_deneme: 0, l_yemek: 0, l_diger: 0,
 };
 
-const VARSAYILAN_ARTIS: Artislar = {
-  y_ciro: ENFLASYON, y_gider: ENFLASYON, l_ciro: ENFLASYON, l_gider: ENFLASYON,
-};
 
 /** Ekrandaki kutudan sayıyı okur: "5.000.000" → 5000000 */
 function kutuSayisi(belge: Document, kimlik: string): number {
@@ -300,7 +279,7 @@ export default function KarHesabiPage() {
       let ciro = 0;
       records.forEach((r) => {
         if (!hatlar.includes(sadelestir(r.Okul))) return;
-        if (moodHaric && sadelestir(r.Sınıf) === "mood") return;
+        if (moodHaric && moodMu(r.Sınıf)) return;
 
         const p = String(r.SözleşmeTarihi || "").split(".");
         if (p.length < 3) return;
@@ -401,11 +380,9 @@ export default function KarHesabiPage() {
      --------------------------------------------------------------- */
   const projeksiyon = useMemo(() => {
     const hat = (o: { ciro: number; gider: number; doluAy: number } | undefined, ciroArtis: number, giderArtis: number, yedekGider: number) => {
-      const veriVar = (o?.doluAy ?? 0) > 0;
+      const { gider, hamGider, veriVar } = giderProjeksiyonu(o, giderArtis, yedekGider);
       const hamCiro = o?.ciro ?? 0;
-      const hamGider = veriVar ? o!.gider : yedekGider;
       const ciro = Math.round(hamCiro * (1 + ciroArtis / 100));
-      const gider = Math.round(hamGider * (1 + giderArtis / 100));
       return { veriVar, hamCiro, hamGider, ciro, gider, kar: ciro - gider, hamKar: hamCiro - hamGider };
     };
     return {

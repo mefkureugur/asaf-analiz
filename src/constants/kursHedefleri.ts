@@ -24,7 +24,16 @@ export interface KursHedefi {
   ciro: number;
   /** Kartın vurgu rengi — tasarım tokenı */
   renk: string;
+  /**
+   * Kâr Hesabı'nın o hat için kullandığı yıllık gider varsayımı.
+   * Finans'ta o döneme ait gider varsa canlı rakam onun yerine geçer;
+   * bu yalnızca Finans boşken devreye giren yedek.
+   */
+  giderVarsayimi: number;
 }
+
+/** Kâr Hesabı'nın kâr marjı hedefi (%). İki hatta da aynı. */
+export const KAR_MARJ_HEDEFI = 25;
 
 /** Dönem → hat → hedef. Yeni dönem için buraya blok eklenir. */
 const HEDEFLER: Record<number, Record<KursHatti, KursHedefi>> = {
@@ -35,6 +44,7 @@ const HEDEFLER: Record<number, Record<KursHatti, KursHedefi>> = {
       ogrenci: 400,
       ciro: 80_000_000,
       renk: "var(--sube-plus)",
+      giderVarsayimi: 58_800_000,
     },
     lgs: {
       ad: "Mefkure LGS",
@@ -42,6 +52,7 @@ const HEDEFLER: Record<number, Record<KursHatti, KursHedefi>> = {
       ogrenci: 120,
       ciro: 23_000_000,
       renk: "var(--sube-lgs)",
+      giderVarsayimi: 16_000_000,
     },
   },
 };

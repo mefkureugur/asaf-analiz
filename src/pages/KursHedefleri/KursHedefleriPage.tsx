@@ -1,145 +1,204 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "../../store/AuthContext";
 import { useRecords, type Kayit } from "../../hooks/useRecords";
 import { useIsMobile } from "../../hooks/useMediaQuery";
-import { aktifDonem, kiyasDonem, tarihinYili } from "../../constants/donem";
+import { aktifDonem, egitimYili, kiyasDonem, tarihinYili } from "../../constants/donem";
 import { branchIdToKurumId } from "../../constants/kurumYetki";
+import { finansOzetleri } from "../../services/karHesabiGider";
+import {
+  karVarsayimlari, giderProjeksiyonu, karHedefiCirosu,
+  sadelestir, moodMu, YKS_GIDER, LGS_GIDER,
+  KAR_HEDEFI, VARSAYILAN_ARTIS,
+  type Hedefler, type Artislar,
+} from "../../services/karHesabiModel";
 import {
   kursHedefleri, HAT_OKULLARI,
   type KursHatti, type KursHedefi,
 } from "../../constants/kursHedefleri";
 
 /* =====================================================================
-   KURS HEDEF TAKİBİ
+   KURS HEDEFLERİ
 
-   Kurucular ve kurs müdürleri için ayrı bir ekran. Hedefler Hedefler
-   sayfasından değil kursHedefleri.ts'ten gelir; buradan değiştirilemez.
+   Bu ekran karne değil sayaç. Dönem 31 Aralık'ta kapanıyor; tek soru
+   "kalan günde ne yapılırsa hedef tutar".
 
-   Uyarı neye göre veriliyor:
-     Ham yüzde uyarı DEĞİLDİR — Mart'ta %40 iyidir, Eylül'de kötüdür.
-     Bunun yerine geçen dönemin AYNI TARİHİNDEKİ payı alınır ("geçen yıl
-     bugün, dönemin %62'si yazılmıştı") ve bu dönemin rakamı o paya
-     bölünerek dönem sonu tahmini bulunur. Mevsimsellik böyle hesaba
-     katılır; takvim yılına orantılı bir "tempo" yanıltıcı olurdu.
+   KÂR HESABI REFERANSI
+   Bütün para tarafı karHesabiModel'den gelir — gider, kâr marjı hedefi,
+   MOOD ayrımı, hat tanımları. Kâr Hesabı'nda gider Finans'ın rakamı ×
+   (1 + % artış), kâr eşiği de gider ÷ (1 − marj). Aynı fonksiyonlar
+   burada da çağrılıyor, kopyalanmıyor; iki ekran ayrışamaz.
 
-     Geçen dönem verisi yoksa tahmin yapılmaz, ekran bunu açıkça söyler.
+   Böylece öğrenci sayısı tek başına bırakılmıyor, üç eşik çıkıyor:
+     başabaş      gider ÷ ortalama       — sonrası kâra yazılır
+     %20 kâr      Kâr Hesabı'nın hedefi  — asıl bahis
+     dönem hedefi kurucuların rakamı
+
+   MOOD kayıtları YKS sayımına girmez: Kâr Hesabı'nda ayrı bir ek kaynak
+   kutusu olarak giriliyor, buradan da sayılsa iki kez toplanırdı.
+
+   TAHMİN
+   Ham yüzde yanıltır — Mart'ta %40 iyidir, Eylül'de değildir. Geçen
+   dönemin AYNI TARİHTEKİ payı alınıp bu dönemin rakamı ona bölünür.
+   Kıyas verisi yoksa tahmin uydurulmaz.
    ===================================================================== */
-
-const sadelestir = (s: unknown): string =>
-  String(s ?? "").toLocaleLowerCase("tr-TR").trim()
-    .replace(/ı/g, "i").replace(/ğ/g, "g").replace(/ü/g, "u")
-    .replace(/ş/g, "s").replace(/ö/g, "o").replace(/ç/g, "c");
 
 const TL = (n: number) => `${Math.round(n).toLocaleString("tr-TR")} ₺`;
 const MN = (n: number) =>
   `${(n / 1_000_000).toLocaleString("tr-TR", { maximumFractionDigits: 1 })} Mn ₺`;
 const YZ = (n: number) => `%${Math.round(n * 100)}`;
+const SAYI = (n: number) => Math.round(n).toLocaleString("tr-TR");
+const ONDALIK = (n: number) => n.toLocaleString("tr-TR", { maximumFractionDigits: 1 });
 
-/** "GG.AA.YYYY" → yılın kaçıncı gününe denk geldiği kabaca (ay*100+gün). */
+/** "GG.AA.YYYY" → ay*100+gün; yıl içi tarih karşılaştırması için. */
 function ayGun(tarih: string): number | null {
   const p = String(tarih).split(".");
-  if (p.length < 3) return null;
   const g = Number(p[0]); const a = Number(p[1]);
-  if (!Number.isFinite(g) || !Number.isFinite(a)) return null;
+  if (p.length < 3 || !Number.isFinite(g) || !Number.isFinite(a)) return null;
   return a * 100 + g;
 }
 
-type Durum = "ustunde" | "yakin" | "risk" | "tehlike" | "bilinmiyor";
+function tarihe(t: string): Date | null {
+  const p = String(t).split(".");
+  if (p.length < 3) return null;
+  const d = new Date(Number(p[2]), Number(p[1]) - 1, Number(p[0]));
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+/** 31 Aralık'a kalan gün — dönem o gün kapanır. */
+function kalanGun(): number {
+  const bugun = new Date();
+  const son = new Date(bugun.getFullYear(), 11, 31);
+  return Math.max(0, Math.ceil((son.getTime() - bugun.getTime()) / 86_400_000));
+}
+
+/* Rütbeler ileriye bakar: hiçbiri "olmadı" demez, hepsi "buradan sonrası
+   şöyle" der. Ekran suçlamak için değil harekete geçirmek için var. */
+type Durum = "onde" | "menzilde" | "hizlan" | "atak" | "bilinmiyor";
 
 const DURUM_BILGI: Record<Durum, { etiket: string; renk: string; simge: string }> = {
-  ustunde:    { etiket: "HEDEFİN ÜZERİNDE", renk: "var(--success)", simge: "▲" },
-  yakin:      { etiket: "HEDEFE YAKIN",     renk: "var(--accent)",  simge: "◆" },
-  risk:       { etiket: "RİSK ALTINDA",     renk: "var(--warning)", simge: "!" },
-  tehlike:    { etiket: "HEDEF TEHLİKEDE",  renk: "var(--danger)",  simge: "!!" },
-  bilinmiyor: { etiket: "TAHMİN YAPILAMADI", renk: "var(--text-3)", simge: "?" },
+  onde:       { etiket: "HEDEFİN ÖNÜNDE", renk: "var(--success)", simge: "▲" },
+  menzilde:   { etiket: "HEDEF MENZİLDE", renk: "var(--accent)",  simge: "◆" },
+  hizlan:     { etiket: "TEMPO ARTMALI",  renk: "var(--gold)",    simge: "▶" },
+  atak:       { etiket: "ATAK ZAMANI",    renk: "var(--warning)", simge: "▶▶" },
+  bilinmiyor: { etiket: "YOL BAŞINDA",    renk: "var(--text-3)",  simge: "·" },
 };
 
 interface HatOzeti {
   anahtar: KursHatti;
   hedef: KursHedefi;
+  /* --- üç temel rakam --- */
   ogrenci: number;
   ciro: number;
   ortalama: number;
   hedefOrtalama: number;
   ogrenciOran: number;
   ciroOran: number;
-  /** Geçen dönemin bugüne kadarki payı — tahminin dayanağı */
-  mevsimPayiOgrenci: number | null;
-  mevsimPayiCiro: number | null;
+  ortalamaOran: number;
+  /* --- tahmin --- */
+  mevsimPayi: number | null;
   tahminOgrenci: number | null;
   tahminCiro: number | null;
   durum: Durum;
-  /** Hedefi tutturmak için kalan kayıtların olması gereken ortalaması */
-  gerekenKalanOrt: number | null;
+  /* --- tempo --- */
   kalanOgrenci: number;
   kalanCiro: number;
+  gerekenGunluk: number;
+  suAnkiGunluk: number;
+  /* --- Kâr Hesabı köprüsü --- */
+  gider: number;
+  giderCanli: boolean;
+  karMarjHedefi: number;
+  basabasOgrenci: number;
+  karHedefiOgrenci: number;
+  hedefKar: number;
+  hedefMarj: number;
 }
 
-function hattiOzetle(anahtar: KursHatti, hedef: KursHedefi, kayitlar: Kayit[]): HatOzeti {
+function hattiOzetle(
+  anahtar: KursHatti, hedef: KursHedefi, kayitlar: Kayit[],
+  gider: number, giderCanli: boolean, karMarjHedefi: number,
+): HatOzeti {
   const donem = aktifDonem();
-  const gecen = kiyasDonem(donem);
   const bugun = new Date();
   const bugunAyGun = (bugun.getMonth() + 1) * 100 + bugun.getDate();
 
   const okullar = HAT_OKULLARI[anahtar];
-  const hattinKayitlari = kayitlar.filter((k) => okullar.includes(sadelestir(k.Okul)));
+  // MOOD hariç — Kâr Hesabı'ndaki sayımın aynısı.
+  const hattin = kayitlar.filter(
+    (k) => okullar.includes(sadelestir(k.Okul)) && !(anahtar === "yks" && moodMu(k.Sınıf)),
+  );
 
-  const buDonem = hattinKayitlari.filter((k) => tarihinYili(k.SözleşmeTarihi) === donem);
-  const gecenTum = hattinKayitlari.filter((k) => tarihinYili(k.SözleşmeTarihi) === gecen);
+  const buDonem = hattin.filter((k) => tarihinYili(k.SözleşmeTarihi) === donem);
+  const gecenTum = hattin.filter((k) => tarihinYili(k.SözleşmeTarihi) === kiyasDonem(donem));
   const gecenBugune = gecenTum.filter((k) => {
     const ag = ayGun(k.SözleşmeTarihi);
     return ag !== null && ag <= bugunAyGun;
   });
 
-  const topla = (liste: Kayit[]) => liste.reduce((t, k) => t + k.SonTutar, 0);
-
+  const topla = (l: Kayit[]) => l.reduce((t, k) => t + k.SonTutar, 0);
   const ogrenci = buDonem.length;
   const ciro = topla(buDonem);
+  const ortalama = ogrenci > 0 ? ciro / ogrenci : 0;
+  const hedefOrtalama = hedef.ciro / hedef.ogrenci;
 
-  const gecenTumCiro = topla(gecenTum);
-  const mevsimPayiOgrenci = gecenTum.length > 0 ? gecenBugune.length / gecenTum.length : null;
-  const mevsimPayiCiro = gecenTumCiro > 0 ? topla(gecenBugune) / gecenTumCiro : null;
+  const mevsimPayi = gecenTum.length > 0 ? gecenBugune.length / gecenTum.length : null;
+  const gecenCiro = topla(gecenTum);
+  const mevsimPayiCiro = gecenCiro > 0 ? topla(gecenBugune) / gecenCiro : null;
 
-  const tahminOgrenci = mevsimPayiOgrenci && mevsimPayiOgrenci > 0 ? ogrenci / mevsimPayiOgrenci : null;
+  const tahminOgrenci = mevsimPayi && mevsimPayi > 0 ? ogrenci / mevsimPayi : null;
   const tahminCiro = mevsimPayiCiro && mevsimPayiCiro > 0 ? ciro / mevsimPayiCiro : null;
 
   let durum: Durum = "bilinmiyor";
   if (tahminOgrenci !== null && tahminCiro !== null) {
     const oran = Math.min(tahminOgrenci / hedef.ogrenci, tahminCiro / hedef.ciro);
-    durum = oran >= 1 ? "ustunde" : oran >= 0.9 ? "yakin" : oran >= 0.75 ? "risk" : "tehlike";
+    durum = oran >= 1 ? "onde" : oran >= 0.9 ? "menzilde" : oran >= 0.75 ? "hizlan" : "atak";
   }
 
+  // Son 30 günün hızı: yıl başından ortalama alsaydık kayıt mevsimi
+  // yüzünden bugünkü tempo olduğundan düşük görünürdü.
+  const otuzGunOnce = new Date(bugun.getTime() - 30 * 86_400_000);
+  const sonOtuz = buDonem.filter((k) => {
+    const t = tarihe(k.SözleşmeTarihi);
+    return t !== null && t >= otuzGunOnce && t <= bugun;
+  }).length;
+
+  const kalan = kalanGun();
   const kalanOgrenci = Math.max(0, hedef.ogrenci - ogrenci);
-  const kalanCiro = Math.max(0, hedef.ciro - ciro);
+
+  // Eşikler ölçülürken gerçekleşen ortalama kullanılır; henüz kayıt yoksa
+  // hedefin gerektirdiği ortalamaya düşülür.
+  const olcuOrt = ortalama > 0 ? ortalama : hedefOrtalama;
 
   return {
-    anahtar, hedef, ogrenci, ciro,
-    ortalama: ogrenci > 0 ? ciro / ogrenci : 0,
-    hedefOrtalama: hedef.ciro / hedef.ogrenci,
+    anahtar, hedef, ogrenci, ciro, ortalama, hedefOrtalama,
     ogrenciOran: ogrenci / hedef.ogrenci,
     ciroOran: ciro / hedef.ciro,
-    mevsimPayiOgrenci, mevsimPayiCiro,
-    tahminOgrenci, tahminCiro,
-    durum,
-    gerekenKalanOrt: kalanOgrenci > 0 ? kalanCiro / kalanOgrenci : null,
-    kalanOgrenci, kalanCiro,
+    ortalamaOran: hedefOrtalama > 0 ? ortalama / hedefOrtalama : 0,
+    mevsimPayi, tahminOgrenci, tahminCiro, durum,
+    kalanOgrenci,
+    kalanCiro: Math.max(0, hedef.ciro - ciro),
+    gerekenGunluk: kalan > 0 ? kalanOgrenci / kalan : 0,
+    suAnkiGunluk: sonOtuz / 30,
+    gider, giderCanli, karMarjHedefi,
+    basabasOgrenci: Math.ceil(gider / olcuOrt),
+    karHedefiOgrenci: Math.ceil(karHedefiCirosu(gider, karMarjHedefi) / olcuOrt),
+    hedefKar: hedef.ciro - gider,
+    hedefMarj: hedef.ciro > 0 ? (hedef.ciro - gider) / hedef.ciro : 0,
   };
 }
 
 export default function KursHedefleriPage() {
   const { user } = useAuth();
   const isMobile = useIsMobile();
-
-  // Tek veri kaynagi: JSON/Firestore birlestirmesi ve iptal suzgeci
-  // useRecords icinde yapiliyor. Iptal edilen kayitlar buraya gelmez.
   const { records, loading } = useRecords();
 
   const donem = aktifDonem();
   const hedefler = kursHedefleri(donem);
+  const kalan = kalanGun();
 
   const kurucu = user?.role?.trim().toLowerCase() === "admin" || user?.email === "ugur@asaf.com";
 
-  /** Müdür yalnızca kendi hattını görür; kurucu ikisini birden. */
   const gorunenHatlar = useMemo<KursHatti[]>(() => {
     if (kurucu) return ["yks", "lgs"];
     const kurum = branchIdToKurumId(user?.branchId);
@@ -148,19 +207,64 @@ export default function KursHedefleriPage() {
     return [];
   }, [kurucu, user?.branchId]);
 
+  /* Gider ve kâr marjı hedefi Kâr Hesabı'nın okuduğu yerlerden gelir:
+     Finans'ın dönem gideri + kayıtlı % artış + kayıtlı marj hedefi. */
+  const [para, setPara] = useState<{
+    gider: Record<KursHatti, number>;
+    canli: Record<KursHatti, boolean>;
+    marj: Hedefler;
+  }>({
+    gider: { yks: YKS_GIDER, lgs: LGS_GIDER },
+    canli: { yks: false, lgs: false },
+    marj: KAR_HEDEFI,
+  });
+
+  useEffect(() => {
+    let iptal = false;
+    Promise.all([finansOzetleri(egitimYili(donem)), karVarsayimlari(donem)])
+      .then(([finans, v]: [Awaited<ReturnType<typeof finansOzetleri>>, { artis: Artislar; karHedefi: Hedefler }]) => {
+        if (iptal) return;
+        const y = giderProjeksiyonu(finans.yks, v.artis.y_gider, YKS_GIDER);
+        const l = giderProjeksiyonu(finans.lgs, v.artis.l_gider, LGS_GIDER);
+        setPara({
+          gider: { yks: y.gider, lgs: l.gider },
+          canli: { yks: y.veriVar, lgs: l.veriVar },
+          marj: v.karHedefi,
+        });
+      })
+      .catch(() => {
+        // Finans/varsayım okunamazsa Kâr Hesabı'nın yedek rakamlarıyla devam.
+        if (!iptal) {
+          setPara((o) => ({
+            ...o,
+            gider: {
+              yks: Math.round(YKS_GIDER * (1 + VARSAYILAN_ARTIS.y_gider / 100)),
+              lgs: Math.round(LGS_GIDER * (1 + VARSAYILAN_ARTIS.l_gider / 100)),
+            },
+          }));
+        }
+      });
+    return () => { iptal = true; };
+  }, [donem]);
+
   const ozetler = useMemo(() => {
     if (!hedefler) return [];
-    return gorunenHatlar.map((h) => hattiOzetle(h, hedefler[h], records));
-  }, [hedefler, gorunenHatlar, records]);
+    return gorunenHatlar.map((h) =>
+      hattiOzetle(
+        h, hedefler[h], records,
+        para.gider[h], para.canli[h],
+        h === "yks" ? para.marj.y : para.marj.l,
+      ),
+    );
+  }, [hedefler, gorunenHatlar, records, para]);
 
   if (!hedefler) {
     return (
       <div className="page rise" style={{ maxWidth: 1100 }}>
-        <Baslik donem={donem} />
-        <div style={bosKutu}>
-          <strong>{donem} dönemi</strong> için kurs hedefi tanımlı değil. Hedefler
-          dönem bazında tanımlanır; yeni dönemin rakamları girilene kadar takip
-          ekranı çalışmaz.
+        <Kahraman donem={donem} kalan={kalan} ozetler={[]} />
+        <div style={bilgiKutusu}>
+          <strong>{donem} dönemi</strong> için kurs hedefi tanımlı değil. Hedefler dönem
+          bazında tanımlanır; yeni dönemin rakamları girilene kadar bu ekran çalışmaz.
         </div>
       </div>
     );
@@ -169,19 +273,17 @@ export default function KursHedefleriPage() {
   if (gorunenHatlar.length === 0) {
     return (
       <div className="page rise" style={{ maxWidth: 1100 }}>
-        <Baslik donem={donem} />
-        <div style={bosKutu}>Bu ekran kurucular ve kurs müdürleri içindir.</div>
+        <Kahraman donem={donem} kalan={kalan} ozetler={[]} />
+        <div style={bilgiKutusu}>Bu ekran kurucular ve kurs müdürleri içindir.</div>
       </div>
     );
   }
 
   return (
     <div className="page rise" style={{ maxWidth: 1100 }}>
-      <Baslik donem={donem} />
+      <Kahraman donem={donem} kalan={kalan} ozetler={ozetler} />
 
-      {loading && (
-        <div style={{ ...bosKutu, marginBottom: "var(--sp-4)" }}>Kayıtlar yükleniyor…</div>
-      )}
+      {loading && <div style={{ ...bilgiKutusu, marginBottom: "var(--sp-4)" }}>Kayıtlar yükleniyor…</div>}
 
       <div
         style={{
@@ -195,29 +297,55 @@ export default function KursHedefleriPage() {
         ))}
       </div>
 
-      {kurucu && ozetler.length === 2 && <ToplamSerit ozetler={ozetler} />}
-
-      <p className="caption" style={{ marginTop: "var(--sp-5)", maxWidth: 640 }}>
-        Dönem sonu tahmini, geçen dönemin aynı tarihindeki payına göre hesaplanır;
-        takvime orantılı bir tempo yerine kayıt mevsimini esas alır. İptal edilen
-        kayıtlar hiçbir rakama girmez.
+      <p className="caption" style={{ marginTop: "var(--sp-5)", maxWidth: 720 }}>
+        Gider, kâr marjı hedefi ve MOOD ayrımı{" "}
+        <Link to="/kar-hesabi" style={{ color: "var(--accent)" }}>Kâr Hesabı</Link>'nın
+        kullandığı modelden okunur; iki ekran aynı rakamı verir. Dönem sonu tahmini
+        geçen dönemin aynı tarihindeki payına dayanır — takvime orantılı bir tempo
+        kayıt mevsimini görmezden gelirdi. İptal edilen kayıtlar hiçbir toplama girmez.
       </p>
     </div>
   );
 }
 
-/* ---------------------------------------------------------------- başlık */
+/* ------------------------------------------------------- kahraman şerit */
 
-function Baslik({ donem }: { donem: number }) {
+function Kahraman({ donem, kalan, ozetler }: { donem: number; kalan: number; ozetler: HatOzeti[] }) {
+  const ogr = ozetler.reduce((t, o) => t + o.ogrenci, 0);
+  const ciro = ozetler.reduce((t, o) => t + o.ciro, 0);
+  const kalanOgr = ozetler.reduce((t, o) => t + o.kalanOgrenci, 0);
+  const kalanCiro = ozetler.reduce((t, o) => t + o.kalanCiro, 0);
+  const hedefKar = ozetler.reduce((t, o) => t + o.hedefKar, 0);
+
   return (
     <header style={{ marginBottom: "var(--sp-6)" }}>
       <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-3)", flexWrap: "wrap" }}>
-        <h1 style={{ margin: 0, fontSize: "var(--t-display-size)" }}>Kurs Hedefleri</h1>
+        <h1 style={{ margin: 0 }}>Kurs Hedefleri</h1>
         <span style={donemRozeti}>{donem} DÖNEMİ</span>
       </div>
-      <p style={{ marginTop: "var(--sp-2)", marginBottom: 0, color: "var(--text-2)" }}>
-        Dönem sonu hedefleri ve bu tempoyla nereye varıldığı.
-      </p>
+
+      <div style={kahramanKutu}>
+        <div style={{ display: "flex", alignItems: "baseline", gap: "var(--sp-3)" }}>
+          <div className="num" style={geriSayimSayi}>{kalan}</div>
+          <div>
+            <div style={{ fontWeight: 800, fontSize: "1.05rem", letterSpacing: "-0.015em" }}>gün kaldı</div>
+            <div className="caption">31 Aralık {donem}'da dönem kapanıyor</div>
+          </div>
+        </div>
+
+        {ozetler.length > 0 && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "var(--sp-6)" }}>
+            <Kutucuk etiket="Bugüne kadar" deger={`${SAYI(ogr)} kayıt`} alt={MN(ciro)} />
+            <Kutucuk etiket="Hedefe kalan" deger={`${SAYI(kalanOgr)} kayıt`} alt={MN(kalanCiro)} />
+            <Kutucuk
+              etiket="Hedef tutarsa dönem kârı"
+              deger={MN(hedefKar)}
+              alt="Kâr Hesabı'ndaki gidere göre"
+              vurgu
+            />
+          </div>
+        )}
+      </div>
     </header>
   );
 }
@@ -227,30 +355,23 @@ function Baslik({ donem }: { donem: number }) {
 function HatKarti({ ozet, gecikme, isMobile }: { ozet: HatOzeti; gecikme: number; isMobile: boolean }) {
   const d = DURUM_BILGI[ozet.durum];
   const renk = ozet.hedef.renk;
-  const ortAcik = ozet.ogrenci > 0 && ozet.ortalama < ozet.hedefOrtalama;
 
   return (
     <section
       className={`card rise rise-${gecikme + 1}`}
-      style={{
-        padding: 0,
-        overflow: "hidden",
-        borderColor: `color-mix(in srgb, ${renk} 26%, var(--line))`,
-      }}
+      style={{ padding: 0, overflow: "hidden", borderColor: `color-mix(in srgb, ${renk} 26%, var(--line))` }}
     >
-      {/* Üst şerit: hattın rengi kartı sahiplenir */}
       <div style={{ height: 3, background: `linear-gradient(90deg, ${renk}, transparent)` }} />
 
       <div style={{ padding: "var(--sp-5)" }}>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "var(--sp-3)" }}>
           <div>
-            <h2 style={{ margin: 0, letterSpacing: "var(--t-title-ls)" }}>{ozet.hedef.ad}</h2>
+            <h2 style={{ margin: 0 }}>{ozet.hedef.ad}</h2>
             <div className="caption" style={{ marginTop: 2 }}>{ozet.hedef.hatlar.join(" + ")}</div>
           </div>
           <span
             style={{
-              ...durumRozeti,
-              color: d.renk,
+              ...durumRozeti, color: d.renk,
               borderColor: `color-mix(in srgb, ${d.renk} 40%, transparent)`,
               background: `color-mix(in srgb, ${d.renk} 12%, transparent)`,
             }}
@@ -259,245 +380,272 @@ function HatKarti({ ozet, gecikme, isMobile }: { ozet: HatOzeti; gecikme: number
           </span>
         </div>
 
-        {/* Hedef satırı */}
-        <div style={hedefSatiri}>
-          Hedef · <strong className="num">{ozet.hedef.ogrenci.toLocaleString("tr-TR")}</strong> öğrenci
-          {"  ·  "}
-          <strong className="num">{MN(ozet.hedef.ciro)}</strong>
-        </div>
-
-        {/* İki halka */}
-        <div style={{ display: "flex", gap: "var(--sp-5)", justifyContent: "center", margin: "var(--sp-5) 0" }}>
-          <Halka
+        {/* ÜÇ TEMEL RAKAM — ekranın omurgası */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "var(--sp-3)", marginTop: "var(--sp-5)" }}>
+          <Metrik
+            etiket="ÖĞRENCİ"
+            deger={SAYI(ozet.ogrenci)}
+            hedef={`hedef ${SAYI(ozet.hedef.ogrenci)}`}
             oran={ozet.ogrenciOran}
             renk={renk}
-            etiket="ÖĞRENCİ"
-            deger={`${ozet.ogrenci.toLocaleString("tr-TR")} / ${ozet.hedef.ogrenci.toLocaleString("tr-TR")}`}
-            boyut={isMobile ? 108 : 124}
           />
-          <Halka
+          <Metrik
+            etiket="CİRO"
+            deger={MN(ozet.ciro)}
+            hedef={`hedef ${MN(ozet.hedef.ciro)}`}
             oran={ozet.ciroOran}
             renk={renk}
-            etiket="CİRO"
-            deger={`${MN(ozet.ciro)} / ${MN(ozet.hedef.ciro)}`}
-            boyut={isMobile ? 108 : 124}
+          />
+          <Metrik
+            etiket="ORTALAMA"
+            deger={ozet.ogrenci > 0 ? TL(ozet.ortalama) : "—"}
+            hedef={`hedef ${TL(ozet.hedefOrtalama)}`}
+            oran={ozet.ortalamaOran}
+            renk={ozet.ortalamaOran >= 1 ? "var(--success)" : renk}
           />
         </div>
 
-        {/* Ortalama — hedefi tutturan asıl kaldıraç */}
-        <Satir
-          etiket="Kayıt başına ortalama"
-          deger={ozet.ogrenci > 0 ? TL(ozet.ortalama) : "—"}
-          altBilgi={`hedef ${TL(ozet.hedefOrtalama)}`}
-          renk={ortAcik ? "var(--danger)" : ozet.ogrenci > 0 ? "var(--success)" : undefined}
-          isaret={ortAcik ? "▼" : ozet.ogrenci > 0 ? "▲" : undefined}
-        />
+        {/* Kâr merdiveni */}
+        <Merdiven ozet={ozet} isMobile={isMobile} />
 
-        {/* Dönem sonu tahmini */}
+        {/* Tempo */}
+        <div style={{ display: "flex", gap: "var(--sp-3)", marginTop: "var(--sp-5)" }}>
+          <Tempo
+            etiket="Gereken tempo"
+            deger={`${ONDALIK(ozet.gerekenGunluk)} kayıt/gün`}
+            alt={`${SAYI(ozet.kalanOgrenci)} kayıt · ${kalanGun()} gün`}
+            renk={renk}
+          />
+          <Tempo
+            etiket="Son 30 günün temposu"
+            deger={`${ONDALIK(ozet.suAnkiGunluk)} kayıt/gün`}
+            alt={
+              ozet.suAnkiGunluk >= ozet.gerekenGunluk
+                ? "gereken tempodan hızlısın"
+                : `günde ${ONDALIK(ozet.gerekenGunluk - ozet.suAnkiGunluk)} kayıt daha`
+            }
+            renk={ozet.suAnkiGunluk >= ozet.gerekenGunluk ? "var(--success)" : "var(--text-2)"}
+          />
+        </div>
+
         {ozet.tahminOgrenci !== null && ozet.tahminCiro !== null ? (
           <Satir
-            etiket="Bu tempoyla dönem sonu"
-            deger={`${Math.round(ozet.tahminOgrenci).toLocaleString("tr-TR")} öğrenci · ${MN(ozet.tahminCiro)}`}
-            altBilgi={
-              ozet.mevsimPayiOgrenci !== null
-                ? `geçen dönem bugüne kadar ${YZ(ozet.mevsimPayiOgrenci)} yazılmıştı`
-                : undefined
-            }
-            renk={DURUM_BILGI[ozet.durum].renk}
+            etiket="Tempo aynı kalırsa dönem sonu"
+            deger={`${SAYI(ozet.tahminOgrenci)} kayıt · ${MN(ozet.tahminCiro)}`}
+            altBilgi={ozet.mevsimPayi !== null ? `geçen dönem bugüne kadar ${YZ(ozet.mevsimPayi)}'i yazılmıştı` : undefined}
+            renk={d.renk}
           />
         ) : (
           <Satir
-            etiket="Bu tempoyla dönem sonu"
-            deger="Hesaplanamadı"
-            altBilgi={`${kiyasDonem()} döneminde bu hatta kayıt yok`}
+            etiket="Tempo aynı kalırsa dönem sonu"
+            deger="Henüz hesaplanamıyor"
+            altBilgi={`${kiyasDonem()} döneminde bu hatta kıyas kaydı yok`}
           />
         )}
 
-        {/* Kalanın olması gereken ortalaması */}
-        {ozet.gerekenKalanOrt !== null && (
-          <Satir
-            etiket="Hedefe kalan"
-            deger={`${ozet.kalanOgrenci.toLocaleString("tr-TR")} öğrenci · ${MN(ozet.kalanCiro)}`}
-            altBilgi={`kalan kayıtların ortalaması ${TL(ozet.gerekenKalanOrt)} olmalı`}
-            renk={
-              ozet.ogrenci > 0 && ozet.gerekenKalanOrt > ozet.ortalama * 1.1
-                ? "var(--warning)"
-                : undefined
-            }
-          />
-        )}
-
-        {/* Uyarı metni: sayının ne anlama geldiği */}
-        <Uyari ozet={ozet} ortAcik={ortAcik} />
+        <Firsat ozet={ozet} />
       </div>
     </section>
   );
 }
 
-/* --------------------------------------------------------------- uyarı */
+/* ----------------------------------------------------------- merdiven */
 
-function Uyari({ ozet, ortAcik }: { ozet: HatOzeti; ortAcik: boolean }) {
-  const mesajlar: string[] = [];
+/**
+ * Üç eşik tek çubukta: başabaş → kâr hedefi → dönem hedefi.
+ * Yüzde tek başına "hedefin dörtte üçü" der; merdiven "başabaşı geçtin,
+ * kâr eşiğine şu kadar kaldı" der. Aradaki fark ekranın bütün tonu.
+ */
+function Merdiven({ ozet, isMobile }: { ozet: HatOzeti; isMobile: boolean }) {
+  const renk = ozet.hedef.renk;
+  const tavan = Math.max(ozet.hedef.ogrenci, ozet.ogrenci, ozet.karHedefiOgrenci) * 1.04;
+  const yer = (n: number) => `${Math.min(100, (n / tavan) * 100)}%`;
+  const dolu = Math.min(100, (ozet.ogrenci / tavan) * 100);
 
-  if (ozet.durum === "tehlike" || ozet.durum === "risk") {
-    const acik = ozet.tahminCiro !== null ? ozet.hedef.ciro - ozet.tahminCiro : 0;
-    mesajlar.push(
-      `Bu tempo sürerse dönem sonunda ciro hedefinin ${MN(Math.max(0, acik))} altında kalınır.`
-    );
-  }
-  if (ortAcik) {
-    mesajlar.push(
-      `Ortalama tutar hedefin ${TL(ozet.hedefOrtalama - ozet.ortalama)} altında; ` +
-      `öğrenci sayısı tutsa bile ciro tutmaz.`
-    );
-  }
-  if (ozet.ogrenciOran - ozet.ciroOran > 0.05) {
-    mesajlar.push(
-      `Öğrenci ilerlemesi ${YZ(ozet.ogrenciOran)}, ciro ilerlemesi ${YZ(ozet.ciroOran)} — ` +
-      `makas indirim tarafında açılıyor.`
-    );
-  }
-  if (ozet.durum === "ustunde" && mesajlar.length === 0) {
-    mesajlar.push("Her iki hedef de bu tempoyla tutuyor.");
-  }
+  // Sıra değere göre: LGS'de %20 kâr eşiği dönem hedefinin üstüne düşebiliyor,
+  // sabit sırada yazılsa etiketler çubuktaki çizgilerle ters düşerdi.
+  const esikler = [
+    { n: ozet.basabasOgrenci, ad: "başabaş", renk: "var(--text-3)" },
+    { n: ozet.karHedefiOgrenci, ad: `%${String(ozet.karMarjHedefi).replace(".", ",")} kâr`, renk: "var(--gold)" },
+    { n: ozet.hedef.ogrenci, ad: "dönem hedefi", renk },
+  ].sort((a, b) => a.n - b.n);
 
-  if (mesajlar.length === 0) return null;
+  return (
+    <div style={{ marginTop: "var(--sp-5)" }}>
+      <div className="label" style={{ marginBottom: "var(--sp-2)" }}>KÂR MERDİVENİ</div>
 
+      <div style={{ position: "relative", height: 10, borderRadius: "var(--r-full)", background: "var(--surface-raised)", border: "1px solid var(--line)" }}>
+        <div
+          style={{
+            position: "absolute", inset: "0 auto 0 0", width: `${dolu}%`,
+            borderRadius: "var(--r-full)",
+            background: `linear-gradient(90deg, color-mix(in srgb, ${renk} 55%, transparent), ${renk})`,
+            transition: "width var(--dur-med) var(--ease-out)",
+          }}
+        />
+        {esikler.map((e) => (
+          <div
+            key={e.ad}
+            title={`${e.ad}: ${SAYI(e.n)} kayıt`}
+            style={{ position: "absolute", top: -3, bottom: -3, left: yer(e.n), width: 2, background: e.renk, borderRadius: 1 }}
+          />
+        ))}
+      </div>
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: isMobile ? "1fr 1fr 1fr" : "repeat(3, 1fr)",
+          gap: "var(--sp-2)", marginTop: "var(--sp-3)",
+        }}
+      >
+        {esikler.map((e) => {
+          const gecildi = ozet.ogrenci >= e.n;
+          return (
+            <div key={e.ad} style={{ borderLeft: `2px solid ${e.renk}`, paddingLeft: "var(--sp-2)" }}>
+              <div className="caption" style={{ textTransform: "uppercase", letterSpacing: "var(--t-label-ls)" }}>{e.ad}</div>
+              <div className="num" style={{ fontWeight: 700, fontSize: "0.9rem" }}>{SAYI(e.n)}</div>
+              <div className="caption" style={{ color: gecildi ? "var(--success)" : "var(--text-3)" }}>
+                {gecildi ? "geçildi ✓" : `${SAYI(e.n - ozet.ogrenci)} kayıt`}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------- fırsat */
+
+/** Kartın kapanışı: ne kaybedileceği değil, kalan günde ne kazanılacağı. */
+function Firsat({ ozet }: { ozet: HatOzeti }) {
   const renk = DURUM_BILGI[ozet.durum].renk;
+  const kalan = kalanGun();
+  const gunluk = (n: number) => ONDALIK(n / Math.max(1, kalan));
+  const marj = String(ozet.karMarjHedefi).replace(".", ",");
+  const satirlar: string[] = [];
+
+  if (ozet.ogrenci >= ozet.karHedefiOgrenci) {
+    satirlar.push(
+      `%${marj} kâr eşiği geçildi. Bundan sonraki her kayıt doğrudan kâra yazılıyor — ` +
+      `kayıt başına yaklaşık ${TL(ozet.ortalama > 0 ? ozet.ortalama : ozet.hedefOrtalama)}.`
+    );
+  } else if (ozet.ogrenci >= ozet.basabasOgrenci) {
+    const fark = ozet.karHedefiOgrenci - ozet.ogrenci;
+    satirlar.push(
+      `Gider çıktı, kâr bölgesindesin. %${marj} kâr eşiğine ${SAYI(fark)} kayıt var — ` +
+      `kalan ${kalan} günde günde ${gunluk(fark)} kayıt yetiyor.`
+    );
+  } else {
+    const fark = ozet.basabasOgrenci - ozet.ogrenci;
+    satirlar.push(
+      `Başabaşa ${SAYI(fark)} kayıt kaldı; ondan sonraki her kayıt doğrudan kâr. ` +
+      `Kalan ${kalan} günde günde ${gunluk(fark)} kayıt bu eşiği açıyor.`
+    );
+  }
+
+  if (ozet.kalanOgrenci > 0) {
+    satirlar.push(
+      `Hedefe kalan ${SAYI(ozet.kalanOgrenci)} kaydın tamamı gelirse dönem kârı ` +
+      `${MN(ozet.hedefKar)} olur (marj ${YZ(ozet.hedefMarj)}).`
+    );
+  }
+
+  if (ozet.hedefMarj * 100 < ozet.karMarjHedefi) {
+    satirlar.push(
+      `Dönem hedefinin marjı ${YZ(ozet.hedefMarj)}; Kâr Hesabı'ndaki %${marj} eşiği için ` +
+      `${SAYI(ozet.karHedefiOgrenci)} kayıt ya da ortalamanın ` +
+      `${TL(karHedefiCirosu(ozet.gider, ozet.karMarjHedefi) / ozet.hedef.ogrenci)} olması gerekir.`
+    );
+  }
+
+  if (ozet.ogrenci > 0 && ozet.ortalama < ozet.hedefOrtalama) {
+    const artis = ozet.hedefOrtalama - ozet.ortalama;
+    const denk = Math.ceil((artis * ozet.ogrenci) / ozet.hedefOrtalama);
+    satirlar.push(
+      `Ortalamayı kayıt başına ${TL(artis)} yukarı çekmek, ${SAYI(denk)} yeni kayıt ` +
+      `bulmakla aynı kapıya çıkıyor — indirim masasında kazanılacak yer var.`
+    );
+  }
 
   return (
     <div
-      role={ozet.durum === "tehlike" ? "alert" : undefined}
       style={{
-        marginTop: "var(--sp-4)",
-        padding: "var(--sp-3) var(--sp-4)",
+        marginTop: "var(--sp-4)", padding: "var(--sp-3) var(--sp-4)",
         borderRadius: "var(--r-md)",
         background: `color-mix(in srgb, ${renk} 10%, transparent)`,
-        border: `1px solid color-mix(in srgb, ${renk} 32%, transparent)`,
-        display: "flex",
-        flexDirection: "column",
-        gap: "var(--sp-2)",
+        border: `1px solid color-mix(in srgb, ${renk} 30%, transparent)`,
+        display: "flex", flexDirection: "column", gap: "var(--sp-2)",
       }}
     >
-      {mesajlar.map((m, i) => (
-        <div key={i} style={{ fontSize: "0.85rem", lineHeight: 1.45, color: "var(--text)" }}>
-          {m}
-        </div>
+      {satirlar.map((m, i) => (
+        <div key={i} style={{ fontSize: "0.85rem", lineHeight: 1.45, color: "var(--text)" }}>{m}</div>
       ))}
-    </div>
-  );
-}
-
-/* --------------------------------------------------------------- halka */
-
-function Halka({
-  oran, renk, etiket, deger, boyut,
-}: { oran: number; renk: string; etiket: string; deger: string; boyut: number }) {
-  const kalinlik = Math.round(boyut * 0.085);
-  const r = (boyut - kalinlik) / 2;
-  const cevre = 2 * Math.PI * r;
-  const dolu = Math.min(1, Math.max(0, oran));
-
-  return (
-    <div style={{ textAlign: "center" }}>
-      <div style={{ position: "relative", width: boyut, height: boyut }}>
-        <svg width={boyut} height={boyut} style={{ transform: "rotate(-90deg)" }} aria-hidden>
-          <circle
-            cx={boyut / 2} cy={boyut / 2} r={r}
-            fill="none" strokeWidth={kalinlik}
-            stroke="color-mix(in srgb, var(--line-strong) 55%, transparent)"
-          />
-          <circle
-            cx={boyut / 2} cy={boyut / 2} r={r}
-            fill="none" strokeWidth={kalinlik} strokeLinecap="round"
-            stroke={renk}
-            strokeDasharray={cevre}
-            strokeDashoffset={cevre * (1 - dolu)}
-            style={{ transition: "stroke-dashoffset var(--dur-med) var(--ease-out)" }}
-          />
-        </svg>
-        <div style={halkaIci}>
-          <div className="num" style={{ fontSize: boyut * 0.24, fontWeight: 800, letterSpacing: "-0.02em" }}>
-            {YZ(oran)}
-          </div>
-        </div>
+      <div className="caption">
+        Gider {TL(ozet.gider)}
+        {ozet.giderCanli ? " — Finans'tan, Kâr Hesabı'ndaki % artışla" : " — Finans'ta bu dönem verisi yok, Kâr Hesabı'nın varsayımı"}
+        {ozet.anahtar === "yks" && " · MOOD kayıtları sayıma girmez"}
       </div>
-      <div className="label" style={{ marginTop: "var(--sp-2)" }}>{etiket}</div>
-      <div className="caption num" style={{ marginTop: 1 }}>{deger}</div>
     </div>
   );
 }
 
-/* ---------------------------------------------------------------- satır */
+/* ------------------------------------------------------------- parçalar */
 
-function Satir({
-  etiket, deger, altBilgi, renk, isaret,
-}: { etiket: string; deger: string; altBilgi?: string; renk?: string; isaret?: string }) {
+function Metrik({ etiket, deger, hedef, oran, renk }: {
+  etiket: string; deger: string; hedef: string; oran: number; renk: string;
+}) {
   return (
-    <div className="data-row" style={{ alignItems: "flex-start" }}>
+    <div>
+      <div className="caption" style={{ textTransform: "uppercase", letterSpacing: "var(--t-label-ls)", fontWeight: 700 }}>
+        {etiket}
+      </div>
+      <div className="num" style={{ fontSize: "1.25rem", fontWeight: 800, letterSpacing: "-0.02em", marginTop: 2, whiteSpace: "nowrap" }}>
+        {deger}
+      </div>
+      <div style={{ height: 4, borderRadius: "var(--r-full)", background: "var(--surface-raised)", border: "1px solid var(--line)", marginTop: "var(--sp-2)", overflow: "hidden" }}>
+        <div
+          style={{
+            height: "100%", width: `${Math.min(100, Math.max(0, oran * 100))}%`,
+            background: renk, transition: "width var(--dur-med) var(--ease-out)",
+          }}
+        />
+      </div>
+      <div className="caption num" style={{ marginTop: 3 }}>{YZ(oran)} · {hedef}</div>
+    </div>
+  );
+}
+
+function Tempo({ etiket, deger, alt, renk }: { etiket: string; deger: string; alt: string; renk: string }) {
+  return (
+    <div style={{ flex: 1, background: "var(--surface-raised)", border: "1px solid var(--line)", borderRadius: "var(--r-md)", padding: "var(--sp-3)" }}>
+      <div className="caption" style={{ textTransform: "uppercase", letterSpacing: "var(--t-label-ls)" }}>{etiket}</div>
+      <div className="num" style={{ fontWeight: 800, fontSize: "1.05rem", letterSpacing: "-0.015em", marginTop: 2, color: renk }}>{deger}</div>
+      <div className="caption" style={{ marginTop: 1 }}>{alt}</div>
+    </div>
+  );
+}
+
+function Satir({ etiket, deger, altBilgi, renk }: { etiket: string; deger: string; altBilgi?: string; renk?: string }) {
+  return (
+    <div className="data-row" style={{ alignItems: "flex-start", marginTop: "var(--sp-2)" }}>
       <div>
         <div style={{ fontSize: "0.85rem", color: "var(--text-2)", fontWeight: 500 }}>{etiket}</div>
         {altBilgi && <div className="caption" style={{ marginTop: 2 }}>{altBilgi}</div>}
       </div>
-      <div
-        className="num"
-        style={{
-          fontWeight: 700, fontSize: "0.92rem", textAlign: "right",
-          color: renk || "var(--text)", whiteSpace: "nowrap",
-        }}
-      >
-        {isaret && <span style={{ marginRight: 4 }}>{isaret}</span>}
+      <div className="num" style={{ fontWeight: 700, fontSize: "0.92rem", textAlign: "right", color: renk || "var(--text)", whiteSpace: "nowrap" }}>
         {deger}
       </div>
     </div>
   );
 }
 
-/* ------------------------------------------------- kurucu toplam şeridi */
-
-function ToplamSerit({ ozetler }: { ozetler: HatOzeti[] }) {
-  const hedefOgr = ozetler.reduce((t, o) => t + o.hedef.ogrenci, 0);
-  const hedefCiro = ozetler.reduce((t, o) => t + o.hedef.ciro, 0);
-  const ogr = ozetler.reduce((t, o) => t + o.ogrenci, 0);
-  const ciro = ozetler.reduce((t, o) => t + o.ciro, 0);
-  const tahminCiro = ozetler.every((o) => o.tahminCiro !== null)
-    ? ozetler.reduce((t, o) => t + (o.tahminCiro as number), 0)
-    : null;
-
-  return (
-    <section className="card rise rise-3" style={{ marginTop: "var(--sp-5)" }}>
-      <div className="label" style={{ marginBottom: "var(--sp-3)" }}>KURSLAR TOPLAMI</div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "var(--sp-6)" }}>
-        <Kutucuk
-          etiket="Öğrenci"
-          deger={`${ogr.toLocaleString("tr-TR")} / ${hedefOgr.toLocaleString("tr-TR")}`}
-          alt={YZ(ogr / hedefOgr)}
-        />
-        <Kutucuk
-          etiket="Ciro"
-          deger={`${MN(ciro)} / ${MN(hedefCiro)}`}
-          alt={YZ(ciro / hedefCiro)}
-        />
-        <Kutucuk
-          etiket="Kayıt başına ortalama"
-          deger={ogr > 0 ? TL(ciro / ogr) : "—"}
-          alt={`hedef ${TL(hedefCiro / hedefOgr)}`}
-        />
-        <Kutucuk
-          etiket="Dönem sonu ciro tahmini"
-          deger={tahminCiro !== null ? MN(tahminCiro) : "—"}
-          alt={tahminCiro !== null ? `hedefin ${YZ(tahminCiro / hedefCiro)}'i` : "hesaplanamadı"}
-        />
-      </div>
-    </section>
-  );
-}
-
-function Kutucuk({ etiket, deger, alt }: { etiket: string; deger: string; alt: string }) {
+function Kutucuk({ etiket, deger, alt, vurgu }: { etiket: string; deger: string; alt: string; vurgu?: boolean }) {
   return (
     <div>
-      <div className="caption">{etiket}</div>
-      <div className="num" style={{ fontSize: "1.15rem", fontWeight: 800, letterSpacing: "-0.015em", marginTop: 2 }}>
+      <div className="caption" style={{ textTransform: "uppercase", letterSpacing: "var(--t-label-ls)" }}>{etiket}</div>
+      <div className="num" style={{ fontSize: "1.3rem", fontWeight: 800, letterSpacing: "-0.02em", marginTop: 2, color: vurgu ? "var(--success)" : "var(--text)" }}>
         {deger}
       </div>
       <div className="caption" style={{ marginTop: 1 }}>{alt}</div>
@@ -506,6 +654,28 @@ function Kutucuk({ etiket, deger, alt }: { etiket: string; deger: string; alt: s
 }
 
 /* --------------------------------------------------------------- stiller */
+
+const kahramanKutu: React.CSSProperties = {
+  marginTop: "var(--sp-4)",
+  padding: "var(--sp-5)",
+  borderRadius: "var(--r-lg)",
+  background: "var(--surface)",
+  border: "1px solid var(--line)",
+  boxShadow: "var(--shadow-sm), inset 0 1px 0 var(--material-edge)",
+  display: "flex",
+  flexWrap: "wrap",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: "var(--sp-5)",
+};
+
+const geriSayimSayi: React.CSSProperties = {
+  fontSize: "clamp(2.6rem, 8vw, 3.6rem)",
+  fontWeight: 800,
+  lineHeight: 1,
+  letterSpacing: "-0.04em",
+  color: "var(--accent)",
+};
 
 const donemRozeti: React.CSSProperties = {
   fontSize: "var(--t-label-size)",
@@ -530,28 +700,9 @@ const durumRozeti: React.CSSProperties = {
   flexShrink: 0,
 };
 
-const hedefSatiri: React.CSSProperties = {
-  marginTop: "var(--sp-4)",
-  padding: "var(--sp-2) var(--sp-3)",
-  borderRadius: "var(--r-sm)",
-  background: "var(--surface-raised)",
-  border: "1px solid var(--line)",
-  fontSize: "0.85rem",
-  color: "var(--text-2)",
-};
-
-const halkaIci: React.CSSProperties = {
-  position: "absolute",
-  inset: 0,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  flexDirection: "column",
-};
-
-const bosKutu: React.CSSProperties = {
-  background: "color-mix(in srgb, var(--warning) 10%, transparent)",
-  border: "1px solid color-mix(in srgb, var(--warning) 35%, transparent)",
+const bilgiKutusu: React.CSSProperties = {
+  background: "color-mix(in srgb, var(--accent) 10%, transparent)",
+  border: "1px solid color-mix(in srgb, var(--accent) 30%, transparent)",
   borderRadius: "var(--r-md)",
   padding: "var(--sp-4)",
   color: "var(--text)",
