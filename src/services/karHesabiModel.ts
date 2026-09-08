@@ -93,6 +93,10 @@ export interface KayitliVarsayimlar {
   karHedefi: Hedefler;
   /** Hat başına ek kaynak toplamı — Kâr Hesabı bunu ciroya ekler. */
   ekKaynak: Hedefler;
+  /** "Bu saatten sonra" beklenen öğrenci sayısı, hat başına. */
+  beklenenOgrenci: Hedefler;
+  /** O öğrencilerin varsayılan kayıt ortalaması, hat başına. */
+  beklenenOrtalama: Hedefler;
 }
 
 /** Dönemin kayıtlı varsayımları; belge yoksa varsayılanlar döner. */
@@ -110,8 +114,13 @@ export async function karVarsayimlari(donem: number): Promise<KayitliVarsayimlar
   // Eski kayıtlarda tek bir karHedefi vardı; o da geçerli sayılır.
   const eski = typeof d?.karHedefi === "number" ? d.karHedefi : null;
 
+  const kutu = (anahtar: string) =>
+    typeof d?.[anahtar] === "number" ? (d[anahtar] as number) : (VARSAYILAN[anahtar] ?? 0);
+
   return {
     ekKaynak: { y: ekKaynakToplami(d, "y"), l: ekKaynakToplami(d, "l") },
+    beklenenOgrenci: { y: kutu("y_ogr"), l: kutu("l_ogr") },
+    beklenenOrtalama: { y: kutu("y_ort"), l: kutu("l_ort") },
     artis: {
       y_ciro: sayi(d?.artis_y_ciro, ENFLASYON),
       y_gider: sayi(d?.artis_y_gider, ENFLASYON),
@@ -143,4 +152,33 @@ export function giderProjeksiyonu(
 /** O kâr marjına ulaştıran ciro: gider ÷ (1 − marj). */
 export function karHedefiCirosu(gider: number, marjYuzdesi: number): number {
   return marjYuzdesi < 100 ? gider / (1 - marjYuzdesi / 100) : 0;
+}
+
+/**
+ * Kâr Hesabı'ndaki "Kurum toplamı" satırlarının aynısı.
+ *
+ * Yıl sonu öğrenci = bugüne kadar gerçekleşen + bu saatten sonra beklenen
+ * Ciro            = gerçekleşen ciro + (beklenen × ortalama) + ek kaynaklar
+ * Kâr             = ciro − gider
+ *
+ * İki ekranın aynı rakamı vermesi bu fonksiyondan geçiyor; formül burada
+ * bir kez duruyor, kopyalanmıyor.
+ */
+export function kurumToplami(girdi: {
+  gerceklesenOgrenci: number;
+  gerceklesenCiro: number;
+  beklenenOgrenci: number;
+  beklenenOrtalama: number;
+  ekKaynak: number;
+  gider: number;
+}): { ogrenci: number; ciro: number; gider: number; kar: number; marj: number } {
+  const ciro =
+    girdi.gerceklesenCiro + girdi.beklenenOgrenci * girdi.beklenenOrtalama + girdi.ekKaynak;
+  return {
+    ogrenci: girdi.gerceklesenOgrenci + girdi.beklenenOgrenci,
+    ciro,
+    gider: girdi.gider,
+    kar: ciro - girdi.gider,
+    marj: ciro > 0 ? (ciro - girdi.gider) / ciro : 0,
+  };
 }

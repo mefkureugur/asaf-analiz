@@ -7,7 +7,7 @@ import { aktifDonem, egitimYili, kiyasDonem, tarihinYili } from "../../constants
 import { branchIdToKurumId } from "../../constants/kurumYetki";
 import { finansOzetleri } from "../../services/karHesabiGider";
 import {
-  karVarsayimlari, giderProjeksiyonu, karHedefiCirosu, ekKaynakToplami,
+  karVarsayimlari, giderProjeksiyonu, karHedefiCirosu, ekKaynakToplami, kurumToplami,
   sadelestir, moodMu, YKS_GIDER, LGS_GIDER,
   KAR_HEDEFI, VARSAYILAN_ARTIS,
   type Hedefler, type Artislar,
@@ -123,6 +123,13 @@ interface HatOzeti {
   olcuOrtalama: number;
   /** Kâr marjı hedefine ulaştıran ciro. */
   karHedefiCiro: number;
+  /* --- Kâr Hesabı "Kurum toplamı" satırlarının aynısı --- */
+  beklenenOgrenci: number;
+  beklenenOrtalama: number;
+  yilSonuOgrenci: number;
+  yilSonuCiro: number;
+  yilSonuKar: number;
+  yilSonuMarj: number;
   hedefKar: number;
   hedefMarj: number;
 }
@@ -130,6 +137,7 @@ interface HatOzeti {
 function hattiOzetle(
   anahtar: KursHatti, hedef: KursHedefi, kayitlar: Kayit[],
   gider: number, giderCanli: boolean, karMarjHedefi: number, ekKaynak: number,
+  beklenenOgrenci: number, beklenenOrtalama: number,
 ): HatOzeti {
   const donem = aktifDonem();
   const bugun = new Date();
@@ -141,7 +149,14 @@ function hattiOzetle(
     (k) => okullar.includes(sadelestir(k.Okul)) && !(anahtar === "yks" && moodMu(k.Sınıf)),
   );
 
-  const buDonem = hattin.filter((k) => tarihinYili(k.SözleşmeTarihi) === donem);
+  // Kâr Hesabı "bugüne kadar" sayar: sözleşme tarihi bugünden sonra olan
+  // kayıtlar gerçekleşmiş sayılmaz. Burada tüm takvim yılı sayılıyordu ve
+  // iki ekran farklı "gerçekleşen" gösteriyordu.
+  const buDonem = hattin.filter((k) => {
+    if (tarihinYili(k.SözleşmeTarihi) !== donem) return false;
+    const ag = ayGun(k.SözleşmeTarihi);
+    return ag !== null && ag <= bugunAyGun;
+  });
   const gecenTum = hattin.filter((k) => tarihinYili(k.SözleşmeTarihi) === kiyasDonem(donem));
   const gecenBugune = gecenTum.filter((k) => {
     const ag = ayGun(k.SözleşmeTarihi);
@@ -189,7 +204,19 @@ function hattiOzetle(
   // hedefin gerektirdiği ortalamaya düşülür.
   const olcuOrt = ortalama > 0 ? ortalama : hedefOrtalama;
 
+  // Kâr Hesabı'nın alt tablosundaki satırların aynısı — formül ortak
+  // modelde, burada yalnızca çağrılıyor.
+  const yilSonu = kurumToplami({
+    gerceklesenOgrenci: ogrenci, gerceklesenCiro: ciro,
+    beklenenOgrenci, beklenenOrtalama, ekKaynak, gider,
+  });
+
   return {
+    beklenenOgrenci, beklenenOrtalama,
+    yilSonuOgrenci: yilSonu.ogrenci,
+    yilSonuCiro: yilSonu.ciro,
+    yilSonuKar: yilSonu.kar,
+    yilSonuMarj: yilSonu.marj,
     anahtar, hedef, ogrenci, ciro, ortalama, hedefOrtalama,
     ogrenciOran: ogrenci / hedef.ogrenci,
     ciroOran: ciro / hedef.ciro,
@@ -243,12 +270,16 @@ export default function KursHedefleriPage() {
     canli: Record<KursHatti, boolean>;
     marj: Hedefler;
     ek: Hedefler;
+    beklenen: Hedefler;
+    beklenenOrt: Hedefler;
   }>({
     gider: { yks: YKS_GIDER, lgs: LGS_GIDER },
     canli: { yks: false, lgs: false },
     marj: KAR_HEDEFI,
     // Kaydedilmiş varsayım gelene kadar ekranın kendi varsayılanları.
     ek: { y: ekKaynakToplami(null, "y"), l: ekKaynakToplami(null, "l") },
+    beklenen: { y: 0, l: 0 },
+    beklenenOrt: { y: 0, l: 0 },
   });
 
   useEffect(() => {
@@ -263,6 +294,8 @@ export default function KursHedefleriPage() {
           canli: { yks: y.veriVar, lgs: l.veriVar },
           marj: v.karHedefi,
           ek: v.ekKaynak,
+          beklenen: v.beklenenOgrenci,
+          beklenenOrt: v.beklenenOrtalama,
         });
       })
       .catch(() => {
@@ -288,6 +321,8 @@ export default function KursHedefleriPage() {
         para.gider[h], para.canli[h],
         h === "yks" ? para.marj.y : para.marj.l,
         h === "yks" ? para.ek.y : para.ek.l,
+        h === "yks" ? para.beklenen.y : para.beklenen.l,
+        h === "yks" ? para.beklenenOrt.y : para.beklenenOrt.l,
       ),
     );
   }, [hedefler, gorunenHatlar, records, para]);
@@ -320,6 +355,7 @@ export default function KursHedefleriPage() {
       {loading && <div style={{ ...bilgiKutusu, marginBottom: "var(--sp-4)" }}>Kayıtlar yükleniyor…</div>}
 
       <KalanTablosu ozetler={ozetler} />
+      <KarHesabiTablosu ozetler={ozetler} />
 
       <div
         style={{
@@ -405,21 +441,15 @@ function KalanTablosu({ ozetler }: { ozetler: HatOzeti[] }) {
   const toplamCiro = ozetler.reduce((t, o) => t + o.kalanCiro, 0);
   const toplamHedefOgr = ozetler.reduce((t, o) => t + o.hedef.ogrenci, 0);
   const toplamHedefCiro = ozetler.reduce((t, o) => t + o.hedef.ciro, 0);
-  const toplamKar = ozetler.reduce((t, o) => t + o.hedefKar, 0);
-  const toplamEk = ozetler.reduce((t, o) => t + o.ekKaynak, 0);
 
   return (
     <section className="card rise" style={{ marginBottom: "var(--sp-5)" }}>
       <div className="label" style={{ marginBottom: "var(--sp-3)" }}>HEDEFE KALAN</div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr auto auto auto", gap: "var(--sp-3) var(--sp-5)", alignItems: "baseline" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr auto auto", gap: "var(--sp-3) var(--sp-5)", alignItems: "baseline" }}>
         <div className="caption" />
         <div className="caption" style={baslikHucre}>Öğrenci</div>
         <div className="caption" style={baslikHucre}>Ciro</div>
-        {/* Kâr, Kâr Hesabı'ndaki modelin verdiği rakam: hedef ciro + ek
-            kaynaklar − gider. Kalan iki sütun "ne lazım", bu sütun
-            "tutarsa ne kazanılır" diyor. */}
-        <div className="caption" style={baslikHucre}>Hedef tutarsa kâr</div>
 
         {ozetler.map((o) => (
           <Fragment key={o.anahtar}>
@@ -437,7 +467,6 @@ function KalanTablosu({ ozetler }: { ozetler: HatOzeti[] }) {
               alt={`${MN(o.ciro)} / ${MN(o.hedef.ciro)}`}
               asildi={o.kalanCiro === 0}
             />
-            <KalanHucre deger={MN(o.hedefKar)} alt={`marj ${YZ(o.hedefMarj)}`} asildi vurgu />
           </Fragment>
         ))}
 
@@ -462,13 +491,7 @@ function KalanTablosu({ ozetler }: { ozetler: HatOzeti[] }) {
                 kalin
               />
             </div>
-            <div style={genelSatir}>
-              <KalanHucre
-                deger={MN(toplamKar)}
-                alt={`marj ${YZ(toplamHedefCiro + toplamEk > 0 ? toplamKar / (toplamHedefCiro + toplamEk) : 0)}`}
-                asildi vurgu kalin
-              />
-            </div>
+
           </>
         )}
       </div>
@@ -495,6 +518,79 @@ function KalanHucre({ deger, alt, asildi, kalin, vurgu }: {
       </div>
       <div className="caption num">{alt}</div>
     </div>
+  );
+}
+
+/* ---------------------------------------------------- kâr hesabı tablosu */
+
+/**
+ * Kâr Hesabı'nın "Kurum toplamı" tablosunun aynısı: yıl sonu öğrenci,
+ * ciro, kâr ve marj. Rakamlar kurumToplami() ile üretiliyor — Kâr Hesabı
+ * da aynı fonksiyonu çağırıyor, iki ekran ayrışamaz.
+ *
+ * Yukarıdaki tablo "hedefe ne kaldı" der; bu tablo "Kâr Hesabı'ndaki
+ * varsayımlarla yıl nerede biter" der. İkisi farklı soru, o yüzden ayrı.
+ */
+function KarHesabiTablosu({ ozetler }: { ozetler: HatOzeti[] }) {
+  if (ozetler.length === 0) return null;
+
+  const ogr = ozetler.reduce((t, o) => t + o.yilSonuOgrenci, 0);
+  const ciro = ozetler.reduce((t, o) => t + o.yilSonuCiro, 0);
+  const gider = ozetler.reduce((t, o) => t + o.gider, 0);
+  const kar = ciro - gider;
+
+  return (
+    <section className="card rise rise-1" style={{ marginBottom: "var(--sp-5)" }}>
+      <div className="label" style={{ marginBottom: 2 }}>KÂR HESABI'NA GÖRE YIL SONU</div>
+      <div className="caption" style={{ marginBottom: "var(--sp-3)" }}>
+        Gerçekleşene, Kâr Hesabı'ndaki "bu saatten sonra" varsayımı ve ek kaynaklar eklenmiş hâli.
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr auto auto auto auto", gap: "var(--sp-3) var(--sp-5)", alignItems: "baseline" }}>
+        <div className="caption" />
+        <div className="caption" style={baslikHucre}>Öğrenci</div>
+        <div className="caption" style={baslikHucre}>Ciro</div>
+        <div className="caption" style={baslikHucre}>Kâr</div>
+        <div className="caption" style={baslikHucre}>Marj</div>
+
+        {ozetler.map((o) => (
+          <Fragment key={o.anahtar}>
+            <div style={{ display: "flex", alignItems: "center", gap: "var(--sp-2)", minWidth: 0 }}>
+              <span style={{ width: 3, height: "1em", borderRadius: "var(--r-full)", background: o.hedef.renk, flexShrink: 0 }} />
+              <span style={{ fontSize: "0.88rem", fontWeight: 600 }}>{o.hedef.ad}</span>
+            </div>
+            <KalanHucre
+              deger={SAYI(o.yilSonuOgrenci)}
+              alt={`${SAYI(o.ogrenci)} + ${SAYI(o.beklenenOgrenci)}`}
+              asildi={o.yilSonuOgrenci >= o.hedef.ogrenci}
+            />
+            <KalanHucre
+              deger={MN(o.yilSonuCiro)}
+              alt={`hedef ${MN(o.hedef.ciro)}`}
+              asildi={o.yilSonuCiro >= o.hedef.ciro}
+            />
+            <KalanHucre deger={MN(o.yilSonuKar)} alt={`gider ${MN(o.gider)}`} asildi={o.yilSonuKar > 0} />
+            <KalanHucre
+              deger={YZ(o.yilSonuMarj)}
+              alt={`hedef %${String(o.karMarjHedefi).replace(".", ",")}`}
+              asildi={o.yilSonuMarj * 100 >= o.karMarjHedefi}
+            />
+          </Fragment>
+        ))}
+
+        {ozetler.length > 1 && (
+          <>
+            <div style={{ ...genelSatir, fontSize: "0.88rem", fontWeight: 800 }}>KURUM</div>
+            <div style={genelSatir}><KalanHucre deger={SAYI(ogr)} alt="" asildi={false} kalin /></div>
+            <div style={genelSatir}><KalanHucre deger={MN(ciro)} alt="" asildi={false} kalin /></div>
+            <div style={genelSatir}><KalanHucre deger={MN(kar)} alt={`gider ${MN(gider)}`} asildi={kar > 0} kalin /></div>
+            <div style={genelSatir}>
+              <KalanHucre deger={YZ(ciro > 0 ? kar / ciro : 0)} alt="" asildi={false} kalin />
+            </div>
+          </>
+        )}
+      </div>
+    </section>
   );
 }
 
