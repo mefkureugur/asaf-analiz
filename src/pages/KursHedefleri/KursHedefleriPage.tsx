@@ -95,6 +95,8 @@ interface HatOzeti {
   ogrenciOran: number;
   ciroOran: number;
   ortalamaOran: number;
+  /** Ortalama hedefine kalan tutar; hedef aşıldıysa sıfır. */
+  kalanOrtalama: number;
   /* --- tahmin --- */
   mevsimPayi: number | null;
   tahminOgrenci: number | null;
@@ -175,6 +177,7 @@ function hattiOzetle(
     ogrenciOran: ogrenci / hedef.ogrenci,
     ciroOran: ciro / hedef.ciro,
     ortalamaOran: hedefOrtalama > 0 ? ortalama / hedefOrtalama : 0,
+    kalanOrtalama: Math.max(0, hedefOrtalama - ortalama),
     mevsimPayi, tahminOgrenci, tahminCiro, durum,
     kalanOgrenci,
     kalanCiro: Math.max(0, hedef.ciro - ciro),
@@ -386,6 +389,12 @@ function HatKarti({ ozet, gecikme, isMobile }: { ozet: HatOzeti; gecikme: number
             etiket="ÖĞRENCİ"
             deger={SAYI(ozet.ogrenci)}
             hedef={`hedef ${SAYI(ozet.hedef.ogrenci)}`}
+            kalan={
+              ozet.kalanOgrenci > 0
+                ? `${SAYI(ozet.kalanOgrenci)} kayıt kaldı`
+                : `hedef aşıldı +${SAYI(ozet.ogrenci - ozet.hedef.ogrenci)}`
+            }
+            asildi={ozet.kalanOgrenci === 0}
             oran={ozet.ogrenciOran}
             renk={renk}
           />
@@ -393,6 +402,12 @@ function HatKarti({ ozet, gecikme, isMobile }: { ozet: HatOzeti; gecikme: number
             etiket="CİRO"
             deger={MN(ozet.ciro)}
             hedef={`hedef ${MN(ozet.hedef.ciro)}`}
+            kalan={
+              ozet.kalanCiro > 0
+                ? `${MN(ozet.kalanCiro)} kaldı`
+                : `hedef aşıldı +${MN(ozet.ciro - ozet.hedef.ciro)}`
+            }
+            asildi={ozet.kalanCiro === 0}
             oran={ozet.ciroOran}
             renk={renk}
           />
@@ -400,6 +415,14 @@ function HatKarti({ ozet, gecikme, isMobile }: { ozet: HatOzeti; gecikme: number
             etiket="ORTALAMA"
             deger={ozet.ogrenci > 0 ? TL(ozet.ortalama) : "—"}
             hedef={`hedef ${TL(ozet.hedefOrtalama)}`}
+            kalan={
+              ozet.ogrenci === 0
+                ? "kayıt bekleniyor"
+                : ozet.kalanOrtalama > 0
+                  ? `${TL(ozet.kalanOrtalama)} kaldı`
+                  : `hedef aşıldı +${TL(ozet.ortalama - ozet.hedefOrtalama)}`
+            }
+            asildi={ozet.ogrenci > 0 && ozet.kalanOrtalama === 0}
             oran={ozet.ortalamaOran}
             renk={ozet.ortalamaOran >= 1 ? "var(--success)" : renk}
           />
@@ -593,8 +616,14 @@ function Firsat({ ozet }: { ozet: HatOzeti }) {
 
 /* ------------------------------------------------------------- parçalar */
 
-function Metrik({ etiket, deger, hedef, oran, renk }: {
-  etiket: string; deger: string; hedef: string; oran: number; renk: string;
+/**
+ * Bir metrik: değer, hedefe göre ilerleme ve HEDEFE NE KADAR KALDIĞI.
+ * Kalan rakam yüzdeden daha işe yarar — "%68" ne yapılacağını söylemez,
+ * "271 kayıt kaldı" söyler.
+ */
+function Metrik({ etiket, deger, hedef, kalan, asildi, oran, renk }: {
+  etiket: string; deger: string; hedef: string; kalan: string;
+  asildi: boolean; oran: number; renk: string;
 }) {
   return (
     <div>
@@ -613,6 +642,15 @@ function Metrik({ etiket, deger, hedef, oran, renk }: {
         />
       </div>
       <div className="caption num" style={{ marginTop: 3 }}>{YZ(oran)} · {hedef}</div>
+      <div
+        className="num"
+        style={{
+          marginTop: 2, fontSize: "0.78rem", fontWeight: 700,
+          color: asildi ? "var(--success)" : "var(--text-2)",
+        }}
+      >
+        {kalan}
+      </div>
     </div>
   );
 }
