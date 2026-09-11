@@ -1,4 +1,4 @@
-import { doc, getDoc } from "firebase/firestore";
+import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "../firebase";
 
 /* =====================================================================
@@ -99,17 +99,12 @@ export interface KayitliVarsayimlar {
   beklenenOrtalama: Hedefler;
 }
 
-/** Dönemin kayıtlı varsayımları; belge yoksa varsayılanlar döner. */
-export async function karVarsayimlari(donem: number): Promise<KayitliVarsayimlar> {
-  let d: Record<string, any> | null = null;
-  try {
-    const anlik = await getDoc(doc(db, KOLEKSIYON, String(donem)));
-    d = anlik.exists() ? (anlik.data() as Record<string, any>) : null;
-  } catch {
-    // Okunamazsa varsayılanlarla devam edilir; ekran çalışmaya devam etsin.
-    d = null;
-  }
-
+/**
+ * Firestore belgesini modele çevirir. Okuma biçimi (tek seferlik ya da
+ * canlı abonelik) değişebilir, çözümleme değişmez — iki yol da buradan
+ * geçsin ki aynı belge iki farklı sonuç üretemesin.
+ */
+export function varsayimlariCoz(d: Record<string, any> | null): KayitliVarsayimlar {
   const sayi = (v: unknown, yedek: number) => (typeof v === "number" ? v : yedek);
   // Eski kayıtlarda tek bir karHedefi vardı; o da geçerli sayılır.
   const eski = typeof d?.karHedefi === "number" ? d.karHedefi : null;
@@ -132,6 +127,24 @@ export async function karVarsayimlari(donem: number): Promise<KayitliVarsayimlar
       l: sayi(d?.karHedefi_l, eski ?? KAR_HEDEFI.l),
     },
   };
+}
+
+/**
+ * Dönemin kayıtlı varsayımlarını CANLI dinler; belge yoksa varsayılanlar
+ * döner. Kurs Hedefleri bunu kullanıyor: Kâr Hesabı'nda "bu saatten sonra"
+ * kutusu değiştiği anda hedef ekranı da kaysın. Tek seferlik okumada
+ * kullanıcı kutuyu değiştirip öbür ekrana geçince eski rakamı görüyordu.
+ */
+export function karVarsayimlariniIzle(
+  donem: number,
+  geri: (v: KayitliVarsayimlar) => void,
+): () => void {
+  return onSnapshot(
+    doc(db, KOLEKSIYON, String(donem)),
+    (anlik) => geri(varsayimlariCoz(anlik.exists() ? (anlik.data() as Record<string, any>) : null)),
+    // Dinlenemezse ekran varsayılanlarla çalışmaya devam etsin.
+    () => geri(varsayimlariCoz(null)),
+  );
 }
 
 /**

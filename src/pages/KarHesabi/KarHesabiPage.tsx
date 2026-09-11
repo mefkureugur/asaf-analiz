@@ -13,6 +13,7 @@ import {
   ALANLAR, VARSAYILAN,
   type Hedefler, type Artislar, type Varsayimlar,
 } from "../../services/karHesabiModel";
+import { kursHedefleri } from "../../constants/kursHedefleri";
 import SayiGirdisi from "../../components/ui/SayiGirdisi";
 import { ChevronDown } from "lucide-react";
 
@@ -244,6 +245,64 @@ function finansHedefi(
   }
 }
 
+/**
+ * Öğrenci kutusunun altına Kurs Hedefleri'nin dönem hedefini yazar.
+ *
+ * İki ekran aynı soruyu farklı uçtan soruyordu: burada "bu saatten sonra
+ * kaç öğrenci bekliyoruz", orada "dönem hedefine kaç kayıt kaldı". Rakam
+ * birbirini görmeyince 87 yazılıp öbür tarafta 114 okunuyordu. Satır
+ * ikisini yan yana koyuyor: hedefin gerektirdiği rakam, girilenle arasındaki
+ * açık ve tek tıkla uygulama.
+ */
+function kursHedefiSatiri(
+  belge: Document, on: "y" | "l",
+  hedefOgrenci: number, hedefAd: string, gerceklesen: number, goster: boolean,
+) {
+  const carpim = belge.getElementById(`${on}_carpim`);
+  if (!carpim) return;
+
+  const kimlik = `khedef_${on}`;
+  let el = belge.getElementById(kimlik);
+  if (!el) {
+    el = belge.createElement("div");
+    el.id = kimlik;
+    el.className = "carpim";
+    (belge.getElementById(`fhedef_${on}`) ?? belge.getElementById(`gecen_${on}`) ?? carpim).after(el);
+  }
+
+  el.textContent = "";
+  if (!goster || hedefOgrenci <= 0) return;
+
+  const gereken = Math.max(0, hedefOgrenci - gerceklesen);
+  if (gereken === 0) {
+    el.textContent = `${hedefAd} dönem hedefi (${hedefOgrenci}) bugüne kadar zaten aşıldı`;
+    return;
+  }
+
+  const girilen = kutuSayisi(belge, `${on}_ogr`);
+  const acik = gereken - girilen;
+  el.textContent =
+    `${hedefAd} dönem hedefi ${hedefOgrenci}: bu tarihten sonra ${gereken} kayıt gerekir · ` +
+    (acik > 0
+      ? `bu planla ${acik} kayıt açık kalıyor `
+      : acik < 0
+        ? `bu plan hedefi ${-acik} kayıt aşıyor `
+        : "bu plan hedefi tam karşılıyor ");
+
+  if (acik !== 0) {
+    const dugme = belge.createElement("span");
+    dugme.textContent = "hedefi uygula";
+    dugme.style.cssText = "text-decoration:underline;cursor:pointer";
+    dugme.onclick = () => {
+      const kutu = belge.getElementById(`${on}_ogr`) as HTMLInputElement | null;
+      if (!kutu) return;
+      kutu.value = TL(gereken);
+      kutu.dispatchEvent(new Event("input", { bubbles: true }));
+    };
+    el.appendChild(dugme);
+  }
+}
+
 export default function KarHesabiPage() {
   const { user } = useAuth();
   const { records } = useRecords();
@@ -387,6 +446,10 @@ export default function KarHesabiPage() {
     [veri, karHedefi, projeksiyon],
   );
 
+  /* Kurs Hedefleri'nin dönem hedefi — seçili döneme ait; tanımlı değilse
+     null ve köprü satırı hiç yazılmaz. Yıl koda gömülü değil. */
+  const kursHedef = useMemo(() => kursHedefleri(year), [year]);
+
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [yuklendi, setYuklendi] = useState(false);
   const [yukseklik, setYukseklik] = useState(1500);
@@ -447,16 +510,27 @@ export default function KarHesabiPage() {
         if (kutu) kutu.value = TL(deger);
       });
     });
+
+    // Kutular dolduktan sonra: satır girilen öğrenci sayısını kutudan okuyor.
+    // Hedef tanımlı olmayan dönemde satır hiç yazılmaz — uydurma rakam olmaz.
+    kursHedefiSatiri(belge, "y", kursHedef?.yks.ogrenci ?? 0, kursHedef?.yks.ad ?? "", v.yks.ogr, kiyasGoster);
+    kursHedefiSatiri(belge, "l", kursHedef?.lgs.ogrenci ?? 0, kursHedef?.lgs.ad ?? "", v.lgs.ogr, kiyasGoster);
+
     pencere.hesapla?.();
-  }, [yuklendi, varsayimHazir, finansHazir, veriJson, varsayimJson, viewMode, projeksiyon, artis, finansDonemi]);
+  }, [yuklendi, varsayimHazir, finansHazir, veriJson, varsayimJson, viewMode, projeksiyon, artis, finansDonemi, kursHedef]);
 
   /* ---------------------------------------------------------------
      Kaydetme
      --------------------------------------------------------------- */
-  const kaydet = useCallback(() => {
+  /**
+   * Varsayımları kaydeder. `degerler` verilirse kutular ondan alınır:
+   * ekrandan ayrılırken iframe'in DOM'u kopmuş olabiliyor ve o anda
+   * okunamayan kutular merge yüzünden sessizce eski hâlinde kalıyordu.
+   */
+  const kaydet = useCallback((degerler?: Varsayimlar) => {
     const belge = iframeRef.current?.contentDocument;
     const gonderi: Record<string, unknown> = {
-      ...(belge ? kutulariOku(belge) : {}),
+      ...(degerler ?? (belge ? kutulariOku(belge) : {})),
       artis_y_ciro: artis.y_ciro, artis_y_gider: artis.y_gider,
       artis_l_ciro: artis.l_ciro, artis_l_gider: artis.l_gider,
       karHedefi_y: karHedefi.y, karHedefi_l: karHedefi.l,
@@ -490,21 +564,34 @@ export default function KarHesabiPage() {
       const g = viewMode === "today";
       finansHedefi(belge, "y", projeksiyon.yks.ciro, veri.yks.ciro, g);
       finansHedefi(belge, "l", projeksiyon.lgs.ciro, veri.lgs.ciro, g);
+      // Öğrenci sayısı değişince dönem hedefine göre açık da değişir.
+      kursHedefiSatiri(belge, "y", kursHedef?.yks.ogrenci ?? 0, kursHedef?.yks.ad ?? "", veri.yks.ogr, g);
+      kursHedefiSatiri(belge, "l", kursHedef?.lgs.ogrenci ?? 0, kursHedef?.lgs.ad ?? "", veri.lgs.ogr, g);
       window.clearTimeout(zamanlayici);
-      zamanlayici = window.setTimeout(kaydet, 900);
+      // Sıfırlanıyor ki ekrandan ayrılırken "bekleyen kayıt var mı"
+      // sorusunun cevabı doğru olsun; yoksa her ayrılışta gereksiz bir
+      // yazma daha gidiyordu.
+      zamanlayici = window.setTimeout(() => { zamanlayici = 0; kaydet(); }, 900);
     };
 
     belge.addEventListener("input", dinle);
     return () => {
-      window.clearTimeout(zamanlayici);
       belge.removeEventListener("input", dinle);
+      // Bekleyen kayıt varsa burada bitirilir. Önceden yalnızca iptal
+      // ediliyordu: kutuya yazıp 900 ms dolmadan Kurs Hedefleri'ne geçen
+      // kullanıcının rakamı hiç kaydedilmiyor, öbür ekran eski rakamı
+      // gösteriyordu. Kutular ref'ten okunuyor, iframe kopmuş olabilir.
+      if (zamanlayici) {
+        window.clearTimeout(zamanlayici);
+        kaydet(elDegerleriRef.current ?? undefined);
+      }
     };
-  }, [yuklendi, kaydet, projeksiyon, veri, viewMode]);
+  }, [yuklendi, kaydet, projeksiyon, veri, viewMode, kursHedef]);
 
   // % artış ve kâr hedefi değişince kaydet.
   useEffect(() => {
     if (!kirliRef.current) return;
-    const zamanlayici = window.setTimeout(kaydet, 900);
+    const zamanlayici = window.setTimeout(() => kaydet(), 900);
     return () => window.clearTimeout(zamanlayici);
   }, [artis, karHedefi, kaydet]);
 
