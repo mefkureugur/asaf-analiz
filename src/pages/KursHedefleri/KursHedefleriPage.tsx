@@ -34,13 +34,17 @@ import {
      %20 kâr      Kâr Hesabı'nın hedefi  — asıl bahis
      dönem hedefi kurucuların rakamı
 
-   PLAN AÇIĞI
-   "Hedefe 114 kayıt kaldı" tek başına eksik bir cümleydi: Kâr Hesabı'nda
-   o sırada "bu saatten sonra 87 öğrenci" yazıyorsa 114'ün 87'si zaten
-   planlanmış demektir, asıl bulunacak rakam 27'dir. İki ekran yan yana
-   durup birbirini görmüyordu. Artık her "kalan" rakamının altında Kâr
-   Hesabı'nın planı ve plandan sonra kalan açık yazıyor; varsayım canlı
-   dinleniyor, Kâr Hesabı'nda kutu değişince burası da kayıyor.
+   HEDEF NEREDEN GELİYOR
+   Ekranın hedefi kodda sabit duran dönem rakamı DEĞİL, Kâr Hesabı'nın
+   "Kurum toplamı" tablosundaki yıl sonu rakamıdır. Sabit hedef sezon
+   başında konuyor ve yıl içinde kıpırdamıyordu; Kâr Hesabı'nda varsayım
+   değişince bu ekran takılı kalıyor, hatta iki ekran farklı dönem kârı
+   yazıyordu (17,7 Mn ₺ ile 33,1 Mn ₺).
+
+   Hedef kurumToplami() ile üretiliyor — Kâr Hesabı'nın çağırdığı
+   fonksiyonun aynısı — ve varsayım canlı dinleniyor. Kurucuların koyduğu
+   hat kaybolmuyor: ikinci bir çizgi olarak duruyor, plan ile arasındaki
+   fark "açık" diye yazılıyor.
 
    MOOD kayıtları YKS sayımına girmez: Kâr Hesabı'nda ayrı bir ek kaynak
    kutusu olarak giriliyor, buradan da sayılsa iki kez toplanırdı.
@@ -94,11 +98,17 @@ const DURUM_BILGI: Record<Durum, { etiket: string; renk: string; simge: string }
 
 interface HatOzeti {
   anahtar: KursHatti;
+  /** Kurucuların sabit dönem hattı — artık birincil hedef değil, kıyas çizgisi. */
   hedef: KursHedefi;
   /* --- üç temel rakam --- */
   ogrenci: number;
   ciro: number;
   ortalama: number;
+  /** HEDEF: Kâr Hesabı'nın Kurum toplamı'ndaki yıl sonu öğrenci sayısı. */
+  hedefOgrenci: number;
+  /** HEDEF: Kâr Hesabı'nın Kurum toplamı'ndaki yıl sonu cirosu. */
+  hedefCiro: number;
+  /** Planın bu saatten sonraki kayıtlar için varsaydığı ortalama. */
   hedefOrtalama: number;
   ogrenciOran: number;
   ciroOran: number;
@@ -134,17 +144,11 @@ interface HatOzeti {
   /* --- Kâr Hesabı "Kurum toplamı" satırlarının aynısı --- */
   beklenenOgrenci: number;
   beklenenOrtalama: number;
-  /** Kâr Hesabı'nın planının ciroya katkısı: beklenen × ortalama + ek kaynaklar. */
-  planCiro: number;
-  /** Plan tuttuktan sonra dönem hedefine kalan — asıl bulunacak rakam. */
+  /** Kurucuların hattı ile plan arasındaki fark; plan öndeyse sıfır. */
   acikOgrenci: number;
   acikCiro: number;
-  yilSonuOgrenci: number;
-  yilSonuCiro: number;
   yilSonuKar: number;
   yilSonuMarj: number;
-  hedefKar: number;
-  hedefMarj: number;
 }
 
 function hattiOzetle(
@@ -187,7 +191,30 @@ function hattiOzetle(
   const ogrenci = buDonem.length;
   const ciro = topla(buDonem);
   const ortalama = ogrenci > 0 ? ciro / ogrenci : 0;
-  const hedefOrtalama = hedef.ciro / hedef.ogrenci;
+
+  /* HEDEF = KÂR HESABI'NIN "KURUM TOPLAMI" TABLOSU.
+
+     Ekran kodda sabit duran dönem hedefini (YKS'de 400 kayıt / 80 Mn ₺)
+     esas alıyordu. O rakam sezon başında konuyor ve yıl içinde hiç
+     kıpırdamıyor; Kâr Hesabı'nda varsayım değişince burası takılı
+     kalıyordu. En görünür sonucu: Kâr Hesabı "kurum kârı 17,7 Mn ₺"
+     derken bu ekran "hedef tutarsa 33,1 Mn ₺" diyordu.
+
+     Artık hedef, Kâr Hesabı'nın yıl sonu rakamı — kurumToplami() ile,
+     yani Kâr Hesabı'nın kullandığı fonksiyonun aynısıyla üretiliyor.
+     Kurucuların koyduğu hat kaybolmuyor: ikinci bir çizgi olarak duruyor
+     ve plan ile arasındaki fark "açık" diye yazılıyor. */
+  const yilSonu = kurumToplami({
+    gerceklesenOgrenci: ogrenci, gerceklesenCiro: ciro,
+    beklenenOgrenci, beklenenOrtalama, ekKaynak, gider,
+  });
+  const hedefOgrenci = yilSonu.ogrenci;
+  const hedefCiro = yilSonu.ciro;
+
+  /* Ortalama hedefi de plandan geliyor: Kâr Hesabı bu saatten sonraki
+     kayıtları bu ortalamayla bekliyor. Plan girilmemişse kurucu hedefinin
+     gerektirdiği ortalamaya düşülür. */
+  const hedefOrtalama = beklenenOrtalama > 0 ? beklenenOrtalama : hedef.ciro / hedef.ogrenci;
 
   const mevsimPayi = gecenTum.length > 0 ? gecenBugune.length / gecenTum.length : null;
   const gecenCiro = topla(gecenTum);
@@ -198,7 +225,10 @@ function hattiOzetle(
 
   let durum: Durum = "bilinmiyor";
   if (tahminOgrenci !== null && tahminCiro !== null) {
-    const oran = Math.min(tahminOgrenci / hedef.ogrenci, tahminCiro / hedef.ciro);
+    const oran = Math.min(
+      hedefOgrenci > 0 ? tahminOgrenci / hedefOgrenci : 0,
+      hedefCiro > 0 ? tahminCiro / hedefCiro : 0,
+    );
     durum = oran >= 1 ? "onde" : oran >= 0.9 ? "menzilde" : oran >= 0.75 ? "hizlan" : "atak";
   }
 
@@ -211,33 +241,24 @@ function hattiOzetle(
   }).length;
 
   const kalan = kalanGun();
-  const kalanOgrenci = Math.max(0, hedef.ogrenci - ogrenci);
+  const kalanOgrenci = Math.max(0, hedefOgrenci - ogrenci);
 
   // Eşikler ölçülürken gerçekleşen ortalama kullanılır; henüz kayıt yoksa
   // hedefin gerektirdiği ortalamaya düşülür.
   const olcuOrt = ortalama > 0 ? ortalama : hedefOrtalama;
 
-  // Kâr Hesabı'nın alt tablosundaki satırların aynısı — formül ortak
-  // modelde, burada yalnızca çağrılıyor.
-  const yilSonu = kurumToplami({
-    gerceklesenOgrenci: ogrenci, gerceklesenCiro: ciro,
-    beklenenOgrenci, beklenenOrtalama, ekKaynak, gider,
-  });
-
   return {
     beklenenOgrenci, beklenenOrtalama,
-    // Plan ve açık, yıl sonu rakamından türetiliyor: Kâr Hesabı'nın
-    // kurumToplami()'sinden çıktıkları için iki ekran ayrışamaz.
-    planCiro: yilSonu.ciro - ciro,
-    acikOgrenci: Math.max(0, hedef.ogrenci - yilSonu.ogrenci),
-    acikCiro: Math.max(0, hedef.ciro - yilSonu.ciro),
-    yilSonuOgrenci: yilSonu.ogrenci,
-    yilSonuCiro: yilSonu.ciro,
+    hedefOgrenci, hedefCiro,
+    // Kurucuların hattı ile planın arasındaki fark — plan tutsa bile
+    // kapanmayan kısım.
+    acikOgrenci: Math.max(0, hedef.ogrenci - hedefOgrenci),
+    acikCiro: Math.max(0, hedef.ciro - hedefCiro),
     yilSonuKar: yilSonu.kar,
     yilSonuMarj: yilSonu.marj,
     anahtar, hedef, ogrenci, ciro, ortalama, hedefOrtalama,
-    ogrenciOran: ogrenci / hedef.ogrenci,
-    ciroOran: ciro / hedef.ciro,
+    ogrenciOran: hedefOgrenci > 0 ? ogrenci / hedefOgrenci : 0,
+    ciroOran: hedefCiro > 0 ? ciro / hedefCiro : 0,
     ortalamaOran: hedefOrtalama > 0 ? ortalama / hedefOrtalama : 0,
     kalanOrtalama: Math.max(0, hedefOrtalama - ortalama),
     mevsimPayi, tahminOgrenci, tahminCiro, durum,
@@ -245,7 +266,7 @@ function hattiOzetle(
     gecenSonrasiCiro: topla(gecenSonrasi),
     gecenVerisiVar: gecenTum.length > 0,
     kalanOgrenci,
-    kalanCiro: Math.max(0, hedef.ciro - ciro),
+    kalanCiro: Math.max(0, hedefCiro - ciro),
     gerekenGunluk: kalan > 0 ? kalanOgrenci / kalan : 0,
     suAnkiGunluk: sonOtuz / 30,
     gider, giderCanli, ekKaynak, karMarjHedefi,
@@ -257,8 +278,6 @@ function hattiOzetle(
     karHedefiCiro: karHedefiCirosu(gider, karMarjHedefi),
     basabasOgrenci: Math.max(0, Math.ceil((gider - ekKaynak) / olcuOrt)),
     karHedefiOgrenci: Math.max(0, Math.ceil((karHedefiCirosu(gider, karMarjHedefi) - ekKaynak) / olcuOrt)),
-    hedefKar: hedef.ciro + ekKaynak - gider,
-    hedefMarj: hedef.ciro + ekKaynak > 0 ? (hedef.ciro + ekKaynak - gider) / (hedef.ciro + ekKaynak) : 0,
   };
 }
 
@@ -390,10 +409,12 @@ export default function KursHedefleriPage() {
       </div>
 
       <p className="caption" style={{ marginTop: "var(--sp-5)", maxWidth: 720 }}>
-        Gider, kâr marjı hedefi, MOOD ayrımı ve "bu saatten sonra" planı{" "}
+        Hedef,{" "}
         <Link to="/kar-hesabi" style={{ color: "var(--accent)" }}>Kâr Hesabı</Link>'nın
-        kullandığı modelden canlı okunur: orada öğrenci sayısını değiştirdiğiniz anda
-        buradaki plan ve açık rakamları da kayar. Kıyas, geçen dönemin
+        Kurum toplamı tablosundaki yıl sonu rakamıdır — orada öğrenci sayısını
+        değiştirdiğiniz anda buradaki bütün rakamlar kayar, iki ekran aynı kârı yazar.
+        Kurucuların koyduğu sabit dönem hattı ikinci çizgi olarak duruyor; aradaki fark
+        "açık" diye geçiyor. Kıyas, geçen dönemin
         aynı takvim penceresinde gerçekleşen kayıtlarıdır — takvime orantılı bir tempo
         kayıt mevsimini görmezden gelirdi. İptal edilen kayıtlar hiçbir toplama girmez.
       </p>
@@ -408,13 +429,12 @@ function Kahraman({ donem, kalan, ozetler }: { donem: number; kalan: number; oze
   const ciro = ozetler.reduce((t, o) => t + o.ciro, 0);
   const kalanOgr = ozetler.reduce((t, o) => t + o.kalanOgrenci, 0);
   const kalanCiro = ozetler.reduce((t, o) => t + o.kalanCiro, 0);
-  const hedefOgr = ozetler.reduce((t, o) => t + o.hedef.ogrenci, 0);
-  const hedefCiro = ozetler.reduce((t, o) => t + o.hedef.ciro, 0);
-  const hedefKar = ozetler.reduce((t, o) => t + o.hedefKar, 0);
-  // Kâr Hesabı'nın planı ve plandan sonra kalan açık — şeritteki "kalan"
-  // rakamı tek başına duruyordu, ne kadarının planlı olduğu görünmüyordu.
-  const planOgr = ozetler.reduce((t, o) => t + o.beklenenOgrenci, 0);
-  const planCiro = ozetler.reduce((t, o) => t + o.planCiro, 0);
+  // Hedef = Kâr Hesabı'nın Kurum toplamı; kurucu hattı ayrı bir kıyas.
+  const hedefOgr = ozetler.reduce((t, o) => t + o.hedefOgrenci, 0);
+  const hedefCiro = ozetler.reduce((t, o) => t + o.hedefCiro, 0);
+  const planKar = ozetler.reduce((t, o) => t + o.yilSonuKar, 0);
+  const kurucuOgr = ozetler.reduce((t, o) => t + o.hedef.ogrenci, 0);
+  const kurucuCiro = ozetler.reduce((t, o) => t + o.hedef.ciro, 0);
   const acikOgr = ozetler.reduce((t, o) => t + o.acikOgrenci, 0);
   const acikCiro = ozetler.reduce((t, o) => t + o.acikCiro, 0);
 
@@ -442,21 +462,21 @@ function Kahraman({ donem, kalan, ozetler }: { donem: number; kalan: number; oze
             <Kutucuk
               etiket="Hedefe kalan öğrenci"
               deger={`${SAYI(kalanOgr)} kayıt`}
-              alt={`hedef ${SAYI(hedefOgr)} · Kâr Hesabı planı ${SAYI(planOgr)}`}
-              ek={acikOgr > 0 ? `plan sonrası açık ${SAYI(acikOgr)} kayıt` : "plan hedefi kapatıyor"}
+              alt={`Kâr Hesabı hedefi ${SAYI(hedefOgr)}`}
+              ek={acikOgr > 0 ? `kurucu hattı ${SAYI(kurucuOgr)} · ${SAYI(acikOgr)} kayıt açık` : `kurucu hattı ${SAYI(kurucuOgr)} · karşılanıyor`}
               ekVurgu={acikOgr === 0}
             />
             <Kutucuk
               etiket="Hedefe kalan ciro"
               deger={MN(kalanCiro)}
-              alt={`hedef ${MN(hedefCiro)} · Kâr Hesabı planı ${MN(planCiro)}`}
-              ek={acikCiro > 0 ? `plan sonrası açık ${MN(acikCiro)}` : "plan hedefi kapatıyor"}
+              alt={`Kâr Hesabı hedefi ${MN(hedefCiro)}`}
+              ek={acikCiro > 0 ? `kurucu hattı ${MN(kurucuCiro)} · ${MN(acikCiro)} açık` : `kurucu hattı ${MN(kurucuCiro)} · karşılanıyor`}
               ekVurgu={acikCiro === 0}
             />
             <Kutucuk
               etiket="Hedef tutarsa dönem kârı"
-              deger={MN(hedefKar)}
-              alt="Kâr Hesabı'ndaki gider ve ek kaynaklara göre"
+              deger={MN(planKar)}
+              alt="Kâr Hesabı · Kurum toplamı'ndaki kâr"
               vurgu
             />
           </div>
@@ -473,20 +493,19 @@ function Kahraman({ donem, kalan, ozetler }: { donem: number; kalan: number; oze
  * genel toplam. Öğrenci ve ciro ayrı sütunlarda — biri diğerinin altında
  * küçük yazıyken ciro açığı gözden kaçıyordu.
  *
- * Her hücrenin altında Kâr Hesabı'nın planı duruyor. "Hedefe 114 kayıt
- * kaldı" tek başına ne yapılacağını söylemiyordu; Kâr Hesabı o sırada
- * 87 öğrenci bekliyorsa asıl bulunacak rakam 27'dir. Plan değişince bu
- * satır da değişir — iki ekran aynı varsayımdan besleniyor.
+ * Hedef, Kâr Hesabı'nın Kurum toplamı'ndaki yıl sonu rakamı; her hücrenin
+ * altında kurucuların sabit hattı ve plan tutsa bile kapanmayan açık
+ * duruyor. Kâr Hesabı'nda varsayım değişince bu tablo da kayar.
  */
 function KalanTablosu({ ozetler }: { ozetler: HatOzeti[] }) {
   if (ozetler.length === 0) return null;
 
   const toplamOgr = ozetler.reduce((t, o) => t + o.kalanOgrenci, 0);
   const toplamCiro = ozetler.reduce((t, o) => t + o.kalanCiro, 0);
-  const toplamHedefOgr = ozetler.reduce((t, o) => t + o.hedef.ogrenci, 0);
-  const toplamHedefCiro = ozetler.reduce((t, o) => t + o.hedef.ciro, 0);
-  const toplamPlanOgr = ozetler.reduce((t, o) => t + o.beklenenOgrenci, 0);
-  const toplamPlanCiro = ozetler.reduce((t, o) => t + o.planCiro, 0);
+  const toplamHedefOgr = ozetler.reduce((t, o) => t + o.hedefOgrenci, 0);
+  const toplamHedefCiro = ozetler.reduce((t, o) => t + o.hedefCiro, 0);
+  const toplamKurucuOgr = ozetler.reduce((t, o) => t + o.hedef.ogrenci, 0);
+  const toplamKurucuCiro = ozetler.reduce((t, o) => t + o.hedef.ciro, 0);
   const toplamAcikOgr = ozetler.reduce((t, o) => t + o.acikOgrenci, 0);
   const toplamAcikCiro = ozetler.reduce((t, o) => t + o.acikCiro, 0);
 
@@ -494,8 +513,8 @@ function KalanTablosu({ ozetler }: { ozetler: HatOzeti[] }) {
     <section className="card rise" style={{ marginBottom: "var(--sp-5)" }}>
       <div className="label" style={{ marginBottom: 2 }}>HEDEFE KALAN</div>
       <div className="caption" style={{ marginBottom: "var(--sp-3)" }}>
-        Kalanın altında Kâr Hesabı'ndaki "bu saatten sonra" planı ve plan tuttuğunda
-        geriye kalan açık yazıyor.
+        Hedef, Kâr Hesabı'nın Kurum toplamı'ndaki yıl sonu rakamı. Altta kurucuların
+        sabit hattı ve plan tutsa bile kapanmayan açık yazıyor.
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr auto auto", gap: "var(--sp-3) var(--sp-5)", alignItems: "baseline" }}>
@@ -510,19 +529,19 @@ function KalanTablosu({ ozetler }: { ozetler: HatOzeti[] }) {
               <span style={{ fontSize: "0.88rem", fontWeight: 600 }}>{o.hedef.ad}</span>
             </div>
             <KalanHucre
-              deger={o.kalanOgrenci > 0 ? `${SAYI(o.kalanOgrenci)} kayıt` : `+${SAYI(o.ogrenci - o.hedef.ogrenci)} aşıldı`}
-              alt={`${SAYI(o.ogrenci)} / ${SAYI(o.hedef.ogrenci)}`}
+              deger={o.kalanOgrenci > 0 ? `${SAYI(o.kalanOgrenci)} kayıt` : `+${SAYI(o.ogrenci - o.hedefOgrenci)} aşıldı`}
+              alt={`${SAYI(o.ogrenci)} / ${SAYI(o.hedefOgrenci)}`}
               asildi={o.kalanOgrenci === 0}
-              plan={o.kalanOgrenci > 0 ? `plan ${SAYI(o.beklenenOgrenci)}` : undefined}
-              acik={o.acikOgrenci > 0 ? `açık ${SAYI(o.acikOgrenci)}` : "plan hedefi kapatıyor"}
+              plan={`kurucu ${SAYI(o.hedef.ogrenci)}`}
+              acik={o.acikOgrenci > 0 ? `açık ${SAYI(o.acikOgrenci)}` : "karşılanıyor"}
               acikVar={o.acikOgrenci > 0}
             />
             <KalanHucre
-              deger={o.kalanCiro > 0 ? MN(o.kalanCiro) : `+${MN(o.ciro - o.hedef.ciro)} aşıldı`}
-              alt={`${MN(o.ciro)} / ${MN(o.hedef.ciro)}`}
+              deger={o.kalanCiro > 0 ? MN(o.kalanCiro) : `+${MN(o.ciro - o.hedefCiro)} aşıldı`}
+              alt={`${MN(o.ciro)} / ${MN(o.hedefCiro)}`}
               asildi={o.kalanCiro === 0}
-              plan={o.kalanCiro > 0 ? `plan ${MN(o.planCiro)}` : undefined}
-              acik={o.acikCiro > 0 ? `açık ${MN(o.acikCiro)}` : "plan hedefi kapatıyor"}
+              plan={`kurucu ${MN(o.hedef.ciro)}`}
+              acik={o.acikCiro > 0 ? `açık ${MN(o.acikCiro)}` : "karşılanıyor"}
               acikVar={o.acikCiro > 0}
             />
           </Fragment>
@@ -538,8 +557,8 @@ function KalanTablosu({ ozetler }: { ozetler: HatOzeti[] }) {
                 deger={toplamOgr > 0 ? `${SAYI(toplamOgr)} kayıt` : "hedef aşıldı"}
                 alt={`${SAYI(toplamHedefOgr - toplamOgr)} / ${SAYI(toplamHedefOgr)}`}
                 asildi={toplamOgr === 0}
-                plan={toplamOgr > 0 ? `plan ${SAYI(toplamPlanOgr)}` : undefined}
-                acik={toplamAcikOgr > 0 ? `açık ${SAYI(toplamAcikOgr)}` : "plan hedefi kapatıyor"}
+                plan={`kurucu ${SAYI(toplamKurucuOgr)}`}
+                acik={toplamAcikOgr > 0 ? `açık ${SAYI(toplamAcikOgr)}` : "karşılanıyor"}
                 acikVar={toplamAcikOgr > 0}
                 kalin
               />
@@ -549,8 +568,8 @@ function KalanTablosu({ ozetler }: { ozetler: HatOzeti[] }) {
                 deger={toplamCiro > 0 ? MN(toplamCiro) : "hedef aşıldı"}
                 alt={`${MN(toplamHedefCiro - toplamCiro)} / ${MN(toplamHedefCiro)}`}
                 asildi={toplamCiro === 0}
-                plan={toplamCiro > 0 ? `plan ${MN(toplamPlanCiro)}` : undefined}
-                acik={toplamAcikCiro > 0 ? `açık ${MN(toplamAcikCiro)}` : "plan hedefi kapatıyor"}
+                plan={`kurucu ${MN(toplamKurucuCiro)}`}
+                acik={toplamAcikCiro > 0 ? `açık ${MN(toplamAcikCiro)}` : "karşılanıyor"}
                 acikVar={toplamAcikCiro > 0}
                 kalin
               />
@@ -564,9 +583,8 @@ function KalanTablosu({ ozetler }: { ozetler: HatOzeti[] }) {
 }
 
 /**
- * Bir hücre: kalan rakam, altında nereden çıktığı, altında da Kâr
- * Hesabı'nın planı ve plandan sonraki açık. Açık, kalanın kendisinden
- * daha işe yarar rakam — o yüzden vurgulu, kalan ise bağlam.
+ * Bir hücre: Kâr Hesabı hedefine kalan rakam, altında nereden çıktığı,
+ * en altta kurucuların sabit hattı ve plan tutsa bile kapanmayan açık.
  */
 function KalanHucre({ deger, alt, asildi, kalin, vurgu, plan, acik, acikVar }: {
   deger: string; alt: string; asildi: boolean; kalin?: boolean; vurgu?: boolean;
@@ -620,16 +638,17 @@ function KalanHucre({ deger, alt, asildi, kalin, vurgu, plan, acik, acikVar }: {
 function KarHesabiTablosu({ ozetler }: { ozetler: HatOzeti[] }) {
   if (ozetler.length === 0) return null;
 
-  const ogr = ozetler.reduce((t, o) => t + o.yilSonuOgrenci, 0);
-  const ciro = ozetler.reduce((t, o) => t + o.yilSonuCiro, 0);
+  const ogr = ozetler.reduce((t, o) => t + o.hedefOgrenci, 0);
+  const ciro = ozetler.reduce((t, o) => t + o.hedefCiro, 0);
   const gider = ozetler.reduce((t, o) => t + o.gider, 0);
   const kar = ciro - gider;
 
   return (
     <section className="card rise rise-1" style={{ marginBottom: "var(--sp-5)" }}>
-      <div className="label" style={{ marginBottom: 2 }}>KÂR HESABI'NA GÖRE YIL SONU</div>
+      <div className="label" style={{ marginBottom: 2 }}>KÂR HESABI · KURUM TOPLAMI</div>
       <div className="caption" style={{ marginBottom: "var(--sp-3)" }}>
-        Gerçekleşene, Kâr Hesabı'ndaki "bu saatten sonra" varsayımı ve ek kaynaklar eklenmiş hâli.
+        Kâr Hesabı'ndaki Kurum toplamı tablosunun aynısı — yukarıdaki hedef bu satırlardan
+        geliyor. Gerçekleşene "bu saatten sonra" varsayımı ve ek kaynaklar eklenmiş hâli.
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr auto auto auto auto", gap: "var(--sp-3) var(--sp-5)", alignItems: "baseline" }}>
@@ -646,14 +665,14 @@ function KarHesabiTablosu({ ozetler }: { ozetler: HatOzeti[] }) {
               <span style={{ fontSize: "0.88rem", fontWeight: 600 }}>{o.hedef.ad}</span>
             </div>
             <KalanHucre
-              deger={SAYI(o.yilSonuOgrenci)}
+              deger={SAYI(o.hedefOgrenci)}
               alt={`${SAYI(o.ogrenci)} + ${SAYI(o.beklenenOgrenci)}`}
-              asildi={o.yilSonuOgrenci >= o.hedef.ogrenci}
+              asildi={o.hedefOgrenci >= o.hedef.ogrenci}
             />
             <KalanHucre
-              deger={MN(o.yilSonuCiro)}
-              alt={`hedef ${MN(o.hedef.ciro)}`}
-              asildi={o.yilSonuCiro >= o.hedef.ciro}
+              deger={MN(o.hedefCiro)}
+              alt={`kurucu hattı ${MN(o.hedef.ciro)}`}
+              asildi={o.hedefCiro >= o.hedef.ciro}
             />
             <KalanHucre deger={MN(o.yilSonuKar)} alt={`gider ${MN(o.gider)}`} asildi={o.yilSonuKar > 0} />
             <KalanHucre
@@ -715,11 +734,11 @@ function HatKarti({ ozet, gecikme, isMobile }: { ozet: HatOzeti; gecikme: number
           <Metrik
             etiket="ÖĞRENCİ"
             deger={SAYI(ozet.ogrenci)}
-            hedef={`hedef ${SAYI(ozet.hedef.ogrenci)}`}
+            hedef={`hedef ${SAYI(ozet.hedefOgrenci)}`}
             kalan={
               ozet.kalanOgrenci > 0
                 ? `${SAYI(ozet.kalanOgrenci)} kayıt kaldı`
-                : `hedef aşıldı +${SAYI(ozet.ogrenci - ozet.hedef.ogrenci)}`
+                : `hedef aşıldı +${SAYI(ozet.ogrenci - ozet.hedefOgrenci)}`
             }
             asildi={ozet.kalanOgrenci === 0}
             oran={ozet.ogrenciOran}
@@ -728,11 +747,11 @@ function HatKarti({ ozet, gecikme, isMobile }: { ozet: HatOzeti; gecikme: number
           <Metrik
             etiket="CİRO"
             deger={MN(ozet.ciro)}
-            hedef={`hedef ${MN(ozet.hedef.ciro)}`}
+            hedef={`hedef ${MN(ozet.hedefCiro)}`}
             kalan={
               ozet.kalanCiro > 0
                 ? `${MN(ozet.kalanCiro)} kaldı`
-                : `hedef aşıldı +${MN(ozet.ciro - ozet.hedef.ciro)}`
+                : `hedef aşıldı +${MN(ozet.ciro - ozet.hedefCiro)}`
             }
             asildi={ozet.kalanCiro === 0}
             oran={ozet.ciroOran}
@@ -763,11 +782,7 @@ function HatKarti({ ozet, gecikme, isMobile }: { ozet: HatOzeti; gecikme: number
           <Tempo
             etiket="Gereken tempo"
             deger={`${ONDALIK(ozet.gerekenGunluk)} kayıt/gün`}
-            alt={
-              ozet.acikOgrenci > 0 && ozet.beklenenOgrenci > 0
-                ? `${SAYI(ozet.kalanOgrenci)} kayıt · ${kalanGun()} gün · plan dışı ${SAYI(ozet.acikOgrenci)}`
-                : `${SAYI(ozet.kalanOgrenci)} kayıt · ${kalanGun()} gün`
-            }
+            alt={`${SAYI(ozet.kalanOgrenci)} kayıt · ${kalanGun()} gün`}
             renk={renk}
           />
           <Tempo
@@ -815,17 +830,18 @@ function HatKarti({ ozet, gecikme, isMobile }: { ozet: HatOzeti; gecikme: number
  * kâr eşiğine şu kadar kaldı" der. Aradaki fark ekranın bütün tonu.
  *
  * Dolu kısım bugüne kadar gerçekleşen; onun devamındaki soluk kısım Kâr
- * Hesabı'nın "bu saatten sonra" planı. Böylece eşiklerin hangisine planla
- * varılıp hangisine varılamadığı çubuğa bakınca görünüyor.
+ * Hesabı'nın "bu saatten sonra" planı — soluk kısım tam hedef çizgisinde
+ * bitiyor, çünkü hedefin kendisi o plan. Kurucuların sabit hattı dördüncü
+ * eşik olarak duruyor.
  */
 function Merdiven({ ozet, isMobile }: { ozet: HatOzeti; isMobile: boolean }) {
   const renk = ozet.hedef.renk;
   const tavan =
-    Math.max(ozet.hedef.ogrenci, ozet.ogrenci, ozet.karHedefiOgrenci, ozet.yilSonuOgrenci) * 1.04;
+    Math.max(ozet.hedef.ogrenci, ozet.ogrenci, ozet.karHedefiOgrenci, ozet.hedefOgrenci) * 1.04;
   const yer = (n: number) => `${Math.min(100, (n / tavan) * 100)}%`;
   const dolu = Math.min(100, (ozet.ogrenci / tavan) * 100);
   const planVar = ozet.beklenenOgrenci > 0;
-  const planDolu = Math.min(100, (ozet.yilSonuOgrenci / tavan) * 100);
+  const planDolu = Math.min(100, (ozet.hedefOgrenci / tavan) * 100);
 
   // Sıra değere göre: LGS'de %20 kâr eşiği dönem hedefinin üstüne düşebiliyor,
   // sabit sırada yazılsa etiketler çubuktaki çizgilerle ters düşerdi.
@@ -842,8 +858,12 @@ function Merdiven({ ozet, isMobile }: { ozet: HatOzeti; isMobile: boolean }) {
       hesap: `${MN(ozet.karHedefiCiro)} ciro${ek} ÷ ${TL(ozet.olcuOrtalama)} ortalama`,
     },
     {
-      n: ozet.hedef.ogrenci, ad: "dönem hedefi", renk,
-      hesap: `${MN(ozet.hedef.ciro)} ciro · ${TL(ozet.hedefOrtalama)} ortalama`,
+      n: ozet.hedefOgrenci, ad: "kâr hesabı hedefi", renk,
+      hesap: `${SAYI(ozet.ogrenci)} gerçekleşen + ${SAYI(ozet.beklenenOgrenci)} beklenen`,
+    },
+    {
+      n: ozet.hedef.ogrenci, ad: "kurucu hattı", renk: "var(--text-2)",
+      hesap: `${MN(ozet.hedef.ciro)} ciro · ${TL(ozet.hedef.ciro / ozet.hedef.ogrenci)} ortalama`,
     },
   ].sort((a, b) => a.n - b.n);
 
@@ -888,14 +908,14 @@ function Merdiven({ ozet, isMobile }: { ozet: HatOzeti; isMobile: boolean }) {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: isMobile ? "1fr 1fr 1fr" : "repeat(3, 1fr)",
+          gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4, 1fr)",
           gap: "var(--sp-2)", marginTop: "var(--sp-3)",
         }}
       >
         {esikler.map((e) => {
           const gecildi = ozet.ogrenci >= e.n;
           // Henüz geçilmemiş eşiğe Kâr Hesabı'nın planıyla varılıyor mu?
-          const planlaGecilir = !gecildi && ozet.yilSonuOgrenci >= e.n;
+          const planlaGecilir = !gecildi && ozet.hedefOgrenci >= e.n;
           return (
             <div key={e.ad} style={{ borderLeft: `2px solid ${e.renk}`, paddingLeft: "var(--sp-2)" }}>
               <div className="caption" style={{ textTransform: "uppercase", letterSpacing: "var(--t-label-ls)" }}>{e.ad}</div>
@@ -910,7 +930,7 @@ function Merdiven({ ozet, isMobile }: { ozet: HatOzeti; isMobile: boolean }) {
                 >
                   {planlaGecilir
                     ? "planla geçiliyor"
-                    : `planla bile ${SAYI(e.n - ozet.yilSonuOgrenci)} açık`}
+                    : `planla bile ${SAYI(e.n - ozet.hedefOgrenci)} açık`}
                 </div>
               )}
               <div className="caption num" style={{ marginTop: 2, color: "var(--text-3)" }}>{e.hesap}</div>
@@ -922,7 +942,8 @@ function Merdiven({ ozet, isMobile }: { ozet: HatOzeti; isMobile: boolean }) {
       {planVar && (
         <div className="caption" style={{ marginTop: "var(--sp-3)" }}>
           Soluk kısım Kâr Hesabı'nın planı: {SAYI(ozet.ogrenci)} gerçekleşen +{" "}
-          {SAYI(ozet.beklenenOgrenci)} beklenen = <strong>{SAYI(ozet.yilSonuOgrenci)}</strong> yıl sonu.
+          {SAYI(ozet.beklenenOgrenci)} beklenen = <strong>{SAYI(ozet.hedefOgrenci)}</strong> yıl sonu,
+          ekranın hedefi bu. Kurucuların hattı {SAYI(ozet.hedef.ogrenci)}.
         </div>
       )}
     </div>
@@ -958,37 +979,39 @@ function Firsat({ ozet }: { ozet: HatOzeti }) {
     );
   }
 
-  /* Kâr Hesabı köprüsü: kalan rakamı planla ikiye ayırır. "114 kayıt
-     kaldı" ile "87'si zaten planda, 27'si açık" aynı veriden çıkıyor ama
-     ikincisi ne yapılacağını söylüyor. */
-  if (ozet.kalanOgrenci > 0 && ozet.beklenenOgrenci > 0) {
-    satirlar.push(
-      ozet.acikOgrenci > 0
-        // "87'si / 92'si / 40'ı" — sayıya göre değişen ek yerine "tanesi":
-        // her rakamda doğru okunuyor.
-        ? `Hedefe kalan ${SAYI(ozet.kalanOgrenci)} kaydın ${SAYI(ozet.beklenenOgrenci)} tanesi ` +
-          `Kâr Hesabı'nın planında; plan tutarsa geriye ${SAYI(ozet.acikOgrenci)} kayıt açık ` +
-          `kalıyor — kalan ${kalan} günde günde ${gunluk(ozet.acikOgrenci)} kayıt bu açığı kapatıyor.`
-        : `Kâr Hesabı'nın planı (${SAYI(ozet.beklenenOgrenci)} kayıt) dönem hedefini karşılıyor: ` +
-          `plan tutarsa yıl ${SAYI(ozet.yilSonuOgrenci)} kayıtla kapanıyor` +
-          (ozet.yilSonuOgrenci > ozet.hedef.ogrenci
-            ? ` — hedefin ${SAYI(ozet.yilSonuOgrenci - ozet.hedef.ogrenci)} kayıt üstünde.`
-            : " — hedefin tam üstünde.")
-    );
-  }
-
+  /* Hedef artık Kâr Hesabı'nın Kurum toplamı olduğu için "kalanın tamamı
+     gelirse" ile "plan tutarsa" aynı cümle: iki ekran aynı kârı yazar. */
   if (ozet.kalanOgrenci > 0) {
     satirlar.push(
-      `Hedefe kalan ${SAYI(ozet.kalanOgrenci)} kaydın tamamı gelirse dönem kârı ` +
-      `${MN(ozet.hedefKar)} olur (marj ${YZ(ozet.hedefMarj)}).`
+      `Kalan ${SAYI(ozet.kalanOgrenci)} kaydın tamamı gelirse — yani Kâr Hesabı'ndaki plan ` +
+      `tutarsa — dönem kârı ${MN(ozet.yilSonuKar)} olur (marj ${YZ(ozet.yilSonuMarj)}).`
     );
   }
 
-  if (ozet.hedefMarj * 100 < ozet.karMarjHedefi) {
+  /* Kurucuların hattı birincil hedef değil ama sessizce kaybolmasın.
+     Kayıt sayısı tutup cironun tutmadığı hâl ayrı yazılıyor: LGS'de plan
+     120 kaydı buluyor ama ciro hattın 4,5 Mn ₺ altında kalıyor — o fark
+     kayıt sayısında değil ortalamada. */
+  const hatBasi = `Kurucuların dönem hattı ${SAYI(ozet.hedef.ogrenci)} kayıt · ${MN(ozet.hedef.ciro)}; `;
+  if (ozet.acikOgrenci > 0) {
     satirlar.push(
-      `Dönem hedefinin marjı ${YZ(ozet.hedefMarj)}; Kâr Hesabı'ndaki %${marj} eşiği için ` +
+      hatBasi +
+      `plan oraya ${SAYI(ozet.acikOgrenci)} kayıt eksik kalıyor. O hattı da tutturmak kalan ` +
+      `${kalan} günde günde ${gunluk(ozet.kalanOgrenci + ozet.acikOgrenci)} kayıt demek.`
+    );
+  } else if (ozet.acikCiro > 0) {
+    satirlar.push(
+      hatBasi +
+      `plan kayıt sayısını buluyor ama ciro ${MN(ozet.acikCiro)} eksik kalıyor — ` +
+      `bu fark kayıt sayısında değil ortalamada.`
+    );
+  }
+
+  if (ozet.yilSonuMarj * 100 < ozet.karMarjHedefi) {
+    satirlar.push(
+      `Planın marjı ${YZ(ozet.yilSonuMarj)}; Kâr Hesabı'ndaki %${marj} eşiği için ` +
       `${SAYI(ozet.karHedefiOgrenci)} kayıt ya da ortalamanın ` +
-      `${TL((karHedefiCirosu(ozet.gider, ozet.karMarjHedefi) - ozet.ekKaynak) / ozet.hedef.ogrenci)} olması gerekir.`
+      `${TL((karHedefiCirosu(ozet.gider, ozet.karMarjHedefi) - ozet.ekKaynak) / Math.max(1, ozet.hedefOgrenci))} olması gerekir.`
     );
   }
 
@@ -996,8 +1019,9 @@ function Firsat({ ozet }: { ozet: HatOzeti }) {
     const artis = ozet.hedefOrtalama - ozet.ortalama;
     const denk = Math.ceil((artis * ozet.ogrenci) / ozet.hedefOrtalama);
     satirlar.push(
-      `Ortalamayı kayıt başına ${TL(artis)} yukarı çekmek, ${SAYI(denk)} yeni kayıt ` +
-      `bulmakla aynı kapıya çıkıyor — indirim masasında kazanılacak yer var.`
+      `Gerçekleşen ortalama, planın varsaydığı ${TL(ozet.hedefOrtalama)} rakamının ` +
+      `${TL(artis)} altında. Bu farkı kapatmak ${SAYI(denk)} yeni kayıt bulmakla aynı ` +
+      `kapıya çıkıyor — indirim masasında kazanılacak yer var.`
     );
   }
 
